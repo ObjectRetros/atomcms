@@ -176,6 +176,36 @@ class WebsiteSettingsSeeder extends Seeder
                 'comment' => 'The homeroom every new users will be assigned to',
             ],
             [
+<<<<<<< HEAD
+                'key' => 'paypal_sandbox_client_id',
+                'value' => '',
+                'comment' => 'The sandbox client ID provided by paypal (Only use this if your paypal is in sandbox)',
+            ],
+            [
+                'key' => 'paypal_client_secret',
+                'value' => '',
+                'comment' => 'The sandbox secret client ID provided by paypal (Only use this if your paypal is in sandbox)',
+            ],
+            [
+                'key' => 'paypal_live_client_id',
+                'value' => '',
+                'comment' => 'The live client ID provided by paypal (Use this if your paypal account is set to live)',
+            ],
+            [
+                'key' => 'paypal_live_client_secret',
+                'value' => '',
+                'comment' => 'The live secret client ID provided by paypal (Use this if your paypal account is set to live)',
+            ],
+            [
+                'key' => 'paypal_locale',
+                'value' => 'en-US',
+                'comment' => 'The locale used for Paypal (Only change this if you are absolutely certain on what you are doing',
+            ],
+            [
+                'key' => 'paypal_currency',
+                'value' => 'USD',
+                'comment' => 'The currency type used to charge the user (Only change this if you are absolutely certain on what you are doing',
+=======
                 'key' => 'cms_color_mode',
                 'value' => 'light',
                 'comment' => 'Determines the color mode of the CMS (light = normal, dark = dark mode)',
@@ -214,6 +244,7 @@ class WebsiteSettingsSeeder extends Seeder
                 'key' => 'max_comment_per_article',
                 'value' => '2',
                 'comment' => 'Specifies the amount of times a user can comment per article',
+>>>>>>> main
             ],
         ];
 

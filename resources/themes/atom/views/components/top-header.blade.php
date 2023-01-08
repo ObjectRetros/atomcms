@@ -29,12 +29,12 @@
         @auth
             @if(hasPermission('view_server_logs') || hasPermission('housekeeping_access'))
             <button
-                    id="administrationDropdown"
-                    data-dropdown-toggle="administration-dropdown"
-                    class="h-10 text-sm font-semibold text-red-700 flex items-center gap-x-1 ml-5 md:ml-0">
-                    {{ __('Administration') }}
+                id="administrationDropdown"
+                data-dropdown-toggle="administration-dropdown"
+                class="h-10 text-sm font-semibold text-red-700 flex items-center gap-x-1 ml-5 md:ml-0">
+                {{ __('Administration') }}
 
-                    <x-icons.chevron-down />
+                <x-icons.chevron-down />
             </button>
 
             <div id="administration-dropdown" class="py-2 hidden z-10 w-44 text-sm bg-white dark:bg-gray-800 shadow block">
@@ -52,6 +52,7 @@
             </div>
             @endif
         @endauth
+
         <x-navigation.user-dropdown />
     </div>
 </div>

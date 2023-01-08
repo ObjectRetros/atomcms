@@ -100,9 +100,8 @@ Route::middleware(['maintenance', 'check-ban', 'force.staff.2fa'])->group(functi
 
         // Shop routes
         Route::get('/shop', ShopController::class)->name('shop.index');
-
-        // Paypal routes
-
+        Route::post('/shop/redeem-voucher', [ShopController::class, 'redeemVoucher'])->name('shop.redeem-voucher');
+        Route::post('/shop/{product}/purchase', [ShopController::class, 'purchase'])->name('shop.purchase');
 
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {

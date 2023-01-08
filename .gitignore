@@ -3,6 +3,7 @@
 /public/hot
 /public/client
 /public/storage
+/public/nitro*
 /storage/*.key
 /vendor
 /public/static

@@ -94,7 +94,6 @@
                             <div class="mt-4 bg-[#efefef] rounded-md p-3 flex flex-col gap-y-1 dark:bg-gray-900">
                                 <div class="flex gap-x-3 items-center">
                                     <input id="terms" type="checkbox" name="terms" class="rounded mt-1 ring-0 focus:ring-0">
-
                                     <a href="{{ route('rules.index') }}" target="_blank" class="mt-1 text-sm font-semibold text-gray-700 hover:text-gray-900 hover:underline dark:text-gray-500 dark:hover:text-gray-300">
                                         {{ __('I accept the :hotel terms & rules.', ['hotel' => setting('hotel_name')]) }}
                                     </a>

@@ -13,9 +13,12 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
+        "paypal/paypal-checkout-sdk": "^1.0",
         "opcodesio/log-viewer": "^1.4",
         "qirolab/laravel-themer": "^2.0",
-        "spatie/laravel-activitylog": "^4.5"
+        "spatie/laravel-activitylog": "^4.5",
+        "srmklive/paypal": "~3.0",
+        "ext-sockets": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\RconService;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\URL;
@@ -18,8 +19,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             \Illuminate\Foundation\Vite::class,
-            \App\Services\ViteService::class
+            \App\Services\ViteService::class,
         );
+
+        $this->app->bind(RconService::class, fn () => new RconService);
 
         $this->app->singleton(
             SettingsService::class,

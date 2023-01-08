@@ -7,6 +7,7 @@
 import './external/flowbite';
 import "./bootstrap";
 
+
 import 'swiper/css';
 import 'swiper/css/pagination';
 import Alpine from "alpinejs";
@@ -17,6 +18,5 @@ import AtomSliders from './components/AtomSliders.js';
 ThemeSwitcher.init();
 ArticleReactions.init();
 AtomSliders.init();
-
 Alpine.start();
 

@@ -2,47 +2,23 @@
 
 namespace App\Services;
 
-use App\Models\Permission;
 use App\Models\User;
 
-/*Credits to Kani for this*/
 class RconService
 {
     protected $socket;
-    protected $connected;
+    protected bool $connected = false;
 
-    protected function connect(): void
-    {
-        if (!function_exists('socket_create')) {
-            abort(500, 'Please enable sockets in your php.ini!');
-        }
-
-        $this->socket = socket_create(
-            config('habbo.rcon.domain'),
-            config('habbo.rcon.type'),
-            config('habbo.rcon.protocol')
-        );
-
-        if (!$this->socket) {
-            abort(500, sprintf('socket_create() failed: reason: %s', socket_strerror(socket_last_error())));
-        }
-
-        $this->connected = socket_connect($this->socket, setting('rcon_ip'), setting('rcon_port'));
-
-        if (!$this->connected) {
-            abort(500, sprintf('socket_connect() failed: reason: %s', socket_strerror(socket_last_error())));
-        }
-    }
 
     public function sendPacket(string $key, $data = null)
     {
-        $this->connect();
+        if (!$this->connect()) {
+            return false;
+        }
 
         $data = json_encode(['key' => $key, 'data' => $data]);
 
-        $request = socket_write($this->socket, $data, strlen($data));
-
-        if ($request === false) {
+        if (!@socket_write($this->socket, $data, strlen($data))) {
             abort(500, sprintf(socket_strerror(socket_last_error($this->socket))));
         }
 
@@ -148,5 +124,38 @@ class RconService
             'user_id' => $user->id,
             'room_id' => $roomId,
         ]);
+    }
+
+    public function updateConfig(User $user, string $command)
+    {
+        return $this->sendPacket('executecommand', [
+            'user_id' => $user->id,
+            'command' => $command,
+        ]);
+    }
+
+    public function isConnected(): bool
+    {
+        $this->connect();
+
+        return $this->connected;
+    }
+
+    protected function connect(): bool
+    {
+
+        if (!function_exists('socket_create')) {
+            return false;
+        }
+
+        if (!($this->socket = @socket_create(config('habbo.rcon.domain'), config('habbo.rcon.type'), config('habbo.rcon.protocol')))) {
+            return false;
+        }
+
+        if (!@socket_connect($this->socket, setting('rcon_ip'), setting('rcon_port'))) {
+            return false;
+        }
+
+        return $this->connected = true;
     }
 }

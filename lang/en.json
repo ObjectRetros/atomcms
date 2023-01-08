@@ -197,5 +197,8 @@
     "You can only comment :amount times per article": "You can only comment :amount times per article",
     "You comment has been posted!": "You comment has been posted!",
     "You can only delete your own comments": "You can only delete your own comments",
-    "You comment has been deleted!": "You comment has been deleted!"
+    "You comment has been deleted!": "You comment has been deleted!",
+    "It seems like you already have this or a higher rank, please select another package if possible.": "It seems like you already have this or a higher rank, please select another package if possible.",
+    "You do not have enough balance, to purchase this package. Please add another $:amount before having enough": "You do not have enough balance, to purchase this package. Please add another $:amount before having enough",
+    "Thank you for purchasing :package": "Thank you for purchasing :package"
 }

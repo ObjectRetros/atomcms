@@ -151,7 +151,7 @@ You can find the documentation, addons, and tips & tricks on **[https://retros.g
 - **Nicollas** - Dark mode, Turbolinks, Performance improvements, Article reactions, User sessions, Layout improvements & PT-BR translations
 - **Dominic** - Performance improvements & User sessions
 - **Oliver** - Profile page & Finnish translations
-- **Beny** - Findretros API fixes & CF Fixes
+- **Beny** - Findretros API fixes & Cloudflare Fixes
 - **Live** - French translations, bugfixes & tweaks
 - **MisterDeen** - Custom Discord widget, bugfixes & tweaks
 - **DamienJolly** - Bugfixes

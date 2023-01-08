@@ -12,7 +12,7 @@ class ArticleController extends Controller
     public function index()
     {
         return view('community.articles', [
-            'articles' => WebsiteArticle::with(['user:id,username,look', 'comment.user:id,username,look'])
+            'articles' => WebsiteArticle::with(['user:id,username,look'])
                 ->latest('id')
                 ->paginate(8),
         ]);
@@ -21,7 +21,7 @@ class ArticleController extends Controller
     public function show(WebsiteArticle $article)
     {
         $myReactions = [];
-        $articleData = $article->load(['user.permission:id,rank_name,staff_background', 'reactions:article_id,user_id,reaction', 'reactions.user:id,username']);
+        $articleData = $article->load(['user.permission:id,rank_name,staff_background', 'reactions:article_id,user_id,reaction', 'reactions.user:id,username', 'comments.user:id,username,look']);
 
         if (Auth::check()) {
             $myReactions = $articleData->reactions->where('user_id', Auth::id())->pluck('reaction');
