@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\RareValueTypes;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\URL;

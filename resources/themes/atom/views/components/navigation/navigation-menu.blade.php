@@ -63,8 +63,14 @@
 
         <a href="{{ route('leaderboard.index') }}"
            class="nav-item dark:text-gray-200 {{ request()->routeIs('leaderboard.*') ? 'md:border-b-4 md:border-b-[#eeb425]' : '' }}">
-           <i class="navigation-icon leaderboards mr-1 hidden lg:inline-flex"></i>
+            <i class="navigation-icon leaderboards mr-1 hidden lg:inline-flex"></i>
             {{ __('Leaderboards') }}
+        </a>
+
+        <a href="{{ route('values.index') }}"
+           class="nav-item dark:text-gray-200 {{ request()->routeIs('values.*') ? 'md:border-b-4 md:border-b-[#eeb425]' : '' }}">
+            <i class="navigation-icon leaderboards mr-1 hidden lg:inline-flex"></i>
+            {{ __('Rare values') }}
         </a>
 
         <a href="{{ route('shop.index') }}"
