@@ -13,41 +13,50 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ShopController extends Controller
 {
+    private RconService $rconService;
+
+    public function __construct(RconService $rconService)
+    {
+        $this->rconService = $rconService;
+    }
+
     public function __invoke()
     {
         return view('shop.shop', [
             'articles' => WebsiteShopArticles::orderBy('position')->with(['rank:id,rank_name', 'features'])->get(),
-            'rconConnected' => app(RconService::class)->isConnected
         ]);
     }
 
     private function giveBadges(User $user, string $badges)
     {
         $badgeList = explode(';', $badges);
-        if (empty($badgeList)) {
-            return;
-        }
-
-        $rcon = app(RconService::class);
-        if (!$rcon->isConnected) {
-            foreach ($badgeList as $badge) {
-                $user->badges()->updateOrCreate([
-                    'user_id' => $user->id,
-                    'badge_code' => $badge,
-                ]);
-            }
-
-            return;
-        }
+        $ownedBadges = $user->badges()->pluck('badge_code')->toArray();
 
         foreach ($badgeList as $badge) {
-            if ($rcon->isConnected) {
-                $rcon->giveBadge($user, $badge);
+            if (in_array($badge, $ownedBadges)) {
+                continue;
             }
+
+            if ($this->rconService->isConnected) {
+                $this->rconService->giveBadge($user, $badge);
+
+                continue;
+            }
+
+            $user->badges()->updateOrCreate([
+                'user_id' => $user->id,
+                'badge_code' => $badge,
+            ]);
         }
     }
 
     public function purchase(WebsiteShopArticles $package, SendCurrency $sendCurrency): Response {
+        if (!$this->rconService->isConnected && Auth::user()->online === '1') {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Please logout before purchasing a package')],
+            );
+        }
+
         $user = Auth::user();
         if ($package->give_rank && $user->rank >= $package->give_rank) {
             return to_route('shop.index')->withErrors(
@@ -61,39 +70,30 @@ class ShopController extends Controller
             );
         }
 
-        $rcon = app(RconService::class);
-        if (!$rcon->isConnected && $user->online === '1') {
-            return to_route('shop.index')->withErrors(
-                ['message' => __('Pleaase logout before purchasing a package')],
-            );
+        $user->decrement('website_balance', $package->price());
+
+        $sendCurrency->execute($user, 'credits', $package->credits);
+        $sendCurrency->execute($user, 'duckets', $package->duckets);
+        $sendCurrency->execute($user, 'diamonds', $package->diamonds);
+
+        if ($package->give_rank) {
+            if ($this->rconService->isConnected) {
+                $this->rconService->setRank($user, $package->give_rank);
+                $this->rconService->disconnectUser($user);
+            } else {
+                $user->update([
+                    'rank' => $package->give_rank,
+                ]);
+            }
         }
 
-        DB::transaction(function () use ($user, $rcon, $package, $sendCurrency) {
-            $user->decrement('website_balance', $package->price());
+        if ($package->badges) {
+            $this->giveBadges($user, $package->badges);
+        }
 
-            $sendCurrency->execute($user, 'credits', $package->credits);
-            $sendCurrency->execute($user, 'duckets', $package->duckets);
-            $sendCurrency->execute($user, 'diamonds', $package->diamonds);
-
-            if ($package->give_rank) {
-                if ($rcon->isConnected) {
-                    $rcon->setRank($user, $package->give_rank);
-                    $rcon->disconnectUser($user);
-                } else {
-                    $user->update([
-                        'rank' => $package->give_rank,
-                    ]);
-                }
-            }
-
-            if ($package->badges) {
-                $this->giveBadges($user, $package->badges);
-            }
-
-            if ($package->furniture) {
-                $this->handleFurniture(json_decode($package->furniture, true));
-            }
-        });
+        if ($package->furniture) {
+            $this->handleFurniture(json_decode($package->furniture, true));
+        }
 
         return to_route('shop.index')->with('success', __('Successful!'));
     }

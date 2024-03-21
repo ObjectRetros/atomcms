@@ -15,7 +15,7 @@ class MeController extends Controller
         return view('user.me', [
             'onlineFriends' => $user->getOnlineFriends(),
             'user' => $user->load('permission:id,rank_name'),
-            'articles' => WebsiteArticle::latest()->with('user:id,username,look')->take(5)->get(),
+            'articles' => WebsiteArticle::whereHas('user')->with('user:id,username,look')->latest()->take(5)->get(),
         ]);
     }
 }

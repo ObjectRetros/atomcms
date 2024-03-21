@@ -6,12 +6,12 @@ use App\Http\Requests\ArticleCommentFormRequest;
 use App\Models\WebsiteArticle;
 use App\Models\WebsiteArticleComment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class WebsiteArticleCommentsController extends Controller
 {
     public function store(WebsiteArticle $article, ArticleCommentFormRequest $request): RedirectResponse
     {
-        $user = $request->user();
         if ($article->userHasReachedArticleCommentLimit()) {
             return redirect()->back()->withErrors([
                 'message' => __('You can only comment :amount times per article', ['amount' => setting('max_comment_per_article')]),
@@ -25,7 +25,7 @@ class WebsiteArticleCommentsController extends Controller
         }
 
         $article->comments()->create([
-            'user_id' => $user->id,
+            'user_id' => Auth::id(),
             'comment' => $request->input('comment'),
         ]);
 
@@ -34,7 +34,7 @@ class WebsiteArticleCommentsController extends Controller
 
     public function destroy(WebsiteArticleComment $comment): RedirectResponse
     {
-        if (! $comment->userCanDeleteComment()) {
+        if (! $comment->canBeDeleted()) {
             return redirect()->back()->withErrors([
                 'message' => __('You can only delete your own comments'),
             ]);

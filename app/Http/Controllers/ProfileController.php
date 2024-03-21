@@ -44,8 +44,7 @@ class ProfileController extends Controller
 
     private function getUserFriends(int $userId)
     {
-        return MessengerFriendship::query()
-            ->select('user_two_id')
+        return MessengerFriendship::select('user_two_id')
             ->where('user_one_id', '=', $userId)
             ->whereHas('user')
             ->with('user:id,username,look')

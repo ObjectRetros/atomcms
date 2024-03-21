@@ -46,13 +46,13 @@ Route::prefix('installation')->controller(InstallationController::class)->group(
     Route::get('/step/{step}', 'showStep')->name('installation.show-step');
 
     Route::post('/start-installation', 'storeInstallationKey')->name('installation.start-installation');
-    Route::post('/save-step', 'saveStepSettings')->name('installation.save-step');
-    Route::post('/previous-step', 'previousStep')->name('installation.previous-step');
     Route::post('/restart-installation', 'restartInstallation')->name('installation.restart');
+    Route::post('/previous-step', 'previousStep')->name('installation.previous-step');
+    Route::post('/save-step', 'saveStepSettings')->name('installation.save-step');
     Route::post('/complete', 'completeInstallation')->name('installation.complete');
 });
 
-
+// All routes within this group is protected by maintenance, ban and 2FA middleware
 Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(function () {
     // Maintenance route
     Route::get('/maintenance', MaintenanceController::class)->name('maintenance.show');
@@ -60,6 +60,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
     // Banned route
     Route::get('/banned', BannedController::class)->name('banned.show');
 
+    // Exceptions to the 2FA check and must only be visited if not logged in
     Route::middleware('guest')->withoutMiddleware('force.staff.2fa')->group(function () {
         Route::get('/', HomeController::class)->name('welcome');
 
@@ -72,9 +73,11 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->name('reset.password.post');
     });
 
+    // Can only be accessed if logged in
     Route::middleware('auth')->group(function () {
         Route::prefix('user')->group(function () {
             Route::get('/me', MeController::class)->name('me.show');
+            Route::get('/claim/referral-reward', ReferralController::class)->name('claim.referral-reward');
 
             // User settings routes
             Route::prefix('settings')->group(function () {
@@ -101,24 +104,23 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Community routes
         Route::prefix('community')->group(function () {
-            Route::get('/', [MeController::class, 'index'])->name('community.index');
-            Route::get('/claim/referral-reward', ReferralController::class)->name('claim.referral-reward');
             Route::get('/photos', PhotosController::class)->name('photos.index')->withoutMiddleware('auth');
 
+            // Allowed to be visited without being logged in
             Route::withoutMiddleware('auth')->group(function () {
                 Route::get('/articles', [ArticleController::class, 'index'])->name('article.index');
                 Route::get('/article/{article:slug}', [ArticleController::class, 'show'])->name('article.show');
-                Route::post('/article/{article:slug}/comment', [WebsiteArticleCommentsController::class, 'store'])->name('article.comment.store');
-                Route::delete('/article/{comment}/comment', [WebsiteArticleCommentsController::class, 'destroy'])->name('article.comment.destroy');
-
-                Route::get('/staff', StaffController::class)->name('staff.index');
-                Route::get('/teams', WebsiteTeamsController::class)->name('teams.index');
             });
+
+            Route::get('/staff', StaffController::class)->name('staff.index');
+            Route::get('/teams', WebsiteTeamsController::class)->name('teams.index');
 
             Route::get('/staff-applications', [StaffApplicationsController::class, 'index'])->name('staff-applications.index');
             Route::get('/staff-applications/{position}', [StaffApplicationsController::class, 'show'])->name('staff-applications.show');
             Route::post('/staff-applications/{position}', [StaffApplicationsController::class, 'store'])->name('staff-applications.store');
 
+            Route::post('/article/{article:slug}/comment', [WebsiteArticleCommentsController::class, 'store'])->name('article.comment.store');
+            Route::delete('/article/{comment}/comment', [WebsiteArticleCommentsController::class, 'destroy'])->name('article.comment.destroy');
             Route::post('/article/{article:slug}/toggle-reaction', [ArticleController::class, 'toggleReaction'])
                 ->name('article.toggle-reaction')
                 ->middleware('throttle:30,1');

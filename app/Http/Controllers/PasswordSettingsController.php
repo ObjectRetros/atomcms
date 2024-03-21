@@ -12,15 +12,11 @@ class PasswordSettingsController extends Controller
 {
     public function edit(): View
     {
-        return view('user.settings.password', [
-            'user' => Auth::user(),
-        ]);
+        return view('user.settings.password');
     }
 
     public function update(PasswordSettingsFormRequest $request): RedirectResponse
     {
-        $request->validated();
-
         Auth::user()->update([
             'password' => Hash::make($request->input('password')),
         ]);

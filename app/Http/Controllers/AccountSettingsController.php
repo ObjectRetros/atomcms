@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AccountSettingsFormRequest;
+use App\Rules\WebsiteWordfilterRule;
 use App\Services\RconService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Jenssegers\Agent\Agent;
 
@@ -23,7 +25,7 @@ class AccountSettingsController extends Controller
     public function sessionLogs(Request $request): View
     {
         $sessions = collect(
-            auth()->user()->sessions
+            Auth::user()->sessions
         )->map(function ($session) use ($request) {
             $agent = $this->createAgent($session);
 
@@ -54,26 +56,34 @@ class AccountSettingsController extends Controller
     public function update(RconService $rcon, AccountSettingsFormRequest $request): RedirectResponse
     {
         $user = Auth::user();
-        $canChangeName = $user->settings?->allow_name_change && $user->username !== $request->input('username');
+        $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
 
-        if ($user->online && $canChangeName && $rcon->isConnected) {
-            $rcon->disconnectUser($user);
-            sleep(1);
-        }
+        if ($allowedNameChange) {
+            // Disconnect the user and wait 1 second, to ensure the name change will proceed
+            if ($rcon->isConnected && $user->online) {
+                $rcon->disconnectUser($user);
+                sleep(1);
+            }
 
-        if ($canChangeName) {
             $user->update([
-                'username' => $request->string('username', Auth::user()->username),
+                'username' => $request->input('username'),
             ]);
         }
 
-        $user->update([
-            'mail' => $request->string('mail', Auth::user()->email),
-            'motto' => $request->string('motto', '')
-        ]);
+        if ($user->mail !== $request->input('mail')) {
+            $user->update([
+                'mail' => $request->input('mail'),
+            ]);
+        }
 
-        if ($user->motto !== $request->string('motto') && $rcon->isConnected) {
-            $rcon->setMotto($user, $request->string('motto', ''));
+        if ($user->motto !== $request->input('motto')) {
+            if ($rcon->isConnected) {
+                $rcon->setMotto($user, $request->input('motto'));
+            } else {
+                $user->update([
+                    'motto' => $request->input('motto'),
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', __('Your account settings has been updated'));

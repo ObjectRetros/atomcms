@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Session;
 
 class LocaleController extends Controller
 {
-    public function __invoke($locale): RedirectResponse
+    public function __invoke(string $locale): RedirectResponse
     {
-        $languages = WebsiteLanguage::select('country_code')
-            ->get()
-            ->pluck('country_code')
-            ->toArray();
-
-        if (! in_array($locale, $languages)) {
+        if (! WebsiteLanguage::where('country_code', $locale)->exists()) {
             return redirect()->back()->withErrors(['message' => __('The language selected is not supported')]);
         }
 
