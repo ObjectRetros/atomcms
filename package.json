@@ -23,7 +23,6 @@
         "popper.js": "^1.16",
         "postcss": "^8.4.14",
         "postcss-import": "^14.1.0",
-        "sass": "^1.54.0",
         "sass-loader": "^10.1.1",
         "tailwindcss": "^3.1.6",
         "turbolinks": "^5.2.0",
@@ -31,6 +30,7 @@
     },
     "dependencies": {
         "-": "^0.0.1",
+        "sass": "^1.83.0",
         "swiper": "^8.4.7"
     }
 }
