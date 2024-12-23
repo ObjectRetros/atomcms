@@ -24,6 +24,13 @@ class Camera extends Model
     protected $casts = [
         'timestamp' => 'datetime',
     ];
+	
+	protected $fillable = [
+        'user_id',
+        'room_id',
+        'timestamp',
+        'url',
+    ];
 
     public static function getFriendsWhoHaveStories()
     {

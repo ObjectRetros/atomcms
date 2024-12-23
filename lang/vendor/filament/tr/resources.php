@@ -343,6 +343,8 @@ return [
 
     'columns' => [
         'id' => 'ID',
+		'user_id' => 'User ID',
+		'room_id' => 'Room ID',
         'badge' => 'Rozet',
         'name' => 'Ad',
         'level' => 'Seviye',
