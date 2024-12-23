@@ -80,12 +80,15 @@
                 @forelse ($article->tags as $tag)
                     <span @class([
                         "text-xs font-medium rounded-lg px-2",
-                        "text-slate-800" => $tag->background_color,
+                        "text-slate-600" => $tag->background_color,
                         "text-white" => $tag->background_color
                     ]) style="background-color: {{ $tag->background_color }}">{{ $tag->name }}</span>
                 @empty
-                    <span class="text-xs text-gray-900 dark:text-gray-400">
-                        {{ __('No tags found.') }}
+					<span @class([
+                        "text-xs font-medium rounded-lg px-2",
+                        "text-slate-600",
+                        "text-white"
+                    ]) style="background-color: #000000">{{ __('No tags found.') }}</span>
                     </span>
                 @endforelse
             </div>
