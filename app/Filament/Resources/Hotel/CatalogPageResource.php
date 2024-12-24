@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Hotel;
 
-use App\Filament\Resources\CatalogPageResource\Pages;
-use App\Filament\Resources\CatalogPageResource\RelationManagers\CatalogItemsRelationManager;
+use App\Filament\Resources\Hotel\CatalogPageResource\Pages;
+use App\Filament\Resources\Hotel\CatalogPageResource\RelationManagers\CatalogItemsRelationManager;
 use App\Models\Game\Furniture\CatalogPage;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
