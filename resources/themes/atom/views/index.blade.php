@@ -22,7 +22,7 @@
             </x-content.guest-content-card>
         </div>
 
-        @if(count($photos))
+        @if($photos)
             <div class="col-span-12">
                 <x-content.guest-content-card icon="camera-icon">
                     <x-slot:title>
@@ -32,7 +32,6 @@
                     <x-slot:under-title>
                         {{ __('Have a look at some of the great moments captured by users around the hotel.') }}
                     </x-slot:under-title>
-
                     <x-photos :photos="$photos" />
                 </x-content.guest-content-card>
             </div>

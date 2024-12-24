@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CatalogPageResource\RelationManagers;
+namespace App\Filament\Resources\Hotel\CatalogPageResource\RelationManagers;
 
 use App\Models\Game\Furniture\ItemBase;
 use Filament\Forms;

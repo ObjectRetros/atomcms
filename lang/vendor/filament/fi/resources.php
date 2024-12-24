@@ -335,6 +335,8 @@ return [
 
     'columns' => [
         'id' => 'ID',
+		'user_id' => 'User ID',
+		'room_id' => 'Room ID',
         'badge' => 'Tunnus',
         'name' => 'Nimi',
         'level' => 'Taso',

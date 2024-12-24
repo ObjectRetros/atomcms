@@ -20,6 +20,7 @@ use App\Filament\Traits\TranslatableResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\Atom\ArticleResource\Pages;
+use App\Filament\Resources\Atom\ArticleResource\RelationManagers;
 
 class ArticleResource extends Resource
 {
@@ -182,6 +183,13 @@ class ArticleResource extends Resource
         return parent::getEloquentQuery()->withoutGlobalScopes([
             SoftDeletingScope::class,
         ]);
+    }
+	
+	public static function getRelations(): array
+    {
+        return [
+            RelationManagers\TagsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

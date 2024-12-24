@@ -108,7 +108,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Community routes
         Route::prefix('community')->group(function () {
-            Route::get('/photos', PhotosController::class)->name('photos.index')->withoutMiddleware('auth');
+            Route::get('/photos', PhotosController::class)->name('photos.index');
 
             // Allowed to be visited without being logged in
             Route::withoutMiddleware('auth')->group(function () {

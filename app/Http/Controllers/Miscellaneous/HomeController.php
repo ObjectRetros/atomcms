@@ -19,6 +19,7 @@ class HomeController extends Controller
                 ->get(),
             'photos' => CameraWeb::latest('id')
                 ->take(4)
+                ->where('visible', true)
                 ->with('user:id,username,look')
                 ->get(),
         ]);

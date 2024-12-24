@@ -75,6 +75,23 @@
             <div class="px-2" id="article-content">
                 {!! $article->full_story !!}
             </div>
+			
+			<div class="w-full h-10 lg:h-1/2 py-1 flex gap-1 items-center justify-start flex-wrap">
+                @forelse ($article->tags as $tag)
+                    <span @class([
+                        "text-xs font-medium rounded-lg px-2",
+                        "text-slate-600" => $tag->background_color,
+                        "text-white" => $tag->background_color
+                    ]) style="background-color: {{ $tag->background_color }}">{{ $tag->name }}</span>
+                @empty
+					<span @class([
+                        "text-xs font-medium rounded-lg px-2",
+                        "text-slate-600",
+                        "text-white"
+                    ]) style="background-color: #000000">{{ __('No tags found.') }}</span>
+                    </span>
+                @endforelse
+            </div>
 
             @include('community.partials.article-reactions')
         </div>

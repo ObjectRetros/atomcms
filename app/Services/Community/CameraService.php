@@ -8,8 +8,9 @@ class CameraService
 {
     public function fetchPhotos(bool $paginate = false, int $perPage = 8): mixed
     {
-        $photos = CameraWeb::latest('id')->with('user:id,username,look');
-
-        return $paginate ? $photos->paginate($perPage) : $photos->get();
+        $photos = CameraWeb::where('visible', true)
+			->latest('id')
+			->with('user:id,username,look');
+		return $paginate ? $photos->paginate($perPage) : $photos->get();
     }
 }
