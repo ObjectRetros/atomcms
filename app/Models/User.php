@@ -38,10 +38,15 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
+	use LogsActivity;
+
 
     public $timestamps = false;
 
@@ -155,7 +160,6 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name')), Str::uuid());
 
-        // Recursive function - Call itself again if the auth ticket already exists
         if (User::where('auth_ticket', $sso)->exists()) {
             return $this->ssoTicket();
         }
@@ -283,5 +287,11 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function canAccessPanel(Panel $panel): bool
     {
         return hasPermission('housekeeping_access');
+    }
+	
+	public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logOnly(['id', 'username', 'motto', 'rank']);
     }
 }

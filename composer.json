@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.8",
         "opcodesio/log-viewer": "*",
         "qirolab/laravel-themer": "^2.0",
+        "rmsramos/activitylog": "^1.0",
         "ryangjchandler/laravel-cloudflare-turnstile": "*",
         "saade/filament-laravel-log": "^3.2",
         "spatie/laravel-activitylog": "^4.8",

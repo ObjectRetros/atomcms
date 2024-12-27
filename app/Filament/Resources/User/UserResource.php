@@ -25,6 +25,7 @@ use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Tables\Columns\UserAvatarColumn;
 use App\Filament\Resources\User\UserResource\Pages;
 use App\Filament\Resources\User\UserResource\RelationManagers;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class UserResource extends Resource
 {
@@ -259,6 +260,7 @@ class UserResource extends Resource
             RelationManagers\BadgesRelationManager::class,
             RelationManagers\ChatLogRelationManager::class,
             RelationManagers\ChatLogPrivateRelationManager::class,
+			ActivitylogRelationManager::class,
         ];
     }
 
@@ -274,7 +276,7 @@ class UserResource extends Resource
 
         return $formData;
     }
-
+	
     public static function getPages(): array
     {
         return [
