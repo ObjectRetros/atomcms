@@ -82,7 +82,7 @@ class WordFilterResource extends Resource
 
                 IconColumn::make('hide')
                     ->label(__('filament::resources.columns.hideable'))
-                    ->icon(fn (string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->icon(fn(string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->colors([
                         'danger' => '0',
                         'success' => '1',
@@ -90,7 +90,7 @@ class WordFilterResource extends Resource
 
                 IconColumn::make('report')
                     ->label(__('filament::resources.columns.reportable'))
-                    ->icon(fn (string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->icon(fn(string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->colors([
                         'danger' => '0',
                         'success' => '1',

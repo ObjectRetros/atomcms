@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Exceptions\MigrationFailedException;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -62,7 +63,7 @@ class InstallationMiddleware
             }
 
             return $installation;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error fetching or creating WebsiteInstallation: ' . $e->getMessage());
             abort(500, 'An error occurred while setting up the installation.');
         }
@@ -135,7 +136,7 @@ class InstallationMiddleware
 
     private function getCurrentStep(Request $request)
     {
-        return (int) Str::after($request->path(), 'step/');
+        return (int)Str::after($request->path(), 'step/');
     }
 
     private function redirectToStep(int $step)

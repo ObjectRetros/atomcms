@@ -16,12 +16,12 @@ class WebsiteTeam extends Model
         return $this->hasMany(User::class, 'team_id', 'id');
     }
 
-	public function getBadgePath(): string
+    public function getBadgePath(): string
     {
         return sprintf('%s%s.gif', setting('badges_path'), $this->getBadgeName());
     }
 
-	public function getBadgeName(): string
+    public function getBadgeName(): string
     {
         return $this->badge ?: '';
     }

@@ -10,7 +10,7 @@ use App\Filament\Resources\Shop\ShopOrderResource;
 
 class LatestOrders extends BaseWidget
 {
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {

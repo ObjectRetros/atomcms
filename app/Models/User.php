@@ -77,7 +77,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function currency(string $currency)
     {
-        if (! $this->relationLoaded('currencies')) {
+        if (!$this->relationLoaded('currencies')) {
             $this->load('currencies');
         }
 
@@ -134,7 +134,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $referrals = 0;
 
-        if (! is_null($this->referrals)) {
+        if (!is_null($this->referrals)) {
             $referrals = $this->referrals->referrals_total;
         }
 
@@ -204,7 +204,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function items(): HasMany
     {
-    return $this->hasMany(Item::class, 'user_id');
+        return $this->hasMany(Item::class, 'user_id');
     }
 
     public function tickets(): HasMany
@@ -253,7 +253,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);
 
-        if (! $codeIsValid) {
+        if (!$codeIsValid) {
             return false;
         }
 
@@ -269,7 +269,8 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->applications()->where('rank_id', '=', $rankId)->exists();
     }
 
-    public function changePassword(string $newPassword) {
+    public function changePassword(string $newPassword)
+    {
         $this->password = Hash::make($newPassword);
         $this->save();
     }

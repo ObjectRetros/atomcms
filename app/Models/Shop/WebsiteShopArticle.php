@@ -13,7 +13,8 @@ class WebsiteShopArticle extends Model
 {
     protected $guarded = ['id'];
 
-    public function furniItems(): Collection {
+    public function furniItems(): Collection
+    {
         if (!$this->furniture) {
             return collect();
         }
@@ -36,8 +37,7 @@ class WebsiteShopArticle extends Model
 
     public function price(): float|int
     {
-        if ($this->costs < 100)
-        {
+        if ($this->costs < 100) {
             return 1;
         }
 

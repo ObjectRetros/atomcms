@@ -14,14 +14,14 @@ class ReactionService
     {
         $reaction = $request->get('reaction');
 
-        if (! is_string($reaction) || ! in_array($reaction, config('habbo.reactions'))) {
+        if (!is_string($reaction) || !in_array($reaction, config('habbo.reactions'))) {
             return ['success' => false];
         }
 
         $existingReaction = WebsiteArticleReaction::getReaction($article->id, $user->id, $reaction);
 
         if ($existingReaction) {
-            $existingReaction->update(['active' => ! $existingReaction->active]);
+            $existingReaction->update(['active' => !$existingReaction->active]);
         } else {
             $article->reactions()->create([
                 'reaction' => $reaction,

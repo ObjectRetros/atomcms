@@ -19,6 +19,7 @@ class LogoGeneratorController extends Controller
 
         return view('logo-generator');
     }
+
     public function store(Request $request)
     {
         $request->validate(['logo' => 'required|image']);

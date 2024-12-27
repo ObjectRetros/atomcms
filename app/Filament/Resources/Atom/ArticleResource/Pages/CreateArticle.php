@@ -17,7 +17,7 @@ class CreateArticle extends CreateRecord
         /** @var null|Article $articleCreated */
         $articleCreated = $this->getRecord();
 
-        if(!$articleCreated || !$articleCreated->visible) return;
+        if (!$articleCreated || !$articleCreated->visible) return;
 
         $articleCreated->createFollowersNotification();
     }

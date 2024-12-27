@@ -34,18 +34,18 @@ class ChatlogRoomResource extends Resource
             ->schema([
                 TextInput::make('room')
                     ->label(__('filament::resources.inputs.room'))
-                    ->formatStateUsing(fn ($record) => $record->room?->name)
+                    ->formatStateUsing(fn($record) => $record->room?->name)
                     ->columnSpanFull()
                     ->disabled(),
 
                 TextInput::make('sender')
                     ->label(__('filament::resources.inputs.sender'))
-                    ->formatStateUsing(fn ($record) => $record->sender?->username)
+                    ->formatStateUsing(fn($record) => $record->sender?->username)
                     ->disabled(),
 
                 TextInput::make('receiver')
                     ->label(__('filament::resources.inputs.receiver'))
-                    ->formatStateUsing(fn ($record) => $record->receiver?->username)
+                    ->formatStateUsing(fn($record) => $record->receiver?->username)
                     ->disabled(),
 
                 Textarea::make('message')
@@ -58,10 +58,10 @@ class ChatlogRoomResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->defaultSort('timestamp', 'desc')
-        ->columns(self::getTable())
-        ->filters([
-            //
+            ->defaultSort('timestamp', 'desc')
+            ->columns(self::getTable())
+            ->filters([
+                //
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

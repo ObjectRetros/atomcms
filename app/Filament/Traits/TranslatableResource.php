@@ -2,6 +2,8 @@
 
 namespace App\Filament\Traits;
 
+use Str;
+
 trait TranslatableResource
 {
     public static function getNavigationGroup(): ?string
@@ -14,7 +16,7 @@ trait TranslatableResource
     public static function getPluralModelLabel(): string
     {
         return __(sprintf(
-            \Str::endsWith(static::class, 'RelationManager')
+            Str::endsWith(static::class, 'RelationManager')
                 ? 'filament::resources.resources.%s.navigation_label'
                 : 'filament::resources.resources.%s.plural',
             static::$translateIdentifier

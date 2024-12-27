@@ -145,12 +145,12 @@ class SettingsRelationManager extends RelationManager
 
                 TextColumn::make('online_time')
                     ->label(__('filament::resources.columns.online_time'))
-                    ->formatStateUsing(fn (string $state) => __(':m minutes', ['m' => round(CarbonInterval::seconds($state)->totalMinutes)]))
+                    ->formatStateUsing(fn(string $state) => __(':m minutes', ['m' => round(CarbonInterval::seconds($state)->totalMinutes)]))
                     ->toggleable(),
 
                 IconColumn::make('can_trade')
                     ->label(__('filament::resources.columns.can_trade'))
-                    ->icon(fn (string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn(string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'success' => '1',
                         'danger' => '0',
@@ -158,7 +158,7 @@ class SettingsRelationManager extends RelationManager
 
                 IconColumn::make('can_change_name')
                     ->label(__('filament::resources.columns.can_change_name'))
-                    ->icon(fn (string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn(string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'success' => '1',
                         'danger' => '0',
@@ -176,7 +176,7 @@ class SettingsRelationManager extends RelationManager
             ])
             ->actions([
                 EditAction::make()
-                    ->disabled(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->online),
+                    ->disabled(fn(RelationManager $livewire) => $livewire->getOwnerRecord()->online),
             ])
             ->bulkActions([]);
     }

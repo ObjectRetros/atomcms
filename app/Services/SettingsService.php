@@ -17,6 +17,6 @@ class SettingsService
 
     public function getOrDefault(string $settingName, ?string $default = null): string
     {
-        return (string) $this->settings->get($settingName, $default);
+        return (string)$this->settings->get($settingName, $default);
     }
 }

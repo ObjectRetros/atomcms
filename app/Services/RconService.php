@@ -18,7 +18,7 @@ class RconService
     public function __construct()
     {
         $this->config = [
-            'ip'   => setting('rcon_ip'),
+            'ip' => setting('rcon_ip'),
             'port' => setting('rcon_port'),
         ];
 
