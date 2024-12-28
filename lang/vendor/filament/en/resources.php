@@ -331,6 +331,8 @@ return [
         'receiver' => 'Receiver',
         'message' => 'Message',
         'room' => 'Room',
+        'permission' => 'Permission',
+        'min_rank' => 'Minimum Rank',
     ],
 
     'columns' => [
@@ -396,6 +398,9 @@ return [
         'receiver' => 'Receiver',
         'message' => 'Message',
         'room' => 'Room',
+        'permission' => 'Permission',
+        'min_rank' => 'Minimum Rank',
+        'description' => 'Description',
     ],
 
     'options' => [

@@ -150,6 +150,11 @@ class HousekeepingPermissionSeeder extends Seeder
                 'min_rank' => 7,
                 'description' => 'The minimum rank required before being able to manage published camera photos',
             ],
+            [
+                'permission' => 'manage_housekeeping_permissions',
+                'min_rank' => 7,
+                'description' => 'The minimum rank required before being able to manage housekeeping permissions',
+            ],
         ];
 
         foreach ($permissions as $permission) {
