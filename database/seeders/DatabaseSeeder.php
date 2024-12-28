@@ -35,6 +35,9 @@ class DatabaseSeeder extends Seeder
 
             // Values
             WebsiteRareValuesCategorySeeder::class,
+
+            // Housekeeping permissions
+            HousekeepingPermissionSeeder::class,
         ]);
 
         // \App\Models\User::factory(10)->create();

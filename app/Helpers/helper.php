@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\HousekeepingPermissionsService;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,6 +25,13 @@ if (! function_exists('hasPermission')) {
     function hasPermission(string $permission): string
     {
         return app(PermissionsService::class)->getOrDefault($permission);
+    }
+}
+
+if (! function_exists('hasHousekeepingPermission')) {
+    function hasHousekeepingPermission(string $permission): string
+    {
+        return app(HousekeepingPermissionsService::class)->getOrDefault($permission);
     }
 }
 
