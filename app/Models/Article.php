@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Enums\NotificationType;
 use App\Models\Compositions\HasNotificationUrl;
-use App\Models\Article\{ ArticleComment, ArticleReaction };
-use Illuminate\Database\Eloquent\{ Model, Builder, Casts\Attribute, Relations\HasMany, Factories\HasFactory, };
+use App\Models\Article\{ArticleComment, ArticleReaction};
+use Auth;
+use Illuminate\Database\Eloquent\{Model, Builder, Casts\Attribute, Relations\HasMany, Factories\HasFactory,};
+use Str;
 
 class Article extends Model
 {
@@ -13,8 +15,8 @@ class Article extends Model
     use HasNotificationUrl;
 
     protected $guarded = [];
-	
-	protected $table = 'website_articles';
+
+    protected $table = 'website_articles';
 
     protected $casts = [
         'visible' => 'boolean',
@@ -29,15 +31,15 @@ class Article extends Model
         parent::boot();
 
         static::creating(function (Article $article) {
-            $article->user_id = \Auth::id();
-            $article->slug = \Str::slug($article->title);
+            $article->user_id = Auth::id();
+            $article->slug = Str::slug($article->title);
             $article->predominant_color = getPredominantImageColor($article->image);
         });
 
         static::updating(function (Article $article) {
-            $article->slug = \Str::slug($article->title);
+            $article->slug = Str::slug($article->title);
 
-            if($article->isDirty('image')) {
+            if ($article->isDirty('image')) {
                 $article->predominant_color = getPredominantImageColor($article->image);
             }
         });
@@ -53,7 +55,7 @@ class Article extends Model
     public static function fromIdAndSlug(string $id, string $slug, bool $withDefaultRelationships = true): Builder
     {
         return Article::valid()
-            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
+            ->when($withDefaultRelationships, fn($query) => $query->defaultRelationships())
             ->whereId($id)
             ->whereSlug($slug);
     }
@@ -61,11 +63,11 @@ class Article extends Model
     public static function getLatestValidArticle(bool $withDefaultRelationships = true): ?Article
     {
         $article = Article::valid()
-            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
+            ->when($withDefaultRelationships, fn($query) => $query->defaultRelationships())
             ->latest()
             ->first();
 
-        if(!$article) return null;
+        if (!$article) return null;
 
         $article->syncPaginatedComments();
 
@@ -91,7 +93,7 @@ class Article extends Model
         $query->with([
             'user:id,username,look,gender',
             'tags',
-            'reactions' => fn ($query) => $query->defaultRelationships(),
+            'reactions' => fn($query) => $query->defaultRelationships(),
             'user.followers'
         ]);
     }
@@ -127,8 +129,7 @@ class Article extends Model
     {
         $this->user->followers()
             ->with('user:id,username')
-            ->each(fn (AuthorNotification $follower) =>
-                $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl())
+            ->each(fn(AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl())
             );
     }
 }

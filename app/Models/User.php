@@ -38,10 +38,15 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
+	use LogsActivity;
+
 
     public $timestamps = false;
 
@@ -77,7 +82,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function currency(string $currency)
     {
-        if (! $this->relationLoaded('currencies')) {
+        if (!$this->relationLoaded('currencies')) {
             $this->load('currencies');
         }
 
@@ -134,7 +139,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $referrals = 0;
 
-        if (! is_null($this->referrals)) {
+        if (!is_null($this->referrals)) {
             $referrals = $this->referrals->referrals_total;
         }
 
@@ -155,7 +160,6 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name')), Str::uuid());
 
-        // Recursive function - Call itself again if the auth ticket already exists
         if (User::where('auth_ticket', $sso)->exists()) {
             return $this->ssoTicket();
         }
@@ -204,7 +208,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function items(): HasMany
     {
-    return $this->hasMany(Item::class, 'user_id');
+        return $this->hasMany(Item::class, 'user_id');
     }
 
     public function tickets(): HasMany
@@ -253,7 +257,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);
 
-        if (! $codeIsValid) {
+        if (!$codeIsValid) {
             return false;
         }
 
@@ -269,7 +273,8 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->applications()->where('rank_id', '=', $rankId)->exists();
     }
 
-    public function changePassword(string $newPassword) {
+    public function changePassword(string $newPassword)
+    {
         $this->password = Hash::make($newPassword);
         $this->save();
     }
@@ -282,5 +287,11 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function canAccessPanel(Panel $panel): bool
     {
         return hasPermission('housekeeping_access');
+    }
+	
+	public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logOnly(['id', 'username', 'motto', 'rank']);
     }
 }

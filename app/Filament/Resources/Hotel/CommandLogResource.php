@@ -45,12 +45,12 @@ class CommandLogResource extends Resource
 
                 TextColumn::make('succes')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'yes' => 'primary',
                         'no' => 'warning'
                     })
                     ->label(__('filament::resources.columns.success'))
-                    ->formatStateUsing(fn (string $state): string => __("filament::resources.options.{$state}")),
+                    ->formatStateUsing(fn(string $state): string => __("filament::resources.options.{$state}")),
 
                 TextColumn::make('timestamp')
                     ->label(__('filament::resources.columns.executed_at'))

@@ -33,12 +33,12 @@ class ChatlogPrivateResource extends Resource
             ->schema([
                 TextInput::make('sender')
                     ->disabled()
-                    ->formatStateUsing(fn ($record) => $record->sender?->username)
+                    ->formatStateUsing(fn($record) => $record->sender?->username)
                     ->label(__('filament::resources.inputs.sender')),
 
                 TextInput::make('receiver')
                     ->disabled()
-                    ->formatStateUsing(fn ($record) => $record->receiver?->username)
+                    ->formatStateUsing(fn($record) => $record->receiver?->username)
                     ->label(__('filament::resources.inputs.receiver')),
 
                 Textarea::make('message')

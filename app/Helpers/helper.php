@@ -14,14 +14,14 @@ if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
     $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_FORWARDED_FOR'];
 }
 
-if (! function_exists('setting')) {
+if (!function_exists('setting')) {
     function setting(string $setting): string
     {
         return app(SettingsService::class)->getOrDefault($setting);
     }
 }
 
-if (! function_exists('hasPermission')) {
+if (!function_exists('hasPermission')) {
     function hasPermission(string $permission): string
     {
         return app(PermissionsService::class)->getOrDefault($permission);
@@ -42,7 +42,7 @@ if (! function_exists('strLimit')) {
     }
 }
 
-if (! function_exists('findMigration')) {
+if (!function_exists('findMigration')) {
     function findMigration(string $tableName): string
     {
         // Iterate through all migration files in the migrations directory
@@ -58,7 +58,7 @@ if (! function_exists('findMigration')) {
     }
 }
 
-if (! function_exists('columnExists')) {
+if (!function_exists('columnExists')) {
     function columnExists(string $table, string $column): bool
     {
         return Schema::hasColumn($table, $column);

@@ -17,7 +17,7 @@ class SessionService
         )->map(function ($session) use ($request) {
             $agent = $this->createAgent($session);
 
-            return (object) [
+            return (object)[
                 'agent' => [
                     'is_desktop' => $agent->isDesktop(),
                     'platform' => $agent->platform(),

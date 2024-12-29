@@ -16,10 +16,10 @@ class PermissionsService
 
     public function getOrDefault(string $permissionName, bool $default = false): bool
     {
-        if (! array_key_exists($permissionName, $this->permissions->toArray())) {
+        if (!array_key_exists($permissionName, $this->permissions->toArray())) {
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        return auth()->check() && auth()->user()->rank >= (int)$this->permissions->get($permissionName);
     }
 }

@@ -25,6 +25,7 @@ use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Tables\Columns\UserAvatarColumn;
 use App\Filament\Resources\User\UserResource\Pages;
 use App\Filament\Resources\User\UserResource\RelationManagers;
+use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 
 class UserResource extends Resource
 {
@@ -72,21 +73,21 @@ class UserResource extends Resource
                                 DateTimePicker::make('account_created')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->account_created)
+                                    ->dehydrateStateUsing(fn(Model $record) => $record->account_created)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.created_at')),
 
                                 DateTimePicker::make('last_login')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_login)
+                                    ->dehydrateStateUsing(fn(Model $record) => $record->last_login)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_login')),
 
                                 DateTimePicker::make('last_online')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_online)
+                                    ->dehydrateStateUsing(fn(Model $record) => $record->last_online)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_online')),
 
@@ -164,8 +165,8 @@ class UserResource extends Resource
                                     ->schema([
                                         TextInput::make('password')
                                             ->label(__('filament::resources.inputs.new_password'))
-                                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                                            ->dehydrated(fn ($state) => filled($state))
+                                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                                            ->dehydrated(fn($state) => filled($state))
                                             ->password()
                                             ->confirmed(),
 
@@ -231,7 +232,7 @@ class UserResource extends Resource
 
                 IconColumn::make('online')
                     ->label(__('filament::resources.columns.online'))
-                    ->icon(fn (Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn(Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'danger' => false,
                         'success' => true,
@@ -257,8 +258,9 @@ class UserResource extends Resource
         return [
             RelationManagers\SettingsRelationManager::class,
             RelationManagers\BadgesRelationManager::class,
-		    RelationManagers\ChatLogRelationManager::class,
+            RelationManagers\ChatLogRelationManager::class,
             RelationManagers\ChatLogPrivateRelationManager::class,
+			ActivitylogRelationManager::class,
         ];
     }
 
@@ -268,13 +270,13 @@ class UserResource extends Resource
         $formData['currency_5'] = $record->currency('diamonds');
         $formData['currency_101'] = $record->currency('points');
 
-        if($record->settings) {
+        if ($record->settings) {
             $formData['allow_change_username'] = $record->settings->can_change_name;
         }
 
         return $formData;
     }
-
+	
     public static function getPages(): array
     {
         return [

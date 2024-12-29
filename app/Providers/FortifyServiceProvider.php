@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\DisableTwoFactorAuthentication;
 use App\Actions\Fortify\RedirectIfTwoFactorConfirmed;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Miscellaneous\CameraWeb;
@@ -25,7 +26,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->app->singleton(
             \Laravel\Fortify\Actions\DisableTwoFactorAuthentication::class,
-            \App\Actions\Fortify\DisableTwoFactorAuthentication::class
+            DisableTwoFactorAuthentication::class
         );
     }
 
@@ -37,7 +38,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::createUsersUsing(CreateNewUser::class);
 
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->input('username').$request->ip());
+            return Limit::perMinute(5)->by($request->input('username') . $request->ip());
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

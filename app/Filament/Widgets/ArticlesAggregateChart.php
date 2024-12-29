@@ -10,18 +10,18 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class ArticlesAggregateChart extends ChartWidget
 {
-	protected static ?int $sort = 2;
-	
+    protected static ?int $sort = 2;
+
     protected static ?string $maxHeight = '300px';
 
     protected static string $color = 'primary';
 
-    public function getHeading(): string | Htmlable | null
+    public function getHeading(): string|Htmlable|null
     {
         return __('filament::resources.stats.articles_chart.title');
     }
 
-    public function getDescription(): string | Htmlable | null
+    public function getDescription(): string|Htmlable|null
     {
         return __('filament::resources.stats.articles_chart.description');
     }
@@ -42,10 +42,10 @@ class ArticlesAggregateChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => $label,
-                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'data' => $data->map(fn(TrendValue $value) => $value->aggregate),
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => $data->map(fn(TrendValue $value) => $value->date),
         ];
     }
 

@@ -12,11 +12,13 @@ use Mail;
 
 class ForgotPasswordController extends Controller
 {
-    public function __invoke() {
+    public function __invoke()
+    {
         return view('auth.passwords.forget');
     }
 
-    public function submitForgetPassword(Request $request) {
+    public function submitForgetPassword(Request $request)
+    {
         $request->validate([
             'mail' => 'required|email',
         ]);
@@ -29,7 +31,7 @@ class ForgotPasswordController extends Controller
                 'token' => $token,
             ]);
 
-            Mail::send('email.forgetPassword', ['token' => $token], function($message) use($request) {
+            Mail::send('email.forgetPassword', ['token' => $token], function ($message) use ($request) {
                 $message->to($request->mail);
                 $message->subject('Reset Password');
             });
@@ -38,7 +40,8 @@ class ForgotPasswordController extends Controller
         return back()->with('success', __('We have e-mailed your password reset link!'));
     }
 
-    public function showResetPassword(Request $request, string $token) {
+    public function showResetPassword(Request $request, string $token)
+    {
         $prt = PasswordResetToken::select('token', 'created_at')->where('token', $token)->first();
         if ($prt === null) {
             return to_route('forgot.password.get')->withErrors('message', __('This token has expired!'));
@@ -54,7 +57,8 @@ class ForgotPasswordController extends Controller
         ]);
     }
 
-    public function submitResetPassword(Request $request, string $token) {
+    public function submitResetPassword(Request $request, string $token)
+    {
         $request->validate([
             'password' => 'required|min:8|confirmed',
             'password_confirmation' => 'required',

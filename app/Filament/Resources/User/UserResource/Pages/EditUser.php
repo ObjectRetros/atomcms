@@ -40,7 +40,7 @@ class EditUser extends EditRecord
         $user = $this->getRecord();
         $data = $this->form->getState();
 
-        if($data['rank'] >= auth()->user()->rank) {
+        if ($data['rank'] >= auth()->user()->rank) {
             Notification::make()
                 ->danger()
                 ->title(__('You cannot edit this user!'))
@@ -132,10 +132,10 @@ class EditUser extends EditRecord
 
     private function treatChangedUserRank(Model $user, array $data, RconService $rcon): void
     {
-        if($data['rank'] == $user->rank) return;
-        if($data['rank'] > auth()->user()->rank) return;
+        if ($data['rank'] == $user->rank) return;
+        if ($data['rank'] > auth()->user()->rank) return;
 
-        if($user->online) {
+        if ($user->online) {
             $rcon->sendSafelyFromDashboard('alertUser',
                 [$user, 'Your rank has been changed. Please, re-enter.'],
                 "RCON: Failed to send a user alert",
@@ -150,7 +150,7 @@ class EditUser extends EditRecord
 
     private function treatChangedUserMotto(Model $user, array $data, RconService $rcon): void
     {
-        if($data['motto'] == $user->motto) return;
+        if ($data['motto'] == $user->motto) return;
 
         $rcon->sendSafelyFromDashboard('setMotto', [$user, $data['motto']], "RCON: Failed to update the user motto");
     }

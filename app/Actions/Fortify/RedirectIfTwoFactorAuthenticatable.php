@@ -23,14 +23,14 @@ class RedirectIfTwoFactorAuthenticatable
     /**
      * The guard implementation.
      *
-     * @var \Illuminate\Contracts\Auth\StatefulGuard
+     * @var StatefulGuard
      */
     protected $guard;
 
     /**
      * The login rate limiter instance.
      *
-     * @var \Laravel\Fortify\LoginRateLimiter
+     * @var LoginRateLimiter
      */
     protected $limiter;
 
@@ -56,7 +56,7 @@ class RedirectIfTwoFactorAuthenticatable
 
         if (Fortify::confirmsTwoFactorAuthentication()) {
             if ($user?->two_factor_secret &&
-                ! is_null($user?->two_factor_confirmed_at) &&
+                !is_null($user?->two_factor_confirmed_at) &&
                 in_array(TwoFactorAuthenticatable::class, class_uses_recursive($user))) {
                 return $this->twoFactorChallengeResponse($request, $user);
             } else {
@@ -81,7 +81,7 @@ class RedirectIfTwoFactorAuthenticatable
     {
         if (Fortify::$authenticateUsingCallback) {
             return tap(call_user_func(Fortify::$authenticateUsingCallback, $request), function ($user) use ($request) {
-                if (! $user) {
+                if (!$user) {
                     $this->fireFailedEvent($request);
 
                     $this->throwFailedAuthenticationException($request);
@@ -97,7 +97,7 @@ class RedirectIfTwoFactorAuthenticatable
                 $this->convertUserPassword($user, $request->input('password'));
             }
 
-            if (! $user || ! $this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
+            if (!$user || !$this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
                 $this->fireFailedEvent($request, $user);
 
                 $this->throwFailedAuthenticationException($request);
@@ -121,7 +121,7 @@ class RedirectIfTwoFactorAuthenticatable
      * Throw a failed authentication validation exception.
      *
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     protected function throwFailedAuthenticationException(Request $request): void
     {
@@ -146,7 +146,7 @@ class RedirectIfTwoFactorAuthenticatable
     /**
      * Get the two factor authentication enabled response.
      *
-     * @param  mixed  $user
+     * @param mixed $user
      */
     protected function twoFactorChallengeResponse(Request $request, $user): Response
     {

@@ -37,7 +37,8 @@ class TagResource extends Resource
             ->schema(static::getForm());
     }
 
-    public static function getForm(): array {
+    public static function getForm(): array
+    {
         return [
             Tabs::make('Main')
                 ->tabs([

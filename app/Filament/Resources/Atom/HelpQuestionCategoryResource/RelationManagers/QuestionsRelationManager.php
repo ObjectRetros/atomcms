@@ -29,7 +29,7 @@ class QuestionsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table->columns(HelpQuestionResource::getTable())
-            ->modifyQueryUsing(fn ($query) => $query->latest())
+            ->modifyQueryUsing(fn($query) => $query->latest())
             ->filters([
                 //
             ])
