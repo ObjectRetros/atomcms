@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Game\Player\UserCurrency;
 use App\Models\User;
+use App\Services\RconService;
 
 class UserObserver
 {
@@ -23,8 +24,6 @@ class UserObserver
             ]);
         }
 
-
-
         UserCurrency::insert([
             [
                 'user_id' => $user->id,
@@ -42,5 +41,16 @@ class UserObserver
                 'amount' => $user->username === 'Admin' ? 0 : setting('start_points'),
             ],
         ]);
+    }
+
+    public function updated(User $user, RconService $rconService): void
+    {
+        if ($rconService->isConnected() && $user->online) {
+            if ($user->isDirty('rank')) {
+                $rconService->setRank($user, $user->rank);
+            }
+            
+            $rconService->disconnectUser($user);
+        }
     }
 }
