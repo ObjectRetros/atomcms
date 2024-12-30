@@ -12,10 +12,31 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\User\UserResource;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
+
+    protected function getTableQuery(): Builder
+    {
+        // Restrict the query to a maximum of 50 users
+        return User::query();
+    }
+
+    protected function getTablePaginationOptions(): array
+    {
+        // Remove "All" option and restrict options to predefined limits
+        return [5, 10, 25, 50];
+    }
+
+    public function getTableRecordsPerPage(): int
+    {
+        // Enforce a maximum of 50 records per page, even if "All" is selected
+        $perPage = parent::getTableRecordsPerPage();
+
+        return $perPage > 50 ? 50 : $perPage;
+    }
 
     protected function getActions(): array
     {
@@ -52,7 +73,7 @@ class ListUsers extends ListRecords
                     $allUsersId = collect($data['users'])->values();
                     $senderId = $data['as_staff'] ? null : auth()->id();
 
-                    if($allUsersId->isEmpty()) {
+                    if ($allUsersId->isEmpty()) {
                         $allUsersId = User::select('id')->get()->pluck('id');
                     }
 
