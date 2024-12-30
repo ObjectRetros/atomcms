@@ -186,7 +186,7 @@ class RconService
      */
     public function giveGotw(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::POINTS, $amount);
+        $this->givePoints($user, CurrencyTypes::Points, $amount);
     }
 
     /**
@@ -195,7 +195,7 @@ class RconService
      */
     public function giveDiamonds(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DIAMONDS, $amount);
+        $this->givePoints($user, CurrencyTypes::Diamonds, $amount);
     }
 
     /**
@@ -204,7 +204,7 @@ class RconService
      */
     public function giveDuckets(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DUCKETS, $amount);
+        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     /**
