@@ -169,6 +169,18 @@ class RconService
     }
 
     /**
+     * @throws RconConnectionException|JsonException
+     */
+    public function givePointsByID(User $user, int $type, int $amount): void
+    {
+        $this->sendCommand('givepoints', [
+            'user_id' => $user->id,
+            'points' => $amount,
+            'type' => $type,
+        ]);
+    }
+
+    /**
      * @throws RconConnectionException
      * @throws JsonException
      */
@@ -249,6 +261,18 @@ class RconService
         $this->sendCommand('executecommand', [
             'user_id' => $user->id,
             'command' => $command,
+        ]);
+    }
+
+    /**
+     * @throws RconConnectionException
+     * @throws JsonException
+     */
+    public function changeUsername(User $user, bool $canChange = false): void
+    {
+        $this->sendCommand('changeusername', [
+            'user_id' => $user->id,
+            'canChange' => $canChange,
         ]);
     }
 }
