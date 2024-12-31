@@ -37,12 +37,6 @@
                         </x-navigation.dropdown-child>
                     @endif
 
-                    @if (hasPermission('view_server_logs'))
-                        <x-navigation.dropdown-child route="/log-viewer" :turbolink="false" target="_blank">
-                            {{ __('Error logs') }}
-                        </x-navigation.dropdown-child>
-                    @endif
-
                     @if(hasPermission('housekeeping_access'))
                         <a data-turbolinks="false" href="{{ setting('housekeeping_url') }}" target="_blank" class="dropdown-item dark:text-gray-200 dark:hover:bg-gray-700">
                             {{ __('Housekeeping') }}
