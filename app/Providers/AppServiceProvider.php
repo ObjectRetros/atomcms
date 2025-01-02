@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
         }
 		
 		Table::configureUsing(function (Table $table) {
-			$table->paginated([10, 25, 50]);
+			$table->paginated([10, 25, 50, 75]);
 		});
     }
 }
