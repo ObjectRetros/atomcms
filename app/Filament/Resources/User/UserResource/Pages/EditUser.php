@@ -51,42 +51,57 @@ class EditUser extends EditRecord
             return;
         }
 
-        $rconEnabled = config('hotel.rcon.enabled');
-        $rcon = app(RconService::class);
+        $rconService = app(RconService::class);
 
         if (!$user->online) {
-            $this->treatChangedCurrenciesWithoutRcon($user, $data);
+            $this->updateOfflineUserWithoutRcon($user, $data);
             return;
         }
 
-        if ($user->online && !$rconEnabled) {
+        if ($user->online && !$rconService->isConnected()) {
             Notification::make()
                 ->danger()
-                ->title(__('RCON is not enabled!'))
-                ->body(__('You cannot edit users because RCON is not enabled and the user is online.'))
+                ->title(__('RCON is not connected!'))
+                ->body(__('You cannot edit users because RCON is not connected and the user is online.'))
                 ->send();
 
             $this->halt();
             return;
         }
 
-        if ($data['credits'] != $user->credits) {
-            $rcon->sendSafelyFromDashboard('giveCurrency',
-                [$user, 'credits', -$user->credits + $data['credits']],
-                'RCON: Failed to send credits'
-            );
-        }
-
-        $this->checkUsernameChangedPermission($user, $data, $rcon);
-        $this->treatChangedCurrencies($user, $data, $rcon);
-        $this->treatChangedUserRank($user, $data, $rcon);
-        $this->treatChangedUserMotto($user, $data, $rcon);
+        $this->updateUserMotto($user, $data, $rconService);
+        $this->updateUserCredits($user, $data, $rconService);
+        $this->updateUserCurrencies($user, $data, $rconService);
+        $this->checkUsernameChangePermission($user, $data, $rconService);
+        $this->updateUserRank($user, $data, $rconService);
     }
 
-    private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
+    private function updateOfflineUserWithoutRcon(Model $user, array $data): void
     {
+        if ($data['motto'] !== $user->motto) {
+            $user->update([
+                'motto' => $data['motto'] != '' ? $data['motto'] : '',
+            ]);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user motto.'))
+                ->send();
+        }
+
         if ($data['credits'] != $user->credits) {
-            $user->credits = $data['credits'];
+            $total = (0 - $user->credits) + $data['credits'];
+
+            $user->update([
+                'credits' => $user->credits + $total,
+            ]);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user credits.'))
+                ->send();
         }
 
         $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
@@ -98,60 +113,117 @@ class EditUser extends EditRecord
             $user->currencies()->whereType($currency->type)->update([
                 'amount' => $updatedCurrencyAmount
             ]);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user currencies (ID: '.$currency->type.').'))
+                ->send();
         });
 
-        $user->settings->update([
-            'can_change_name' => $data['allow_change_username'] ? '1' : '0',
-        ]);
+        if ($data['allow_change_username'] != $user->settings->can_change_name) {
+            $user->settings->update([
+                'can_change_name' => $data['allow_change_username'] ? '1' : '0',
+            ]);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user change name permission.'))
+                ->send();
+        }
+
+        if ($data['rank'] !== $user->rank) {
+            $user->update([
+                'rank' => $data['rank'],
+            ]);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user rank.'))
+                ->send();
+        }
     }
 
-    private function checkUsernameChangedPermission(Model $user, array $data, RconService $rcon): void
+    private function updateUserMotto(Model $user, array $data, RconService $rconService): void
     {
-        if ($data['allow_change_username'] == $user->settings->can_change_name) return;
+        if($data['motto'] == $user->motto) return;
 
-        $rcon->sendSafelyFromDashboard('changeUsername',
-            [$user, $data['allow_change_username']],
-            'RCON: Failed to set can_change_username'
-        );
+        $rconService->setMotto($user, $data['motto'] != '' ? $data['motto'] : '');
+
+        Notification::make()
+            ->success()
+            ->title(__('Success!'))
+            ->body(__('Successfully updated user motto.'))
+            ->send();
     }
 
-    private function treatChangedCurrencies(Model $user, array $data, RconService $rcon): void
+    private function updateUserCredits(Model $user, array $data, RconService $rconService): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user, $rcon) {
+        if($data['credits'] == $user->credits) return;
+
+        $rconService->giveCredits($user, -$user->credits + $data['credits']);
+
+        Notification::make()
+            ->success()
+            ->title(__('Success!'))
+            ->body(__('Successfully updated user credits.'))
+            ->send();
+    }
+
+    private function updateUserCurrencies(Model $user, array $data, RconService $rconService): void
+    {
+        if ($data['credits'] != $user->credits) {
+            $rconService->giveCredits($user, -$user->credits + $data['credits']);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user credits.'))
+                ->send();
+        }
+
+        $user->currencies->each(function (UserCurrency $currency) use ($data, $user, $rconService) {
             $updatedCurrencyAmount = collect($data)
                 ->get("currency_{$currency->type}", $currency->amount);
 
             if ($updatedCurrencyAmount == $currency->amount) return;
 
-            $rcon->sendSafelyFromDashboard('giveCurrency',
-                [$user, $currency->type, -$currency->amount + $updatedCurrencyAmount],
-                "RCON: Failed to send a currency",
-            );
+            $rconService->givePointsByID($user, $currency->type, -$currency->amount + $updatedCurrencyAmount);
+
+            Notification::make()
+                ->success()
+                ->title(__('Success!'))
+                ->body(__('Successfully updated user currencies (ID: '.$currency->type.').'))
+                ->send();
         });
     }
 
-    private function treatChangedUserRank(Model $user, array $data, RconService $rcon): void
+    private function checkUsernameChangePermission(Model $user, array $data, RconService $rconService): void
     {
-        if ($data['rank'] == $user->rank) return;
-        if ($data['rank'] > auth()->user()->rank) return;
+        if ($data['allow_change_username'] == $user->settings->can_change_name) return;
 
-        if ($user->online) {
-            $rcon->sendSafelyFromDashboard('alertUser',
-                [$user, 'Your rank has been changed. Please, re-enter.'],
-                "RCON: Failed to send a user alert",
-            );
+        $rconService->changeUsername($user, $data['allow_change_username']);
 
-            sleep(2);
-        }
-
-        $rcon->sendSafelyFromDashboard('disconnectUser', [$user], "RCON: Failed to disconnect a user");
-        $rcon->sendSafelyFromDashboard('setRank', [$user, $data['rank']], "RCON: Failed to update the user rank");
+        Notification::make()
+            ->success()
+            ->title(__('Success!'))
+            ->body(__('Successfully updated user change name permission.'))
+            ->send();
     }
 
-    private function treatChangedUserMotto(Model $user, array $data, RconService $rcon): void
+    private function updateUserRank(Model $user, array $data, RconService $rconService): void
     {
-        if ($data['motto'] == $user->motto) return;
+        if($data['rank'] == $user->rank) return;
+        if($data['rank'] > auth()->user()->rank) return;
 
-        $rcon->sendSafelyFromDashboard('setMotto', [$user, $data['motto']], "RCON: Failed to update the user motto");
+        $rconService->setRank($user, $data['rank']);
+
+        Notification::make()
+            ->success()
+            ->title(__('Success!'))
+            ->body(__('Successfully updated user rank.'))
+            ->send();
     }
 }

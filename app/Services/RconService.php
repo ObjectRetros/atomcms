@@ -169,12 +169,24 @@ class RconService
     }
 
     /**
+     * @throws RconConnectionException|JsonException
+     */
+    public function givePointsByID(User $user, int $type, int $amount): void
+    {
+        $this->sendCommand('givepoints', [
+            'user_id' => $user->id,
+            'points' => $amount,
+            'type' => $type,
+        ]);
+    }
+
+    /**
      * @throws RconConnectionException
      * @throws JsonException
      */
     public function giveGotw(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::POINTS, $amount);
+        $this->givePoints($user, CurrencyTypes::Points, $amount);
     }
 
     /**
@@ -183,7 +195,7 @@ class RconService
      */
     public function giveDiamonds(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DIAMONDS, $amount);
+        $this->givePoints($user, CurrencyTypes::Diamonds, $amount);
     }
 
     /**
@@ -192,7 +204,7 @@ class RconService
      */
     public function giveDuckets(User $user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DUCKETS, $amount);
+        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     /**
@@ -249,6 +261,18 @@ class RconService
         $this->sendCommand('executecommand', [
             'user_id' => $user->id,
             'command' => $command,
+        ]);
+    }
+
+    /**
+     * @throws RconConnectionException
+     * @throws JsonException
+     */
+    public function changeUsername(User $user, bool $canChange = false): void
+    {
+        $this->sendCommand('changeusername', [
+            'user_id' => $user->id,
+            'canChange' => $canChange,
         ]);
     }
 }
