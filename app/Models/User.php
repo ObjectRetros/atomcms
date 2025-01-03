@@ -292,6 +292,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 	public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-        ->logOnly(['id', 'username', 'motto', 'rank', 'credits']);
+        ->logOnly(['id', 'username', 'motto', 'rank', 'credits'])
+		->logOnlyDirty();
     }
 }
