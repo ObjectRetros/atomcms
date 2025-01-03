@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Atom\FotoResource\Pages;
+namespace App\Filament\Resources\Atom\CameraWebResource\Pages;
 
 use App\Filament\Resources\Atom\CameraWebResource;
 use Filament\Actions;
