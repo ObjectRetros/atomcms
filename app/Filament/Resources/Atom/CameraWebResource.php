@@ -7,7 +7,7 @@ use Filament\Tables;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Filament\Resources\Atom\FotoResource\Pages;
+use App\Filament\Resources\Atom\CameraWebResource\Pages;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;

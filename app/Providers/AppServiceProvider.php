@@ -6,6 +6,7 @@ use App\Exceptions\MigrationFailedException;
 use App\Services\PermissionsService;
 use App\Services\RconService;
 use App\Services\SettingsService;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -46,9 +47,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         if (config('habbo.site.force_https')) {
             URL::forceScheme('https');
         }
+		
+		Table::configureUsing(function (Table $table) {
+			$table->paginated([10, 25, 50]);
+		});
     }
 }
