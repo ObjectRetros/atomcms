@@ -288,11 +288,21 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return hasHousekeepingPermission('can_access_housekeeping');
     }
-
+	
 	public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-        ->logOnly(['id', 'username', 'motto', 'rank', 'credits'])
-		->logOnlyDirty();
+            ->logOnly(['id', 'username', 'motto', 'rank', 'credits'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function save(array $options = [])
+    {
+        if (!$this->isDirty()) {
+            return false;
+		}
+
+        return parent::save($options);
     }
 }
