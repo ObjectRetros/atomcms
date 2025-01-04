@@ -89,44 +89,23 @@ class EditUser extends EditRecord
         });
     }
 
-    private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
-	{
-    $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
+    private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void {
+		
+		$user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
+			$updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
 
-        $updatedCurrencyAmount = collect($data)->get("currency_{$currency->type}", $currency->amount);
+			Log::info('Processing currency update', ['user_id' => $user->id, 'type' => $currency->type, 'current_amount' => $currency->amount, 'updated_amount' => $updatedCurrencyAmount]);
 
-        if ($updatedCurrencyAmount == $currency->amount) {
-            return;
-        }
+			if ($updatedCurrencyAmount == $currency->amount) {
+				return;
+			}
 
-        $currencyToUpdate = $user->currencies()->where('type', $currency->type)->first();
+			$updated = $user->currencies()->where('type', $currency->type)->update(['amount' => $updatedCurrencyAmount]);
+		});
 
-        if ($currencyToUpdate) {
-            $currencyToUpdate->update(['amount' => $updatedCurrencyAmount]);
-
-            Log::info('Currency updated in DB', [
-                'user_id' => $user->id,
-                'type' => $currency->type,
-                'old_amount' => $currency->amount,
-                'new_amount' => $updatedCurrencyAmount,
-            ]);
-
-            activity()
-                ->performedOn($currencyToUpdate)
-                ->withProperties([
-                    'type' => $currency->type,
-                    'old_amount' => $currency->amount,
-                    'new_amount' => $updatedCurrencyAmount,
-                ])
-                ->event('updated')
-                ->log('Currency updated without RCON');
-        }
-    });
-
-    $user->settings->update([
-        'can_change_name' => $data['allow_change_username'] ? '1' : '0',
-    ]);
+		$user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
 	}
+
 
     private function checkUsernameChangedPermission(Model $user, array $data, RconService $rcon): void
     {
@@ -141,7 +120,7 @@ class EditUser extends EditRecord
     private function treatChangedCurrencies(Model $user, array $data, RconService $rcon): void
     {
         $user->currencies->each(function (UserCurrency $currency) use ($data, $user, $rcon) {
-            $updatedCurrencyAmount = collect($data)->get("currency_{$currency->type}", $currency->amount);
+            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
 
             if ($updatedCurrencyAmount == $currency->amount) return;
 
