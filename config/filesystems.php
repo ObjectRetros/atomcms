@@ -43,6 +43,11 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+		
+		'badges' => [
+			'driver' => 'local',
+			'root' => env('BadgePath'),
+		],
 
         's3' => [
             'driver' => 's3',
