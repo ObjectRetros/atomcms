@@ -19,6 +19,9 @@ Check out the fantastic trio that brings it all together:
 - **Vite**: As a next-generation frontend build tool, Vite empowers Atom CMS with lightning-fast development and production speeds. Dive into the Vite documentation [here](https://vitejs.dev/) to explore its full potential.
 - **TailwindCSS**: To ensure a visually stunning and responsive design, Atom CMS incorporates TailwindCSS, a utility-first CSS framework. Learn more about TailwindCSS and its installation process from the official [docs](https://tailwindcss.com/docs/installation)
 
+### 🤝 Contributions
+We appreciate any type of contribution towards Atom CMS, how ever to maintain a certain standard that make the reviewing process the most streamlined, we have defined some [contribution guidelines](https://github.com/ObjectRetros/atomcms/wiki/0.-Contribution-guidelines). Please take a moment to read them if you're considering contributing towards the CMS, thank you!
+
 ### 🧙‍♂️ Learning Laravel
 If you are new to Laravel and want to build your own features, we highly recommend the following free resources:
 
