@@ -108,7 +108,12 @@ class WebsiteSettingsSeeder extends Seeder
             [
                 'key' => 'badges_path',
                 'value' => '/client/flash/c_images/album1584',
-                'comment' => 'The path to the badges folder',
+                'comment' => 'The path to the badges folder, for the frontend',
+            ],
+			[
+                'key' => 'badge_path_filesystem',
+                'value' => '/var/www/gamedata/c_images/album1584',
+                'comment' => 'The path to the badges folder, for the backend',
             ],
             [
                 'key' => 'group_badge_path',
