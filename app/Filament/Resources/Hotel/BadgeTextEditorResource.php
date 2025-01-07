@@ -56,7 +56,6 @@ class BadgeTextEditorResource extends Resource
                     ->getStateUsing(function ($record) use ($badgesPath) {
                         $badgeName = str_replace('badge_desc_', '', $record->badge_key);
                         $imageUrl = asset($badgesPath . $badgeName . '.gif');
-                        Log::info('Badge Image URL:', ['url' => $imageUrl]);
                         return $imageUrl;
                     })
                     ->width(50)
