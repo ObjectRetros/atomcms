@@ -72,7 +72,7 @@ class ListBadgeTextEditors extends ListRecords
             $jsonData[$badge->badge_key] = $badge->badge_description;
         }
 
-        file_put_contents($jsonPath, json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents($jsonPath, json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         Notification::make()
             ->title('Export Successful')
