@@ -120,6 +120,11 @@ class WebsiteSettingsSeeder extends Seeder
                 'value' => '/client/flash/c_images/Badgeparts/generated',
                 'comment' => 'The path that contains all the generated group badges',
             ],
+			[
+                'key' => 'nitro_external_texts_file',
+                'value' => '/var/www/gamedata/config/ExternalTexts.json',
+                'comment' => 'The path for loading ExternalTexts',
+            ],			
             [
                 'key' => 'maintenance_enabled',
                 'value' => '0',
