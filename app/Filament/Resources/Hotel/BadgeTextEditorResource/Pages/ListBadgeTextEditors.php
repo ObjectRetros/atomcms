@@ -17,7 +17,7 @@ class ListBadgeTextEditors extends ListRecords
     protected function getActions(): array
     {
         return [
-            Actions\CreateAction::make() // Add this line for the "Add Badge" button
+            Actions\CreateAction::make()
                 ->label('Add Badge')
                 ->modalHeading('Add a New Badge')
                 ->modalButton('Create Badge')
@@ -59,6 +59,14 @@ class ListBadgeTextEditors extends ListRecords
         $jsonData = json_decode(file_get_contents($jsonPath), true);
 
         $badges = WebsiteBadgedata::all();
+
+        $badgeKeys = $badges->pluck('badge_key')->toArray();
+
+        foreach ($jsonData as $key => $value) {
+            if (str_starts_with($key, 'badge_desc_') && !in_array($key, $badgeKeys)) {
+                unset($jsonData[$key]);
+            }
+        }
 
         foreach ($badges as $badge) {
             $jsonData[$badge->badge_key] = $badge->badge_description;
