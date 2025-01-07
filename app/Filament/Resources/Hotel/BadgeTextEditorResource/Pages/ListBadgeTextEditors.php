@@ -19,6 +19,7 @@ class ListBadgeTextEditors extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Add Badge')
+				->color('info')
                 ->modalHeading('Add a New Badge')
                 ->modalButton('Create Badge')
                 ->after(function () {
@@ -31,6 +32,10 @@ class ListBadgeTextEditors extends ListRecords
             Actions\Action::make('export')
                 ->label('Export to JSON')
                 ->action('exportToJson'),
+            Actions\Action::make('backup')
+                ->label('Create Backup')
+                ->color('success')
+                ->action('createBackup'),
         ];
     }
 
@@ -79,5 +84,45 @@ class ListBadgeTextEditors extends ListRecords
             ->body('Badge data exported successfully.')
             ->success()
             ->send();
+    }
+
+    public function createBackup(SettingsService $settingsService)
+    {
+        $jsonPath = $settingsService->getOrDefault('nitro_external_texts_file');
+
+        if (empty($jsonPath)) {
+            Notification::make()
+                ->title('Backup Failed')
+                ->body('The JSON file path is not configured in the website settings.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if (!file_exists($jsonPath)) {
+            Notification::make()
+                ->title('Backup Failed')
+                ->body('The JSON file does not exist at the specified path.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $timestamp = now()->format('YmdHis');
+        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . $timestamp . '.json';
+
+        if (copy($jsonPath, $backupPath)) {
+            Notification::make()
+                ->title('Backup Successful')
+                ->body('A backup of the JSON file has been created: ' . basename($backupPath))
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Backup Failed')
+                ->body('Failed to create a backup of the JSON file.')
+                ->danger()
+                ->send();
+        }
     }
 }
