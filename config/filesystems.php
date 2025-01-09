@@ -1,8 +1,5 @@
 <?php
 
-'default' => env('FILESYSTEM_DISK', 'local'),
-
-
 return [
     'disks' => [
         'local' => [
