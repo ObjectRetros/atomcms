@@ -59,5 +59,8 @@ class AppServiceProvider extends ServiceProvider
 		$settingsService = app(SettingsService::class);
 		$badgePath = $settingsService->getOrDefault('badge_path_filesystem', '/var/www/gamedata/c_images/album1584');
 		Config::set('filesystems.disks.badges.root', $badgePath);
+		
+		$adsPath = $settingsService->getOrDefault('ads_path_filesystem', '/var/www/gamedata/custom');
+		Config::set('filesystems.disks.ads.root', $adsPath);
     }
 }

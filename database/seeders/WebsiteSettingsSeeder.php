@@ -121,6 +121,16 @@ class WebsiteSettingsSeeder extends Seeder
                 'comment' => 'The path that contains all the generated group badges',
             ],
 			[
+                'key' => 'ads_path_filesystem',
+                'value' => '/var/www/gamedata/custom',
+                'comment' => 'The path for loading ADS from disk - for the Backend',
+            ],	
+			[
+                'key' => 'ads_picture_path',
+                'value' => '/gamedata/custom',
+                'comment' => 'The path for loading ADS from the CMS - for the Frontend',
+            ],	
+			[
                 'key' => 'nitro_external_texts_file',
                 'value' => '/var/www/gamedata/config/ExternalTexts.json',
                 'comment' => 'The path for loading ExternalTexts',
