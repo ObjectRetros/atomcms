@@ -108,8 +108,7 @@ class ListBadgeTextEditors extends ListRecords
             return;
         }
 
-        $timestamp = now()->format('YmdHis');
-        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . $timestamp . '.json';
+        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . time(). '.json';
 
         if (copy($jsonPath, $backupPath)) {
             Notification::make()
