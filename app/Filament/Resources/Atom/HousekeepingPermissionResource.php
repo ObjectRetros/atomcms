@@ -25,7 +25,7 @@ class HousekeepingPermissionResource extends Resource
     protected static ?string $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/housekeeping-permissions';
-    
+
     protected static ?string $navigationLabel = 'Housekeeping permissions';
 
     public static string $translateIdentifier = 'housekeeping-permissions';
@@ -38,7 +38,7 @@ class HousekeepingPermissionResource extends Resource
                 ->schema([
                     TextInput::make('permission')
                         ->label(__('filament::resources.inputs.permission'))
-                        ->maxLength(50)
+                        ->maxLength(255)
                         ->autocomplete()
                         ->unique(ignoreRecord: true)
                         ->required(),
