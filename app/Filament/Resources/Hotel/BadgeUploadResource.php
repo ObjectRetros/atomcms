@@ -12,7 +12,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 class BadgeUploadResource extends Resource
 {
     protected static ?string $navigationGroup = 'Hotel';
-	protected static ?string $navigationIcon = 'heroicon-o-gif';
+	  protected static ?string $navigationIcon = 'heroicon-o-gif';
     protected static ?string $label = 'Badge Upload';
 
     public static function form(Forms\Form $form): Forms\Form

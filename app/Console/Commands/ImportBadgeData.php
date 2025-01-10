@@ -82,7 +82,7 @@ class ImportBadgeData extends Command
                 ['badge_key'],
                 ['badge_name', 'badge_description']
             );
-
+          
             $this->info("Processed " . $chunk->count() . " badges.");
         });
     }

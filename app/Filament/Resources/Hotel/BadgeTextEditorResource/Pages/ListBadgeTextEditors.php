@@ -20,7 +20,7 @@ class ListBadgeTextEditors extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Add Badge')
-                ->color('info')
+				        ->color('info')
                 ->modalHeading('Add a New Badge')
                 ->modalButton('Create Badge')
                 ->after(function () {
@@ -65,13 +65,12 @@ class ListBadgeTextEditors extends ListRecords
         $jsonData = json_decode(file_get_contents($jsonPath), true);
 
         $badges = WebsiteBadge::all();
-
-        $validBadgeKeys = $badges->pluck('badge_key')->toArray();
+        $badgeKeys = $badges->pluck('badge_key')->toArray();
 
         foreach ($jsonData as $key => $value) {
             if (
                 (str_starts_with($key, 'badge_desc_') || str_starts_with($key, 'badge_name_')) &&
-                !in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $validBadgeKeys)
+                !in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $badgeKeys)
             ) {
                 unset($jsonData[$key]);
             }
