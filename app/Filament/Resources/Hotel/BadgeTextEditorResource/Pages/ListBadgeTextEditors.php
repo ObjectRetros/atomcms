@@ -9,6 +9,7 @@ use Filament\Pages\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class ListBadgeTextEditors extends ListRecords
 {
@@ -19,7 +20,7 @@ class ListBadgeTextEditors extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Add Badge')
-				->color('info')
+                ->color('info')
                 ->modalHeading('Add a New Badge')
                 ->modalButton('Create Badge')
                 ->after(function () {
@@ -30,10 +31,10 @@ class ListBadgeTextEditors extends ListRecords
                         ->send();
                 }),
             Actions\Action::make('export')
-                ->label('Export to JSON')
+                ->label('Export to ExternalTexts')
                 ->action('exportToJson'),
             Actions\Action::make('backup')
-                ->label('Create Backup')
+                ->label('Create Backup of ExternalTexts')
                 ->color('success')
                 ->action('createBackup'),
         ];
@@ -65,25 +66,46 @@ class ListBadgeTextEditors extends ListRecords
 
         $badges = WebsiteBadge::all();
 
-        $badgeKeys = $badges->pluck('badge_key')->toArray();
+        $validBadgeKeys = $badges->pluck('badge_key')->toArray();
 
         foreach ($jsonData as $key => $value) {
-            if (str_starts_with($key, 'badge_desc_') && !in_array($key, $badgeKeys)) {
+            if (
+                (str_starts_with($key, 'badge_desc_') || str_starts_with($key, 'badge_name_')) &&
+                !in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $validBadgeKeys)
+            ) {
                 unset($jsonData[$key]);
             }
         }
 
         foreach ($badges as $badge) {
-            $jsonData[$badge->badge_key] = $badge->badge_description;
+            $jsonData['badge_desc_' . $badge->badge_key] = $badge->badge_description;
+            $jsonData['badge_name_' . $badge->badge_key] = $badge->badge_name;
         }
 
-        file_put_contents($jsonPath, json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        try {
+            $result = file_put_contents(
+                $jsonPath,
+                json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            );
 
-        Notification::make()
-            ->title('Export Successful')
-            ->body('Badge data exported successfully.')
-            ->success()
-            ->send();
+            if ($result === false) {
+                throw new \Exception('Failed to write to the JSON file.');
+            }
+
+            Notification::make()
+                ->title('Export Successful')
+                ->body('Badge data exported successfully.')
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            Log::error('Failed to export badge data: ' . $e->getMessage());
+
+            Notification::make()
+                ->title('Export Failed')
+                ->body('Failed to export badge data. Please check file permissions or contact your administrator.')
+                ->danger()
+                ->send();
+        }
     }
 
     public function createBackup(SettingsService $settingsService)
@@ -108,7 +130,7 @@ class ListBadgeTextEditors extends ListRecords
             return;
         }
 
-        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . time(). '.json';
+        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . time() . '.json';
 
         if (copy($jsonPath, $backupPath)) {
             Notification::make()

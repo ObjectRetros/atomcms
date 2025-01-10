@@ -57,15 +57,25 @@ class ImportBadgeData extends Command
 
     private function processBadgeData(string $jsonPath): void
     {
-        $badgeData = Collection::make(File::json($jsonPath))
-            ->filter(fn($value, $key) => str_starts_with($key, self::BADGE_PREFIX))
-            ->map(fn($value, $key) => [
-                'badge_key' => $key,
-                'badge_name' => str_replace(self::BADGE_PREFIX, '', $key),
-                'badge_description' => $value,
-            ])
-            ->values();
+        $jsonData = File::json($jsonPath);
 
+        // Extract badge names and descriptions
+        $badgeNames = Collection::make($jsonData)
+            ->filter(fn($value, $key) => str_starts_with($key, 'badge_name_'))
+            ->mapWithKeys(fn($value, $key) => [str_replace('badge_name_', '', $key) => $value]);
+
+        $badgeDescriptions = Collection::make($jsonData)
+            ->filter(fn($value, $key) => str_starts_with($key, self::BADGE_PREFIX))
+            ->mapWithKeys(fn($value, $key) => [str_replace(self::BADGE_PREFIX, '', $key) => $value]);
+
+        // Combine badge names and descriptions
+        $badgeData = $badgeNames->map(fn($name, $key) => [
+            'badge_key' => $key, // Use only the badge name (e.g., 14X12, 14XR1)
+            'badge_name' => $name,
+            'badge_description' => $badgeDescriptions->get($key, 'No description available'),
+        ])->values();
+
+        // Upsert the combined data in chunks
         $badgeData->chunk(self::CHUNK_SIZE)->each(function ($chunk) {
             WebsiteBadge::upsert(
                 $chunk->toArray(),

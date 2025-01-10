@@ -27,13 +27,12 @@ class BadgeTextEditorResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('badge_key')
                     ->required()
-                    ->label('Badge Key - You must add badge_desc_')
-                    ->default('badge_desc_')
-                    ->placeholder('e.g., badge_desc_XXXX'),
-                Forms\Components\TextInput::make('badge_name')
+                    ->label('Badge Key - Expl. ATOM101')
+                    ->placeholder('This is the badge code'),
+				Forms\Components\TextInput::make('badge_name')
                     ->required()
                     ->label('Badge Name')
-                    ->placeholder('e.g., XXXX'),
+                    ->placeholder('This is the name of the badge: Expl. The ATOM Badge'),
                 Forms\Components\Textarea::make('badge_description')
                     ->required()
                     ->label('Badge Description')
@@ -47,7 +46,7 @@ class BadgeTextEditorResource extends Resource
         $badgesPath = $settingsService->getOrDefault('badges_path', '/gamedata/c_images/album1584/');
 
         return $table
-            ->columns([
+            ->columns([                
                 Tables\Columns\ImageColumn::make('badge_key')
                     ->label('Badge Image')
                     ->getStateUsing(function ($record) use ($badgesPath) {
@@ -58,9 +57,15 @@ class BadgeTextEditorResource extends Resource
                     ->width(50)
                     ->height(50),
                 TextColumn::make('badge_name')
-                    ->label('Badge Name')
-                    ->searchable()
-                    ->sortable(),
+					->label('Badge Code & Name')
+					->formatStateUsing(function ($record) {
+						return $record->badge_key . ' : ' . $record->badge_name;
+					})
+					->searchable(query: function ($query, $search) {
+						$query->where('badge_key', 'like', "%{$search}%")
+						->orWhere('badge_name', 'like', "%{$search}%");
+					})
+					->sortable(),
                 TextColumn::make('badge_description')
                     ->label('Badge Description')
                     ->getStateUsing(fn ($record) => Str::limit($record->badge_description, 65))
