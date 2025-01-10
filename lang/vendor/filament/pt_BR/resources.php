@@ -447,6 +447,10 @@ return [
             'title' => 'Fotos Postadas',
             'description' => 'fotos compradas.',
         ],
+		'badge_count' => [
+            'title' => 'Contagem de emblemas',
+            'description' => 'Emblemas disponíveis.',
+        ],
         'articles_chart' => [
             'title' => 'Artigos (Mensal)',
             'label' => 'Artigos',

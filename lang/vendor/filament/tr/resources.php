@@ -465,6 +465,10 @@ return [
             'title' => 'Photos Count',
             'description' => 'photos uploaded.',
         ],
+		'badge_count' => [
+            'title' => 'Badge Count',
+            'description' => 'Avalible Badges.',
+        ],
         'articles_chart' => [
             'title' => 'Articles (Monthly)',
             'label' => 'Articles',

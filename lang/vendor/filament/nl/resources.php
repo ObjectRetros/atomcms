@@ -458,6 +458,10 @@ return [
             'title' => 'Aantal fotos',
             'description' => 'Geüploade fotos',
         ],
+		'badge_count' => [
+            'title' => 'Badge Aantal',
+            'description' => 'Beschikbare Badges.',
+        ],
         'articles_chart' => [
             'title' => 'Artikelen (Maandelijks)',
             'label' => 'Artikelen',
