@@ -4,9 +4,11 @@ namespace App\Filament\Resources\Atom;
 
 use App\Filament\Resources\Atom\HousekeepingPermissionResource\Pages;
 use App\Filament\Resources\Atom\HousekeepingPermissionResource\RelationManagers;
+use App\Models\Game\Permission;
 use App\Models\WebsiteHousekeepingPermission;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -43,11 +45,10 @@ class HousekeepingPermissionResource extends Resource
                         ->unique(ignoreRecord: true)
                         ->required(),
 
-                    TextInput::make('min_rank')
+                    Select::make('min_rank')
+                        ->native(false)
                         ->label(__('filament::resources.inputs.min_rank'))
-                        ->required()
-                        ->maxLength(255)
-                        ->autocomplete(),
+                        ->options(Permission::get()->pluck('rank_name', 'id')),
 
                     TextInput::make('description')
                         ->label(__('filament::resources.inputs.description'))
@@ -71,9 +72,10 @@ class HousekeepingPermissionResource extends Resource
                     ->label(__('filament::resources.columns.permission'))
                     ->searchable(),
 
-                TextColumn::make('min_rank')
+                TextColumn::make('permission.rank_name')
                     ->label(__('filament::resources.columns.min_rank'))
                     ->searchable()
+                    ->sortable()
                     ->limit(30),
 
                 TextColumn::make('description')
