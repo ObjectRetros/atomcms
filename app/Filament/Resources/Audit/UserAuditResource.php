@@ -17,31 +17,31 @@ use Rmsramos\Activitylog\Resources\ActivitylogResource;
 
 class UserAuditResource extends ActivitylogResource
 {
-	public static function table(Table $table): Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                static::getLogNameColumnCompoment()
-					->toggleable(true),
-                static::getEventColumnCompoment(),
-                static::getSubjectTypeColumnCompoment(),
+                static::getLogNameColumnComponent()
+                    ->toggleable(true),
+                static::getEventColumnComponent(),
+                static::getSubjectTypeColumnComponent(),
                 TextColumn::make('causer.name')
                     ->label(__('activitylog::tables.columns.causer.label'))
                     ->getStateUsing(function (Model $record) {
                         if ($record->causer_id == null) {
-                            return new HtmlString('&mdash;');
+                            return new HtmlString('—');
                         }
 
                         return $record->causer->username;
                     })
                     ->searchable(),
-                static::getPropertiesColumnCompoment(),
-                static::getCreatedAtColumnCompoment(),
+                static::getPropertiesColumnComponent(),
+                static::getCreatedAtColumnComponent(),
             ])
             ->defaultSort(config('filament-activitylog.resources.default_sort_column', 'created_at'), config('filament-activitylog.resources.default_sort_direction', 'asc'))
             ->filters([
                 static::getDateFilterComponent(),
-                static::getEventFilterCompoment(),
+                static::getEventFilterComponent(),
             ]);
     }
 
@@ -56,7 +56,7 @@ class UserAuditResource extends ActivitylogResource
     {
         return [
             'index' => Pages\ListUserAudits::route('/'),
-			'view' => Pages\ViewAudit::route('/{record}'),
+            'view' => Pages\ViewAudit::route('/{record}'),
         ];
     }
 }
