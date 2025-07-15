@@ -1,3 +1,5 @@
+@yield('content')
+@include('cookie-consent::index')
 <!DOCTYPE html>
 <html class="app" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
