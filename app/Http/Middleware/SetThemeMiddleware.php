@@ -11,11 +11,8 @@ class SetThemeMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (setting('theme') === '' || setting('theme' === '1')) {
-            Theme::set('atom');
-        } else {
-            Theme::set(setting('theme'));
-        }
+        $theme = setting('theme', 'atom'); // Default to 'atom' if empty
+        Theme::set($theme);
 
         return $next($request);
     }

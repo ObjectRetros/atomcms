@@ -14,15 +14,23 @@ class SettingsService
 
     public function __construct()
     {
-        Cache::remember('website_settings', now()->addMinutes(5), function () {
-            return Schema::hasTable('website_settings') ? WebsiteSetting::all()->pluck('value', 'key') : collect();
-        });
+        try {
+            Cache::remember('website_settings', now()->addMinutes(5), function () {
+                return Schema::hasTable('website_settings') ? WebsiteSetting::all()->pluck('value', 'key') : collect();
+            });
 
-        $this->settings = Cache::get('website_settings');
+            $this->settings = Cache::get('website_settings');
+        } catch (\Throwable $e) {
+            $this->settings = collect();
+        }
     }
 
     public function getOrDefault(string $settingName, ?string $default = null): string
     {
+        if (!$this->settings) {
+            return (string)$default;
+        }
+
         return (string)$this->settings->get($settingName, $default);
     }
 }
