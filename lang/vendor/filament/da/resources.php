@@ -439,10 +439,14 @@ return [
         'badge_image_required' => 'You need to enter a badge image url.',
     ],
 
-    'stats' => [
+	'stats' => [
         'users_count' => [
             'title' => 'Users Count',
             'description' => 'users registered.',
+        ],
+		'online_users_count' => [
+            'title' => 'Online Users',
+            'description' => 'Currently online users',
         ],
         'furniture_count' => [
             'title' => 'Furniture Count',
@@ -456,6 +460,18 @@ return [
             'title' => 'Photos Count',
             'description' => 'photos uploaded.',
         ],
+		'bans_count' => [
+            'title' => 'Bans Count',
+            'description' => 'users banned.',
+        ],
+		'article_count' => [
+            'title' => 'Article Count',
+            'description' => 'total articles.',
+        ],
+		'visible_article_count' => [
+            'title' => 'Articles online',
+            'description' => 'total articles visible.',
+        ],
         'articles_chart' => [
             'title' => 'Articles (Monthly)',
             'label' => 'Articles',
@@ -468,6 +484,10 @@ return [
             'completed' => 'Completed',
             'description' => 'Amount of orders created this month.',
         ],
+		'help_center_tickets_count' => [
+            'title' => 'Total Tickets',
+            'description' => 'total helpcenter tickets.',
+        ],		
     ],
 
     'permissions' => [

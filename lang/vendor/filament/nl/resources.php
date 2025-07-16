@@ -440,36 +440,56 @@ return [
         'badge_texts_required' => 'Je dient de badgeteksten in te voeren.',
         'badge_image_required' => 'Je moet een badge-afbeeldings-URL invoeren.',
     ],
-
-    'stats' => [
+	
+	'stats' => [
         'users_count' => [
-            'title' => 'Aantal leden',
-            'description' => 'Geregistreerde leden',
+            'title' => 'Users Count',
+            'description' => 'users registered.',
+        ],
+		'online_users_count' => [
+            'title' => 'Online Users',
+            'description' => 'Currently online users',
         ],
         'furniture_count' => [
-            'title' => 'Aantal meubilair',
-            'description' => 'Meubi items geregistreerd.',
+            'title' => 'Furniture Count',
+            'description' => 'furniture items registered.',
         ],
         'rooms_count' => [
-            'title' => 'Aantal kamers',
-            'description' => 'Kamers aangemaakt',
+            'title' => 'Rooms Count',
+            'description' => 'rooms created.',
         ],
         'photos_count' => [
-            'title' => 'Aantal fotos',
-            'description' => 'Geüploade fotos',
+            'title' => 'Photos Count',
+            'description' => 'photos uploaded.',
+        ],
+		'bans_count' => [
+            'title' => 'Bans Count',
+            'description' => 'users banned.',
+        ],
+		'article_count' => [
+            'title' => 'Article Count',
+            'description' => 'total articles.',
+        ],
+		'visible_article_count' => [
+            'title' => 'Articles online',
+            'description' => 'total articles visible.',
         ],
         'articles_chart' => [
-            'title' => 'Artikelen (Maandelijks)',
-            'label' => 'Artikelen',
-            'description' => 'Aantal artikelen aangemaakt deze maand',
+            'title' => 'Articles (Monthly)',
+            'label' => 'Articles',
+            'description' => 'Amount of articles created this month.',
         ],
         'orders_chart' => [
-            'title' => 'Orders (Maandelijks)',
-            'pending' => 'Afwachting',
-            'cancelled' => 'Gecanceld',
-            'completed' => 'Compleet',
-            'description' => 'Aantal orders aangemaakt deze maand',
+            'title' => 'Orders (Monthly)',
+            'pending' => 'Pending',
+            'cancelled' => 'Cancelled',
+            'completed' => 'Completed',
+            'description' => 'Amount of orders created this month.',
         ],
+		'help_center_tickets_count' => [
+            'title' => 'Total Tickets',
+            'description' => 'total helpcenter tickets.',
+        ],		
     ],
 
     'permissions' => [

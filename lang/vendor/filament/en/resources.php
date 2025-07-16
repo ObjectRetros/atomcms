@@ -62,6 +62,7 @@ return [
             'label' => 'User',
             'plural' => 'Users',
         ],
+		
         'badge-resource' => [
             'navigation_label' => 'Manage Badges',
             'label' => 'Badge',
@@ -450,6 +451,10 @@ return [
             'title' => 'Users Count',
             'description' => 'users registered.',
         ],
+		'online_users_count' => [
+            'title' => 'Online Users',
+            'description' => 'Currently online users',
+        ],
         'furniture_count' => [
             'title' => 'Furniture Count',
             'description' => 'furniture items registered.',
@@ -461,6 +466,18 @@ return [
         'photos_count' => [
             'title' => 'Photos Count',
             'description' => 'photos uploaded.',
+        ],
+		'bans_count' => [
+            'title' => 'Bans Count',
+            'description' => 'users banned.',
+        ],
+		'article_count' => [
+            'title' => 'Article Count',
+            'description' => 'total articles.',
+        ],
+		'visible_article_count' => [
+            'title' => 'Articles online',
+            'description' => 'total articles visible.',
         ],
         'articles_chart' => [
             'title' => 'Articles (Monthly)',
@@ -474,6 +491,10 @@ return [
             'completed' => 'Completed',
             'description' => 'Amount of orders created this month.',
         ],
+		'help_center_tickets_count' => [
+            'title' => 'Total Tickets',
+            'description' => 'total helpcenter tickets.',
+        ],		
     ],
 
     'permissions' => [

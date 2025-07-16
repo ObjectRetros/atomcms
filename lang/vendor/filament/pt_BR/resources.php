@@ -430,35 +430,55 @@ return [
         'were_completed' => 'foram pagos e entregues.',
     ],
 
-    'stats' => [
+	'stats' => [
         'users_count' => [
-            'title' => 'Quantidade de Usuários',
-            'description' => 'usuários registrados.',
+            'title' => 'Users Count',
+            'description' => 'users registered.',
+        ],
+		'online_users_count' => [
+            'title' => 'Online Users',
+            'description' => 'Currently online users',
         ],
         'furniture_count' => [
-            'title' => 'Contagem de Mobis',
-            'description' => 'mobis registrados.',
+            'title' => 'Furniture Count',
+            'description' => 'furniture items registered.',
         ],
         'rooms_count' => [
-            'title' => 'Contagem de Quartos',
-            'description' => 'quartos criados.',
+            'title' => 'Rooms Count',
+            'description' => 'rooms created.',
         ],
         'photos_count' => [
-            'title' => 'Fotos Postadas',
-            'description' => 'fotos compradas.',
+            'title' => 'Photos Count',
+            'description' => 'photos uploaded.',
+        ],
+		'bans_count' => [
+            'title' => 'Bans Count',
+            'description' => 'users banned.',
+        ],
+		'article_count' => [
+            'title' => 'Article Count',
+            'description' => 'total articles.',
+        ],
+		'visible_article_count' => [
+            'title' => 'Articles online',
+            'description' => 'total articles visible.',
         ],
         'articles_chart' => [
-            'title' => 'Artigos (Mensal)',
-            'label' => 'Artigos',
-            'description' => 'Quantidade de posts feitos esse mês.',
+            'title' => 'Articles (Monthly)',
+            'label' => 'Articles',
+            'description' => 'Amount of articles created this month.',
         ],
         'orders_chart' => [
-            'title' => 'Pedidos (Mensal)',
-            'pending' => 'Pendentes',
-            'cancelled' => 'Cancelados',
-            'completed' => 'Completos',
-            'description' => 'Quantidade de pedidos feitos esse mês.',
+            'title' => 'Orders (Monthly)',
+            'pending' => 'Pending',
+            'cancelled' => 'Cancelled',
+            'completed' => 'Completed',
+            'description' => 'Amount of orders created this month.',
         ],
+		'help_center_tickets_count' => [
+            'title' => 'Total Tickets',
+            'description' => 'total helpcenter tickets.',
+        ],		
     ],
 
     'notifications' => [

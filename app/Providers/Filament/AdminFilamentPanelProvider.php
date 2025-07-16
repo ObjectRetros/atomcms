@@ -10,6 +10,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Facades\FilamentView;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -22,9 +23,13 @@ use Rmsramos\Activitylog\ActivitylogPlugin;
 use Rmsramos\Activitylog\Resources\ActivitylogResource;
 
 class AdminFilamentPanelProvider extends PanelProvider
-{
+{	
     public function panel(Panel $panel): Panel
-    {
+	{
+		FilamentView::registerRenderHook(
+			'panels::body.end', fn () => view('components.footer')->render()
+		);
+	
         return $panel
             ->default()
             ->id('housekeeping')
@@ -32,6 +37,15 @@ class AdminFilamentPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => Color::Amber,
+				'total-users' => Color::hex('#5edc2f'),
+				'online-users' => Color::hex('#3333fe'),
+				'total-furni' => Color::hex('#d1be00'),
+				'total-rooms' => Color::hex('#df6311'),
+				'total-photos' => Color::hex('#1da7a3'),
+				'total-bans' => Color::hex('#ff0000'),
+				'total-article' => Color::hex('#c141b2'),
+				'total-article-visible' => Color::hex('#6c9f50'),
+				'total-tickets' => Color::hex('#7f7f7f'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
