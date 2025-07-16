@@ -38,7 +38,7 @@ class WebsiteRareValuesController extends Controller
 
         return view('rare-values', [
             'categories' => $category,
-            'categoriesNav' =>  $this->valueCategoriesService->fetchAllCategories(),
+            'categoriesNav' => $this->valueCategoriesService->fetchAllCategories(),
         ]);
     }
 

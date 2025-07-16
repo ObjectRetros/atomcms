@@ -20,37 +20,53 @@
                     </div>
                 </x-content.content-card>
             @else
-                @forelse($categories as $category)
-                    <x-content.content-card :icon="$category->badge">
-                        <x-slot:title>
-                            {{ $category->name }}
-                        </x-slot:title>
-
-                        <x-slot:under-title>
-                            {{ __('All the :category rares', ['category' => $category->name]) }}
-                        </x-slot:under-title>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($category->furniture as $rare)
-                                <x-rares.rare-card :rare="$rare" />
-                            @endforeach
-                        </div>
-                    </x-content.content-card>
-                @empty
+                @if($categories->isEmpty() && isset($searchTerm))
                     <x-content.content-card icon="currency-icon">
                         <x-slot:title>
-                            {{ __('Rare values') }}
+                            {{ __('Search Results') }}
                         </x-slot:title>
 
                         <x-slot:under-title>
-                            {{ __('Get an overview of all of the rares on :hotel', ['hotel' => setting('hotel_name')]) }}
+                            {{ __('No rares found for ":term"', ['term' => $searchTerm]) }}
                         </x-slot:under-title>
 
                         <p class="text-center">
-                            {{ __('We currently have no rares listed here') }}
+                            {{ __('Try a different search term') }}
                         </p>
                     </x-content.content-card>
-                @endforelse
+                @else
+                    @forelse($categories as $category)
+                        <x-content.content-card :icon="$category->badge">
+                            <x-slot:title>
+                                {{ $category->name }}
+                            </x-slot:title>
+
+                            <x-slot:under-title>
+                                {{ __('All the :category rares', ['category' => $category->name]) }}
+                            </x-slot:under-title>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($category->furniture as $rare)
+                                    <x-rares.rare-card :rare="$rare" />
+                                @endforeach
+                            </div>
+                        </x-content.content-card>
+                    @empty
+                        <x-content.content-card icon="currency-icon">
+                            <x-slot:title>
+                                {{ __('Rare values') }}
+                            </x-slot:title>
+
+                            <x-slot:under-title>
+                                {{ __('Get an overview of all of the rares on :hotel', ['hotel' => setting('hotel_name')]) }}
+                            </x-slot:under-title>
+
+                            <p class="text-center">
+                                {{ __('We currently have no rares listed here') }}
+                            </p>
+                        </x-content.content-card>
+                    @endforelse
+                @endif
             @endif
         </div>
     </div>
@@ -68,7 +84,7 @@
             <form action="{{ route('values.search') }}" method="POST" class="space-y-3">
                 @csrf
 
-                <x-form.input classes="mb-3" name="search" placeholder="Search for a rare"/>
+                <x-form.input classes="mb-3" name="search" placeholder="Search for a rare" value="{{ $searchTerm ?? '' }}"/>
 
                 @if (setting('google_recaptcha_enabled'))
                     <div class="g-recaptcha" data-sitekey="{{ config('habbo.site.recaptcha_site_key') }}"></div>
