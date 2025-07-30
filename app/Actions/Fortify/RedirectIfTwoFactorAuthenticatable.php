@@ -176,11 +176,11 @@ class RedirectIfTwoFactorAuthenticatable
         $rules = [];
 
         if (setting('google_recaptcha_enabled')) {
-            $rules['g-recaptcha-response'] = ['sometimes', 'string', new GoogleRecaptchaRule()];
+            $rules['g-recaptcha-response'] = ['required', 'string', new GoogleRecaptchaRule()];
         }
 
         if (setting('cloudflare_turnstile_enabled')) {
-            $rules['cf-turnstile-response'] = [app(Turnstile::class)];
+            $rules['cf-turnstile-response'] = ['required', app(Turnstile::class)];
         }
 
         $messages = [
