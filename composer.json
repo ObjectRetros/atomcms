@@ -7,7 +7,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/ObjectRetros/activitylog"
+            "url": "https://github.com/rmsramos/activitylog"
         }
     ],
     "require": {
@@ -24,7 +24,7 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
-        "objectretros/activitylog": "dev-main",
+        "rmsramos/activitylog": "1.0.10",
         "opcodesio/log-viewer": "*",
         "qirolab/laravel-themer": "^2.0",
         "ryangjchandler/laravel-cloudflare-turnstile": "*",
