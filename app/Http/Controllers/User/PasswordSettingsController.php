@@ -21,7 +21,7 @@ class PasswordSettingsController extends Controller
         Auth::user()->update([
             'password' => Hash::make($request->input('password')),
         ]);
-
-        return redirect()->back()->with('success', __('Your password has been changed!'));
+		
+		return redirect()->route('settings.password.show')->with('success', __('Your password has been changed!'));
     }
 }
