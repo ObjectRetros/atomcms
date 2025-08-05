@@ -97,6 +97,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::get('/session-logs', [AccountSettingsController::class, 'sessionLogs'])->name('settings.session-logs');
 
                 Route::get('/two-factor', [TwoFactorAuthenticationController::class, 'index'])->name('settings.two-factor');
+				Route::post('/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('two-factor.enable');
                 Route::post('/2fa-verify', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
             });
         });
@@ -133,7 +134,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         // Leaderboard routes
         Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard.index');
 
-        // Shop routes
+		// Shop routes
         Route::prefix('shop')->group(function () {
             Route::get('/{category:slug?}', ShopController::class)->name('shop.index');
 

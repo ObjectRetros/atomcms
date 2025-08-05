@@ -94,9 +94,8 @@
                         </p>
                     </div>
 
-                    <form action="/user/two-factor-authentication" method="post" class="mt-8">
+                    <form action="{{ route('two-factor.enable') }}" method="post" class="mt-8">
                         @csrf
-
                         <x-form.secondary-button>
                             {{ __('Activate 2FA') }}
                         </x-form.secondary-button>

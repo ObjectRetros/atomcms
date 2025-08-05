@@ -32,7 +32,7 @@
                 </p>
 
                 <div class="mt-4 flex flex-col items-center md:flex-row md:items-start md:justify-center">
-                    <div class="flex gap-x-8 rounded bg-gray-100 px-4 py-2">
+                    <div class="flex gap-x-8 rounded bg-gray-100 px-4 py-2 text-black">
                         <span class="flex items-center">
                             {!! auth()->user()->twoFactorQrCodeSvg() !!}
                         </span>
@@ -51,9 +51,9 @@
                     </div>
                 </div>
 
-                <div class="mt-2 flex justify-center text-xs italic text-gray-600">
+                <div class="mt-2 flex justify-center text-xs italic text-red-500">
                     <div class="w-full lg:w-[480px]">
-                        {{ __('Please save your recovery codes somewhere safe! If you lose access to your 2FA codes, those recovery codes will be needed to regain access your account.') }}
+                        <strong>{{ __('Please save your recovery codes somewhere safe! If you lose access to your 2FA codes, those recovery codes will be needed to regain access your account.') }}</strong>
                     </div>
                 </div>
 
@@ -68,7 +68,15 @@
                         </x-slot:info>
                     </x-form.label>
 
-                    <x-form.input name="code" placeholder="{{ __('Code') }}" />
+                    <x-form.input classes="mb-3" name="code" placeholder="{{ __('Code') }}" />
+
+                    @if (setting('google_recaptcha_enabled'))
+                        <div class="g-recaptcha" data-sitekey="{{ config('habbo.site.recaptcha_site_key') }}"></div>
+                    @endif
+
+                    @if (setting('cloudflare_turnstile_enabled'))
+                        <x-turnstile />
+                    @endif
 
                     <x-form.secondary-button classes="mt-4">
                         {{ __('Verify 2FA') }}
@@ -86,9 +94,8 @@
                         </p>
                     </div>
 
-                    <form action="/user/two-factor-authentication" method="post" class="mt-8">
+                    <form action="{{ route('two-factor.enable') }}" method="post" class="mt-8">
                         @csrf
-
                         <x-form.secondary-button>
                             {{ __('Activate 2FA') }}
                         </x-form.secondary-button>
