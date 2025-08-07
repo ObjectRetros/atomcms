@@ -17,7 +17,7 @@
 
             <!-- 2FA enabled, we display the QR code : -->
             @if (auth()->user()->two_factor_confirmed)
-                <form action="{{ route('user.two-factor.disable') }}" method="post">
+                <form action="/user/two-factor-authentication" method="post">
                     @csrf
                     @method('delete')
 
@@ -94,7 +94,7 @@
                         </p>
                     </div>
 
-                    <form action="{{ route('user.two-factor.enable') }}" method="post" class="mt-8">
+                    <form action="{{ route('two-factor.enable') }}" method="post" class="mt-8">
                         @csrf
                         <x-form.secondary-button>
                             {{ __('Activate 2FA') }}
