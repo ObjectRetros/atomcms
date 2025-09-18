@@ -64,7 +64,7 @@ class AccountSettingsController extends Controller
             $this->userService->updateField($user, 'motto', $request->input('motto'));
         }
 
-        return redirect()->back()->with('success', __('Your account settings has been updated'));
+        return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
     }
     public function twoFactor(): View
     {

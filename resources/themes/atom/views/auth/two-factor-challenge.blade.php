@@ -1,76 +1,57 @@
 <x-app-layout>
-    @push('title', __('Two factor challenge'))
+    @push('title', __('Two-Factor Authentication'))
 
-    <div class="col-span-12 lg:px-[250px] flex flex-col gap-y-3">
+    <div class="col-span-12 flex flex-col gap-y-3 md:col-span-9 md:col-start-4">
         <x-content.content-card icon="hotel-icon" classes="border dark:border-gray-900">
             <x-slot:title>
-                {{ __('Two-factor verification') }}
+                {{ __('Two-Factor Authentication') }}
             </x-slot:title>
-
             <x-slot:under-title>
-                {{ __('Enter your 2-factor authentication code provided on your by the authentication app on your mobile phone.') }}
+                {{ __('Please enter your two-factor authentication code or one of your recovery codes.') }}
             </x-slot:under-title>
 
-            <form action="/two-factor-challenge" method="POST">
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('two-factor.login') }}">
                 @csrf
 
-                <div id="twoFactorCode">
+                <!-- Two-Factor Code -->
+                <div>
                     <x-form.label for="code">
                         {{ __('Code') }}
-
                         <x-slot:info>
-                            {{ __('Enter the code from your authentication app') }}
+                            {{ __('Enter the two-factor authentication code from your authenticator app.') }}
                         </x-slot:info>
                     </x-form.label>
-
-                    <x-form.input name="code" placeholder="{{ __('Code') }}" :autofocus="true" />
-                    <small onclick="toggleRecoveryCodeField()"
-                        class="italic text-gray-600 hover:cursor-pointer hover:underline">{{ __('Lost access to your 2FA codes? Click here to use a recovery code') }}</small>
+                    <x-form.input id="code" name="code" type="text" placeholder="{{ __('Code') }}" class="mb-3" />
                 </div>
 
-                <div id="recoveryCode">
+                <!-- Recovery Code -->
+                <div class="mt-4">
                     <x-form.label for="recovery_code">
-                        {{ __('Recovery code') }}
-
+                        {{ __('Recovery Code') }}
                         <x-slot:info>
-                            {{ __('In case you dont have access to your two-factor authentication code, you can use one of your recovery codes.') }}
+                            {{ __('Enter one of your recovery codes if you cannot access your authenticator app.') }}
                         </x-slot:info>
                     </x-form.label>
-
-                    <x-form.input name="recovery_code" :required="false" placeholder="{{ __('Recovery code') }}" />
-                    <small onclick="toggleRecoveryCodeField()"
-                        class="italic text-gray-600 hover:cursor-pointer hover:underline">{{ __('Regained access to your 2FA codes? Click here to use your authentication app') }}</small>
+                    <x-form.input id="recovery_code" name="recovery_code" type="text" placeholder="{{ __('Recovery Code') }}" class="mb-3" />
                 </div>
 
-                <div class="flex justify-end">
-                    <x-form.secondary-button classes="md:w-1/4 mt-4">
-                        {{ __('Confirm 2FA') }}
-                    </x-form.secondary-button>
-                </div>
+                @if (setting('google_recaptcha_enabled'))
+                    <div class="g-recaptcha" data-sitekey="{{ config('habbo.site.recaptcha_site_key') }}"></div>
+                @endif
+                @if (setting('cloudflare_turnstile_enabled'))
+                    <x-turnstile />
+                @endif
+
+                <x-form.secondary-button type="submit" class="mt-4">
+                    {{ __('Verify') }}
+                </x-form.secondary-button>
             </form>
         </x-content.content-card>
     </div>
-
-    @push('javascript')
-        <script>
-            document.querySelector('#recoveryCode').style.display = 'none';
-            let showRecoveryCodeField = false;
-
-            function toggleRecoveryCodeField() {
-                if (!showRecoveryCodeField) {
-                    document.querySelector('#twoFactorCode').style.display = 'none';
-                    document.querySelector('#recoveryCode').style.display = 'block';
-
-                    showRecoveryCodeField = true;
-
-                    return;
-                }
-
-                document.querySelector('#twoFactorCode').style.display = 'block';
-                document.querySelector('#recoveryCode').style.display = 'none';
-
-                showRecoveryCodeField = false;
-            }
-        </script>
-    @endpush
 </x-app-layout>
