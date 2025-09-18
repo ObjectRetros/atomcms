@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Permission extends Model implements HasBadge
 {
+    protected $table = 'permissions';
     public $timestamps = false;
 
-    protected $guarded = ['id'];
+    protected $guarded = ['id', 'rank_name'];
 
     public function users(): HasMany
     {
@@ -21,6 +22,11 @@ class Permission extends Model implements HasBadge
     public function roles(): HasMany
     {
         return $this->hasMany(PermissionRole::class);
+    }
+
+    public function staffApplications(): HasMany
+    {
+        return $this->hasMany(\App\Models\StaffApplication::class, 'rank_id');
     }
 
     public function getBadgePath(): string

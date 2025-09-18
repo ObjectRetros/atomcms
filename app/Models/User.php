@@ -44,21 +44,13 @@ use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
-	use LogsActivity;
-
+    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable, LogsActivity;
 
     public $timestamps = false;
 
-    protected $guarded = [
-        'id',
-    ];
+    protected $guarded = ['id'];
 
-    protected $hidden = [
-        'id',
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['id', 'password', 'remember_token'];
 
     protected function casts(): array
     {
