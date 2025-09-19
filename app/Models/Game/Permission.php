@@ -4,6 +4,7 @@ namespace App\Models\Game;
 
 use App\Models\User;
 use App\Models\Compositions\HasBadge;
+use App\Models\StaffApplication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -26,7 +27,7 @@ class Permission extends Model implements HasBadge
 
     public function staffApplications(): HasMany
     {
-        return $this->hasMany(\App\Models\StaffApplication::class, 'rank_id');
+        return $this->hasMany(StaffApplication::class, 'rank_id');
     }
 
     public function getBadgePath(): string

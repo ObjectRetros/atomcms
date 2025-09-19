@@ -28,7 +28,7 @@ class OpenPosition extends Model
         parent::boot();
 
         static::deleting(function ($openPosition) {
-            \App\Models\StaffApplication::where('rank_id', $openPosition->permission_id)->delete();
+            StaffApplication::where('rank_id', $openPosition->permission_id)->delete();
         });
     }
 
