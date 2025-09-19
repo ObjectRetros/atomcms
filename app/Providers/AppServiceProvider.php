@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Exceptions\MigrationFailedException;
+use App\Observers\WebsiteDrawBadgeObserver;
 use App\Services\PermissionsService;
 use App\Services\RconService;
 use App\Services\SettingsService;
+use App\Models\WebsiteDrawBadge;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -62,5 +64,7 @@ class AppServiceProvider extends ServiceProvider
 		
 		$adsPath = $settingsService->getOrDefault('ads_path_filesystem', '/var/www/gamedata/custom');
 		Config::set('filesystems.disks.ads.root', $adsPath);
+		
+		WebsiteDrawBadge::observe(WebsiteDrawBadgeObserver::class);
     }
 }

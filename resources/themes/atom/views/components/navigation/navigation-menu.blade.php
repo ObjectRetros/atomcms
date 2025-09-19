@@ -7,6 +7,10 @@
                 <x-navigation.dropdown-child :route="route('me.show')">
                     {{ __('Home') }}
                 </x-navigation.dropdown-child>
+				
+				<x-navigation.dropdown-child :route="route('draw-badge')">
+                    {{ __('Badge Drawer') }}
+                </x-navigation.dropdown-child>
 
                 <x-navigation.dropdown-child :route="route('profile.show', auth()->user()->username)">
                     {{ __('My Profile') }}

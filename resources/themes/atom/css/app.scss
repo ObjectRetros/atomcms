@@ -271,3 +271,65 @@ html.dark .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
 #article-content a {
     color: #53b2f8;
 }
+
+.badge-drawer-button {
+    background-image: linear-gradient(to bottom, #f2f2f3 51%, #d9d8d8 49%);
+    box-shadow: inset 0 0 0px 2px #d9d9d9;
+    padding: 10px;
+
+    &:hover {
+        background: linear-gradient(to bottom, #ffffff 50%, #EBEBEB 50%);
+        box-shadow: inset 0 0 0px 2px #ffffff;
+    }
+
+    .toggled {
+        background: #f2f2f3;
+    }
+}
+
+
+html.dark .badge-drawer-button {
+    background-image: linear-gradient(to bottom, #141414 51%, #101010 49%);
+    box-shadow: inset 0 0 0px 2px #242424;
+    padding: 10px;
+
+    &:hover {
+        background: linear-gradient(to bottom, #171717 50%, #111111 50%);
+        box-shadow: inset 0 0 0px 2px #363636;
+    }
+
+    .toggled {
+        background: #f2f2f3;
+    }
+}
+
+.badge-drawer-palette {
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #000;
+    height: 40px;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    display: flex;
+    border-width: 3px;
+    border-color: #b6bec5;
+    position: relative;
+    overflow: hidden;
+    max-width: 38px;
+    width: 100%;
+
+    &::after {
+        content: "";
+        z-index: 2;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background-color: #fff;
+        opacity: .1;
+    }
+}

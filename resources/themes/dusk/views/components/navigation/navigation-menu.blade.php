@@ -66,7 +66,10 @@
                         <x-navigation.dropdown-child :route="route('profile.show', Auth::user()->username)">
                             {{ __('My profile') }}
                         </x-navigation.dropdown-child>
-
+						
+						<x-navigation.dropdown-child :route="route('draw-badge')">
+							{{ __('Badge Drawer') }}
+						</x-navigation.dropdown-child>
 
                         <x-navigation.dropdown-child :route="route('settings.account.show')">
                             {{ __('Account settings') }}
