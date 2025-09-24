@@ -44,16 +44,16 @@ class AccountSettingsController extends Controller
             return redirect()->back()->withErrors('User not found');
         }
 
-        $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
+        // $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
 
         if (!$this->rconService->isConnected() && Auth::user()->online === '1') {
             return back()->withErrors('You must be offline to change your account settings');
         }
 
-        if ($allowedNameChange) {
+        /** if ($allowedNameChange) {
             $this->rconService->disconnectUser($user);
             $this->userService->updateField($user, 'username', $request->input('username'));
-        }
+        } **/
 
         if ($user->mail !== $request->input('mail')) {
             $this->userService->updateField($user, 'mail', $request->input('mail'));

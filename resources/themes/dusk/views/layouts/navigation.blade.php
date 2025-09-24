@@ -4,11 +4,6 @@
         <div class="flex justify-between h-16 text-gray-500 hover:text-gray-700 text-sm font-medium leading-5">
             <div class="flex">
                 <!-- Logo -->
-                <div class="flex items-center flex-shrink-0">
-                    <a href="{{ route('home') }}">
-                        <x-application-logo class="block w-auto h-10 text-gray-600 fill-current" />
-                    </a>
-                </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
