@@ -81,8 +81,12 @@ class InstallationController extends Controller
             'completed' => true,
         ]);
 
-        if (Cache::get('website_permissions')) {
+        if (Cache::has('website_permissions')) {
             Cache::forget('website_permissions');
+        }
+
+        if (Cache::has('website_settings')) {
+            Cache::forget('website_settings');
         }
 
         return to_route('welcome');
