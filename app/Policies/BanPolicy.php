@@ -23,7 +23,6 @@ class BanPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\Ban  $ban
      * @return Response|bool
      */
     public function delete(User $user)

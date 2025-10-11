@@ -13,7 +13,7 @@ class ViewUser extends ViewRecord
     {
         return static::$resource::fillWithOutsideData(
             $this->getRecord(),
-            $data
+            $data,
         );
     }
 }

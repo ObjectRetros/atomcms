@@ -37,7 +37,7 @@ class CatalogItemsRelationManager extends RelationManager
                     ->relationship(
                         name: 'itemBase',
                         titleAttribute: 'item_name',
-                        modifyQueryUsing: fn (Builder $query) => $query->orderBy('item_name')
+                        modifyQueryUsing: fn (Builder $query) => $query->orderBy('item_name'),
                     )
                     ->searchable()
                     ->required()
@@ -291,7 +291,7 @@ class CatalogItemsRelationManager extends RelationManager
                             ->distinct()
                             ->orderBy('type')
                             ->pluck('type', 'type')
-                            ->toArray()
+                            ->toArray(),
                     )
                     ->multiple()
                     ->searchable()

@@ -37,7 +37,7 @@ class CoreSqlFile extends Migration
                 preg_split('/;\s*\n/', $sql),
                 fn ($stmt) => ! empty(trim($stmt)) &&
                            ! str_starts_with(trim($stmt), '--') &&
-                           ! str_starts_with(trim($stmt), '/*')
+                           ! str_starts_with(trim($stmt), '/*'),
             );
 
             $totalStatements = count($statements);
@@ -67,7 +67,7 @@ class CoreSqlFile extends Migration
                         }
 
                     } catch (\Exception $e) {
-                        $progressBar->setMessage('Error: '.substr($e->getMessage(), 0, 50).'...');
+                        $progressBar->setMessage('Error: ' . substr($e->getMessage(), 0, 50) . '...');
                         // Continue on non-critical errors
                     }
                 }

@@ -15,7 +15,7 @@ class ArticleController extends Controller
 {
     public function __construct(
         private readonly ArticleService $articlesService,
-        private readonly ReactionService $reactionService
+        private readonly ReactionService $reactionService,
     ) {}
 
     public function index(): View

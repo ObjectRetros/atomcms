@@ -31,7 +31,7 @@ class ArticlesAggregateChart extends ChartWidget
         $data = Trend::model(Article::class)
             ->between(
                 start: now()->startOfMonth(),
-                end: now()->endOfMonth()
+                end: now()->endOfMonth(),
             )
             ->perDay()
             ->count();

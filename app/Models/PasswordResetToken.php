@@ -16,7 +16,7 @@ class PasswordResetToken extends Model
     ];
 
     // timestamps = true, but we don't have "UPDATED_AT". To prevent an error, we set the default value to `null`.
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
 
     public function user(): BelongsTo
     {
