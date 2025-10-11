@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Tables\Table;
 use App\Filament\Resources\Hotel\ChatlogPrivates\ChatlogPrivateResource;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 
 class ChatLogPrivateRelationManager extends RelationManager
 {

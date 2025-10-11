@@ -12,7 +12,7 @@ class TurnstileCheck implements ValidationRule
     {
         $response = LaravelTurnstile::validate($value);
 
-        if (!$response['success'] && setting('cloudflare_turnstile_enabled')) {
+        if (! $response['success'] && setting('cloudflare_turnstile_enabled')) {
             $fail(__(config('turnstile.error_messages.turnstile_check_message')));
         }
     }

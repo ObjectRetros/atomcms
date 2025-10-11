@@ -22,7 +22,7 @@ class ShopController extends Controller
         $this->rconService = $rconService;
     }
 
-    public function __invoke(WebsiteShopCategory|null $category)
+    public function __invoke(?WebsiteShopCategory $category)
     {
         $packages = WebsiteShopArticle::orderBy('position');
 
@@ -59,11 +59,12 @@ class ShopController extends Controller
         }
     }
 
-    public function purchase(WebsiteShopArticle $package, Request $request, SendCurrency $sendCurrency): Response {
+    public function purchase(WebsiteShopArticle $package, Request $request, SendCurrency $sendCurrency): Response
+    {
         $user = Auth::user();
 
         if ($request->has('receiver')) {
-            if (!$package->is_giftable) {
+            if (! $package->is_giftable) {
                 return to_route('shop.index')->withErrors(
                     ['message' => __('This package is not giftable')],
                 );
@@ -71,7 +72,7 @@ class ShopController extends Controller
 
             $user = User::where('username', $request->input('receiver'))->first();
 
-            if (!$user) {
+            if (! $user) {
                 return to_route('shop.index')->withErrors(
                     ['message' => __('Recipient not found')],
                 );
@@ -91,7 +92,7 @@ class ShopController extends Controller
             );
         }
 
-        if (!$this->rconService->isConnected && $user->online === '1') {
+        if (! $this->rconService->isConnected && $user->online === '1') {
             return to_route('shop.index')->withErrors(
                 ['message' => __('Please logout before purchasing a package')],
             );

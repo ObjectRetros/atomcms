@@ -34,7 +34,7 @@ class InstallationMiddleware
 
         $isInstallationStepHandled = $this->handleInstallationSteps($request, $installation);
 
-        if (!$isInstallationStepHandled) {
+        if (! $isInstallationStepHandled) {
             return $this->redirectIfNotCompleted($installation);
         }
 
@@ -43,16 +43,16 @@ class InstallationMiddleware
 
     private function ensureInstallationTableExists()
     {
-        if (!Schema::hasTable('website_installation')) {
-            Artisan::call("migrate", ['--path' => "database/migrations/" . findMigration('website_installation')]);
+        if (! Schema::hasTable('website_installation')) {
+            Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('website_installation')]);
 
-            if (!Schema::hasTable('website_installation')) {
+            if (! Schema::hasTable('website_installation')) {
                 throw new MigrationFailedException('website_installation');
             }
         }
 
-        if (!Schema::hasTable('sessions')) {
-            Artisan::call("migrate", ['--path' => "database/migrations/" . findMigration('sessions')]);
+        if (! Schema::hasTable('sessions')) {
+            Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('sessions')]);
         }
     }
 
@@ -61,7 +61,7 @@ class InstallationMiddleware
         try {
             $installation = WebsiteInstallation::query()->first();
 
-            if (!$installation) {
+            if (! $installation) {
                 return WebsiteInstallation::create([
                     'step' => 0,
                     'completed' => false,
@@ -72,7 +72,7 @@ class InstallationMiddleware
 
             return $installation;
         } catch (Exception $e) {
-            Log::error('Error fetching or creating WebsiteInstallation: ' . $e->getMessage());
+            Log::error('Error fetching or creating WebsiteInstallation: '.$e->getMessage());
             abort(500, 'An error occurred while setting up the installation.');
         }
     }
@@ -123,7 +123,7 @@ class InstallationMiddleware
 
     private function isInvalidStep(Request $request)
     {
-        return !$this->isValidStep($request) && $this->isNonPostRequest($request);
+        return ! $this->isValidStep($request) && $this->isNonPostRequest($request);
     }
 
     private function isMismatchedStep(Request $request, WebsiteInstallation $installation)
@@ -134,6 +134,7 @@ class InstallationMiddleware
     private function isValidStep(Request $request)
     {
         $step = $this->getCurrentStep($request);
+
         return filter_var($step, FILTER_VALIDATE_INT) !== false;
     }
 
@@ -144,7 +145,7 @@ class InstallationMiddleware
 
     private function getCurrentStep(Request $request)
     {
-        return (int)Str::after($request->path(), 'step/');
+        return (int) Str::after($request->path(), 'step/');
     }
 
     private function redirectToStep(int $step)

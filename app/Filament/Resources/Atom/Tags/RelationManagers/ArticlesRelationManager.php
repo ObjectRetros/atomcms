@@ -2,16 +2,15 @@
 
 namespace App\Filament\Resources\Atom\Tags\RelationManagers;
 
-use Filament\Schemas\Schema;
+use App\Filament\Resources\Atom\Articles\ArticleResource;
+use App\Filament\Traits\TranslatableResource;
 use Filament\Actions\AttachAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\DetachAction;
 use Filament\Actions\DetachBulkAction;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Atom\Articles\ArticleResource;
+use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 
 class ArticlesRelationManager extends RelationManager
 {

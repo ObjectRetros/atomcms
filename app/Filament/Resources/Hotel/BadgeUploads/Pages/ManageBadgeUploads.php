@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\Hotel\BadgeUploads\Pages;
 
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Components\FileUpload;
-use Filament\Resources\Pages\Page;
-use Filament\Forms;
-use Filament\Notifications\Notification; // Import the Notification class
-use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\Page; // Import the Notification class
 
 class ManageBadgeUploads extends Page implements HasForms
 {
@@ -17,6 +15,7 @@ class ManageBadgeUploads extends Page implements HasForms
     public $badge_file;
 
     protected static string $resource = 'App\Filament\Resources\Hotel\BadgeUploads\BadgeUploadResource';
+
     protected string $view = 'filament.pages.manage-badge-uploads';
 
     public function mount(): void

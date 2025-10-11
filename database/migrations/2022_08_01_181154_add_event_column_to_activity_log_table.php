@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection(config('activitylog.database_connection'))->table(config('activitylog.table_name'), function (Blueprint $table) {
-            if (!columnExists(config('activitylog.table_name'), 'event')) {
+            if (! columnExists(config('activitylog.table_name'), 'event')) {
                 $table->string('event')->nullable()->after('subject_type');
             }
         });

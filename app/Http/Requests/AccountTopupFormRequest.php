@@ -9,7 +9,7 @@ class AccountTopupFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => ['required', 'integer', 'min:1', 'max:250']
+            'amount' => ['required', 'integer', 'min:1', 'max:250'],
         ];
     }
 }

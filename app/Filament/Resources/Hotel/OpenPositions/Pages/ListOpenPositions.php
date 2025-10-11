@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\OpenPositions\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Hotel\OpenPositions\OpenPositionResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListOpenPositions extends ListRecords

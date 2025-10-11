@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\User\Bans\Pages;
 
-use Filament\Resources\Pages\ManageRecords;
 use App\Filament\Resources\User\Bans\BanResource;
+use Filament\Resources\Pages\ManageRecords;
 
 class ManageBans extends ManageRecords
 {

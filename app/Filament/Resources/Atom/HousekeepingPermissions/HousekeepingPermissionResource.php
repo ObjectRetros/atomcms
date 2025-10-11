@@ -2,33 +2,27 @@
 
 namespace App\Filament\Resources\Atom\HousekeepingPermissions;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Atom\HousekeepingPermissions\Pages\ListHousekeepingPermissions;
-use App\Filament\Resources\Atom\HousekeepingPermissionResource\Pages;
-use App\Filament\Resources\Atom\HousekeepingPermissionResource\RelationManagers;
 use App\Models\WebsiteHousekeepingPermission;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class HousekeepingPermissionResource extends Resource
 {
     protected static ?string $model = WebsiteHousekeepingPermission::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/housekeeping-permissions';
-    
+
     protected static ?string $navigationLabel = 'Housekeeping permissions';
 
     public static string $translateIdentifier = 'housekeeping-permissions';
@@ -36,33 +30,33 @@ class HousekeepingPermissionResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema
-        ->components([
-            Section::make()
-                ->schema([
-                    TextInput::make('permission')
-                        ->label(__('filament::resources.inputs.permission'))
-                        ->maxLength(50)
-                        ->autocomplete()
-                        ->unique(ignoreRecord: true)
-                        ->required(),
+            ->components([
+                Section::make()
+                    ->schema([
+                        TextInput::make('permission')
+                            ->label(__('filament::resources.inputs.permission'))
+                            ->maxLength(50)
+                            ->autocomplete()
+                            ->unique(ignoreRecord: true)
+                            ->required(),
 
-                    TextInput::make('min_rank')
-                        ->label(__('filament::resources.inputs.min_rank'))
-                        ->required()
-                        ->maxLength(255)
-                        ->autocomplete(),
+                        TextInput::make('min_rank')
+                            ->label(__('filament::resources.inputs.min_rank'))
+                            ->required()
+                            ->maxLength(255)
+                            ->autocomplete(),
 
-                    TextInput::make('description')
-                        ->label(__('filament::resources.inputs.description'))
-                        ->nullable()
-                        ->maxLength(255)
-                        ->autocomplete()
-                        ->columnSpanFull()
-                ])
-                ->columns([
-                    'sm' => 2
-                ])
-        ]);
+                        TextInput::make('description')
+                            ->label(__('filament::resources.inputs.description'))
+                            ->nullable()
+                            ->maxLength(255)
+                            ->autocomplete()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns([
+                        'sm' => 2,
+                    ]),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -86,11 +80,13 @@ class HousekeepingPermissionResource extends Resource
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
 
-                        if (strlen($state) <= $column->getCharacterLimit()) return null;
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
 
                         return $state;
                     })
-                    ->limit(60)
+                    ->limit(60),
             ])
             ->filters([
                 //

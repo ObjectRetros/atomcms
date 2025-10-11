@@ -2,20 +2,19 @@
 
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
+use App\Filament\Tables\Columns\HabboBadgeColumn;
+use App\Filament\Traits\TranslatableResource;
+use App\Services\RconService;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Forms;
-use Filament\Tables\Table;
-use App\Services\RconService;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Notifications\Notification;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Tables\Columns\HabboBadgeColumn;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Table;
 
 class BadgesRelationManager extends RelationManager
 {
@@ -72,9 +71,11 @@ class BadgesRelationManager extends RelationManager
                         $user = $livewire->getOwnerRecord();
                         $hasRconEnabled = config('hotel.rcon.enabled');
 
-                        if (!$user->online) return;
+                        if (! $user->online) {
+                            return;
+                        }
 
-                        if (!$hasRconEnabled) {
+                        if (! $hasRconEnabled) {
                             Notification::make()
                                 ->danger()
                                 ->title('RCON is not enabled!')
@@ -106,9 +107,11 @@ class BadgesRelationManager extends RelationManager
         $user = $livewire->getOwnerRecord();
         $hasRconEnabled = config('hotel.rcon.enabled');
 
-        if (!$user->online) return;
+        if (! $user->online) {
+            return;
+        }
 
-        if (!$hasRconEnabled) {
+        if (! $hasRconEnabled) {
             Notification::make()
                 ->danger()
                 ->title('RCON is not enabled!')

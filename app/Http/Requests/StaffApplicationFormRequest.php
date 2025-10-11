@@ -12,7 +12,7 @@ class StaffApplicationFormRequest extends FormRequest
     {
         return [
             'content' => ['required', 'string'],
-            'g-recaptcha-response' => [new GoogleRecaptchaRule()],
+            'g-recaptcha-response' => [new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
         ];
     }

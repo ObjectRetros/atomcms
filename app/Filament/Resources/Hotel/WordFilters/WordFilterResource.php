@@ -2,21 +2,19 @@
 
 namespace App\Filament\Resources\Hotel\WordFilters;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
+use App\Filament\Resources\Hotel\WordFilters\Pages\ManageWordFilters;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Wordfilter;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Hotel\WordFilters\Pages\ManageWordFilters;
-use Filament\Tables;
-use App\Models\Wordfilter;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\WordFilterResource\Pages;
+use Filament\Tables\Table;
 
 class WordFilterResource extends Resource
 {
@@ -24,9 +22,9 @@ class WordFilterResource extends Resource
 
     protected static ?string $model = Wordfilter::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-eye-slash';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-eye-slash';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     protected static ?string $slug = 'hotel/wordfilters';
 
@@ -86,7 +84,7 @@ class WordFilterResource extends Resource
 
                 IconColumn::make('hide')
                     ->label(__('filament::resources.columns.hideable'))
-                    ->icon(fn(string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->icon(fn (string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->colors([
                         'danger' => '0',
                         'success' => '1',
@@ -94,7 +92,7 @@ class WordFilterResource extends Resource
 
                 IconColumn::make('report')
                     ->label(__('filament::resources.columns.reportable'))
-                    ->icon(fn(string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->icon(fn (string $state): string => $state == '0' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->colors([
                         'danger' => '0',
                         'success' => '1',

@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Articles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Articles\WebsiteArticle;
-use App\Models\Articles\WebsiteArticleReaction;
 use App\Services\Articles\ArticleService;
 use App\Services\Articles\ReactionService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +16,7 @@ class ArticleController extends Controller
     public function __construct(
         private readonly ArticleService $articlesService,
         private readonly ReactionService $reactionService
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -45,4 +42,5 @@ class ArticleController extends Controller
         $response = $this->reactionService->toggleReaction($article, Auth::user(), $request);
 
         return response()->json($response);
-    }}
+    }
+}

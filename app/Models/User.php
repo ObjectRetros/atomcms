@@ -38,13 +38,12 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable, LogsActivity;
+    use HasApiTokens, HasFactory, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     public $timestamps = false;
 
@@ -74,7 +73,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function currency(string $currency)
     {
-        if (!$this->relationLoaded('currencies')) {
+        if (! $this->relationLoaded('currencies')) {
             $this->load('currencies');
         }
 
@@ -131,7 +130,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $referrals = 0;
 
-        if (!is_null($this->referrals)) {
+        if (! is_null($this->referrals)) {
             $referrals = $this->referrals->referrals_total;
         }
 
@@ -249,7 +248,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);
 
-        if (!$codeIsValid) {
+        if (! $codeIsValid) {
             return false;
         }
 
@@ -281,7 +280,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         return hasHousekeepingPermission('can_access_housekeeping');
     }
 
-	public function getActivitylogOptions(): LogOptions
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly(['id', 'username', 'motto', 'rank', 'credits'])
@@ -291,9 +290,9 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function save(array $options = [])
     {
-        if (!$this->isDirty()) {
+        if (! $this->isDirty()) {
             return false;
-		}
+        }
 
         return parent::save($options);
     }

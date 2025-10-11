@@ -3,7 +3,6 @@
 namespace App\Models\Community\Staff;
 
 use App\Models\User;
-use App\Models\Compositions\HasBadge;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 

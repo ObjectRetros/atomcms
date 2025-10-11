@@ -2,9 +2,8 @@
 
 namespace App\Models\Articles;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Articles\WebsiteArticle;
+use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model
 {

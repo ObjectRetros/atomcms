@@ -14,9 +14,7 @@ use Illuminate\View\View;
 
 class WebsiteRareValuesController extends Controller
 {
-    public function __construct(private readonly RareValueCategoriesService $valueCategoriesService)
-    {
-    }
+    public function __construct(private readonly RareValueCategoriesService $valueCategoriesService) {}
 
     public function index(): View
     {
@@ -38,7 +36,7 @@ class WebsiteRareValuesController extends Controller
 
         return view('rare-values', [
             'categories' => $category,
-            'categoriesNav' =>  $this->valueCategoriesService->fetchAllCategories(),
+            'categoriesNav' => $this->valueCategoriesService->fetchAllCategories(),
         ]);
     }
 

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\CommandLogs\Pages;
 
-use Filament\Resources\Pages\ManageRecords;
 use App\Filament\Resources\Hotel\CommandLogs\CommandLogResource;
+use Filament\Resources\Pages\ManageRecords;
 
 class ManageCommandLogs extends ManageRecords
 {

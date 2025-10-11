@@ -2,9 +2,9 @@
 
 namespace App\Filament\Filters;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\DatePicker;
 
 class DateRangeFilter extends Filter
 {

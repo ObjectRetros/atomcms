@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Teams\Pages;
 
-use Filament\Actions\DeleteAction;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\Atom\Teams\TeamResource;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
 
 class EditTeam extends EditRecord
 {

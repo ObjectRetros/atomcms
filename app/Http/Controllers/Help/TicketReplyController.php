@@ -11,15 +11,15 @@ class TicketReplyController extends Controller
 {
     public function store(WebsiteHelpCenterTicket $ticket, WebsiteTicketReplyFormRequest $request)
     {
-        if (!$ticket->isOpen()) {
-            return  redirect()->back()->with([
-                'message' => __('You cannot reply to the ticket as it has been closed.')
+        if (! $ticket->isOpen()) {
+            return redirect()->back()->with([
+                'message' => __('You cannot reply to the ticket as it has been closed.'),
             ]);
         }
 
-        if (!$ticket->canManageTicket()) {
-            return  redirect()->back()->with([
-                'message' => __('You cannot reply to others tickets.')
+        if (! $ticket->canManageTicket()) {
+            return redirect()->back()->with([
+                'message' => __('You cannot reply to others tickets.'),
             ]);
         }
 
@@ -34,9 +34,9 @@ class TicketReplyController extends Controller
 
     public function destroy(WebsiteHelpCenterTicketReply $reply)
     {
-        if (!$reply->canDeleteReply()) {
+        if (! $reply->canDeleteReply()) {
             return redirect()->back()->with([
-                'message' => __('You do not have permission to delete this reply.')
+                'message' => __('You do not have permission to delete this reply.'),
             ]);
         }
 

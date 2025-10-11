@@ -8,9 +8,7 @@ use Illuminate\View\View;
 
 class WebsiteTeamsController extends Controller
 {
-    public function __construct(private readonly TeamService $teamService)
-    {
-    }
+    public function __construct(private readonly TeamService $teamService) {}
 
     public function __invoke(): View
     {

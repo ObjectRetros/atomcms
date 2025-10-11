@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorSettings\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Hotel\EmulatorSettings\EmulatorSettingResource;
-use Filament\Pages\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListEmulatorSettings extends ListRecords

@@ -3,23 +3,24 @@
 namespace App\Services;
 
 use App\Enums\CurrencyTypes;
+use App\Exceptions\RconConnectionException;
+use Illuminate\Support\Facades\Log;
 use JsonException;
 use Socket;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
-use App\Exceptions\RconConnectionException;
 
 class RconService
 {
-    protected Socket|null $socket = null;
+    protected ?Socket $socket = null;
+
     public bool $isConnected = false;
+
     protected array $config = [];
 
     public function __construct()
     {
         $this->config = [
             'ip' => setting('rcon_ip'),
-            'port' => (int)setting('rcon_port'),
+            'port' => (int) setting('rcon_port'),
         ];
 
         $this->initialize();
@@ -29,19 +30,21 @@ class RconService
     {
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
-        if (!$this->socket) {
+        if (! $this->socket) {
             $error = socket_strerror(socket_last_error());
             Log::error("RCON initialization failed: $error");
 
             $this->closeConnection();
+
             return;
         }
 
-        if (!@socket_connect($this->socket, $this->config['ip'], $this->config['port'])) {
+        if (! @socket_connect($this->socket, $this->config['ip'], $this->config['port'])) {
             $error = socket_strerror(socket_last_error());
             Log::error("RCON connection failed: $error");
 
             $this->closeConnection();
+
             return;
         }
 
@@ -69,8 +72,8 @@ class RconService
      */
     public function sendCommand(string $command, ?array $data = null)
     {
-        if (!$this->isConnected) {
-            $error = "RCON command failed: Not connected";
+        if (! $this->isConnected) {
+            $error = 'RCON command failed: Not connected';
             Log::error($error);
 
             $this->closeConnection();
@@ -80,7 +83,7 @@ class RconService
 
         $payload = json_encode(['key' => $command, 'data' => $data], JSON_THROW_ON_ERROR);
 
-        if (!@socket_write($this->socket, $payload, strlen($payload))) {
+        if (! @socket_write($this->socket, $payload, strlen($payload))) {
             $error = socket_strerror(socket_last_error($this->socket));
             Log::error("RCON command ($command) failed: $error");
 

@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/*Credits to Kani for this*/
+/* Credits to Kani for this */
 class FindRetrosMiddleware
 {
     public function handle(Request $request, Closure $next): Response

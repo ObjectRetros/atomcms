@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Hotel\Achievements\Pages;
 
+use App\Filament\Resources\Hotel\Achievements\AchievementResource;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Traits\LatestResourcesTrait;
-use App\Filament\Resources\Hotel\Achievements\AchievementResource;
 
 class ListAchievements extends ListRecords
 {

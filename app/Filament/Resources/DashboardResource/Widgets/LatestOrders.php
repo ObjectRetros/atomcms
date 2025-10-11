@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\DashboardResource\Widgets;
 
-use Filament\Actions\ViewAction;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\User\UserOrder;
-use Filament\Widgets\TableWidget as BaseWidget;
 use App\Filament\Resources\Shop\ShopOrderResource;
+use App\Models\User\UserOrder;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Table;
+use Filament\Widgets\TableWidget as BaseWidget;
 
 class LatestOrders extends BaseWidget
 {

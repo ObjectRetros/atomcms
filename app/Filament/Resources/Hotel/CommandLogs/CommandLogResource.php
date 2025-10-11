@@ -2,15 +2,14 @@
 
 namespace App\Filament\Resources\Hotel\CommandLogs;
 
-use Filament\Schemas\Schema;
 use App\Filament\Resources\Hotel\CommandLogs\Pages\ManageCommandLogs;
+use App\Filament\Traits\TranslatableResource;
 use App\Models\CommandLog;
-use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\CommandLogResource\Pages;
+use Filament\Tables\Table;
 
 class CommandLogResource extends Resource
 {
@@ -18,9 +17,9 @@ class CommandLogResource extends Resource
 
     protected static ?string $model = CommandLog::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Logs';
+    protected static string|\UnitEnum|null $navigationGroup = 'Logs';
 
     public static string $translateIdentifier = 'command-logs';
 
@@ -46,12 +45,12 @@ class CommandLogResource extends Resource
 
                 TextColumn::make('succes')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'yes' => 'primary',
                         'no' => 'warning'
                     })
                     ->label(__('filament::resources.columns.success'))
-                    ->formatStateUsing(fn(string $state): string => __("filament::resources.options.{$state}")),
+                    ->formatStateUsing(fn (string $state): string => __("filament::resources.options.{$state}")),
 
                 TextColumn::make('timestamp')
                     ->label(__('filament::resources.columns.executed_at'))

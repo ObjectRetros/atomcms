@@ -2,21 +2,19 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorSettings;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use App\Filament\Resources\Hotel\EmulatorSettings\Pages\ListEmulatorSettings;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\CreateEmulatorSetting;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\EditEmulatorSetting;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\EmulatorSetting;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Hotel\EmulatorSettings\Pages\ListEmulatorSettings;
 use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\EmulatorSettingResource\Pages;
+use App\Models\EmulatorSetting;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class EmulatorSettingResource extends Resource
 {
@@ -24,9 +22,9 @@ class EmulatorSettingResource extends Resource
 
     protected static ?string $model = EmulatorSetting::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-adjustments-horizontal';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     public static string $translateIdentifier = 'emulator-settings';
 
@@ -48,7 +46,7 @@ class EmulatorSettingResource extends Resource
                             ->label(__('filament::resources.inputs.value'))
                             ->required()
                             ->maxLength(512),
-                    ])
+                    ]),
             ]);
     }
 

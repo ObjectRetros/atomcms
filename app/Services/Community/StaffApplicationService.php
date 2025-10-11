@@ -18,7 +18,7 @@ class StaffApplicationService
 
     public function fetchOpenPositions(): Collection
     {
-       return WebsiteOpenPosition::canApply()->with('permission')->get();
+        return WebsiteOpenPosition::canApply()->with('permission')->get();
     }
 
     public function hasUserAppliedForPosition($user, $positionId): bool
@@ -29,6 +29,7 @@ class StaffApplicationService
     public function isPositionOpenForApplication($position): bool
     {
         $currentTime = now();
+
         return $position->apply_from <= $currentTime && $position->apply_to >= $currentTime;
     }
 }

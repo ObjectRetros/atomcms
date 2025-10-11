@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Atom\Tags\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\Atom\Tags\TagResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateTag extends CreateRecord
 {

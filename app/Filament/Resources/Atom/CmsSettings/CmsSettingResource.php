@@ -2,19 +2,17 @@
 
 namespace App\Filament\Resources\Atom\CmsSettings;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Atom\CmsSettings\Pages\ManageCmsSettings;
-use App\Models\Miscellaneous\WebsiteSetting;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
 use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Atom\CmsSettingResource\Pages;
+use App\Models\Miscellaneous\WebsiteSetting;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class CmsSettingResource extends Resource
 {
@@ -22,9 +20,9 @@ class CmsSettingResource extends Resource
 
     protected static ?string $model = WebsiteSetting::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cpu-chip';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cpu-chip';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/cms-settings';
 
@@ -54,11 +52,11 @@ class CmsSettingResource extends Resource
                             ->nullable()
                             ->maxLength(255)
                             ->autocomplete()
-                            ->columnSpanFull()
+                            ->columnSpanFull(),
                     ])
                     ->columns([
-                        'sm' => 2
-                    ])
+                        'sm' => 2,
+                    ]),
             ]);
     }
 
@@ -83,11 +81,13 @@ class CmsSettingResource extends Resource
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
 
-                        if (strlen($state) <= $column->getCharacterLimit()) return null;
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
 
                         return $state;
                     })
-                    ->limit(60)
+                    ->limit(60),
             ])
             ->filters([
                 //

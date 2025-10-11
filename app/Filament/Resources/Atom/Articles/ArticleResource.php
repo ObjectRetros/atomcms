@@ -2,41 +2,38 @@
 
 namespace App\Filament\Resources\Atom\Articles;
 
-use Filament\Schemas\Schema;
+use App\Filament\Resources\Atom\Articles\Pages\CreateArticle;
+use App\Filament\Resources\Atom\Articles\Pages\EditArticle;
+use App\Filament\Resources\Atom\Articles\Pages\ListArticles;
+use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
+use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Articles\WebsiteArticle;
+use Exception;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Exception;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
-use App\Filament\Resources\Atom\Articles\Pages\ListArticles;
-use App\Filament\Resources\Atom\Articles\Pages\CreateArticle;
-use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
-use App\Filament\Resources\Atom\Articles\Pages\EditArticle;
-use App\Models\Articles\WebsiteArticle;
-use Filament\Forms\Components\RichEditor;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
-use App\Filament\Traits\TranslatableResource;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\Atom\ArticleResource\Pages;
-use App\Filament\Resources\Atom\ArticleResource\RelationManagers;
 
 class ArticleResource extends Resource
 {
@@ -44,9 +41,9 @@ class ArticleResource extends Resource
 
     protected static ?string $model = WebsiteArticle::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-newspaper';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/articles';
 
@@ -105,8 +102,8 @@ class ArticleResource extends Resource
                                 ->live()
                                 ->afterStateUpdated(function (string $operation, $state, $record) {
                                     if ($operation !== 'edit' || is_null($record)) {
-										return;
-									}
+                                        return;
+                                    }
 
                                     try {
                                         if ($state) {
@@ -119,11 +116,12 @@ class ArticleResource extends Resource
                                     }
                                 })
                                 ->formatStateUsing(function ($record) {
-									if (is_null($record)) {
-										return true;
-									}								
-									return is_null($record->deleted_at);
-								}),
+                                    if (is_null($record)) {
+                                        return true;
+                                    }
+
+                                    return is_null($record->deleted_at);
+                                }),
 
                             Toggle::make('can_comment')
                                 ->onIcon('heroicon-s-check')
@@ -131,7 +129,7 @@ class ArticleResource extends Resource
                                 ->default(true)
                                 ->offIcon('heroicon-s-x-mark'),
                         ]),
-                ])->columnSpanFull()
+                ])->columnSpanFull(),
         ];
     }
 
@@ -142,7 +140,7 @@ class ArticleResource extends Resource
             ->poll('60s')
             ->columns(static::getTable())
             ->filters([
-                TrashedFilter::make()
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -200,8 +198,8 @@ class ArticleResource extends Resource
             SoftDeletingScope::class,
         ]);
     }
-	
-	public static function getRelations(): array
+
+    public static function getRelations(): array
     {
         return [
             TagsRelationManager::class,

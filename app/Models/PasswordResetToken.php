@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PasswordResetToken extends Model
 {
     protected $primaryKey = 'token';
+
     protected $fillable = ['email', 'token', 'created_at'];
+
     protected $casts = [
         'created_at' => 'date',
     ];

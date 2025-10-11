@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\Hotel\BadgeTextEditors\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Hotel\BadgeTextEditors\BadgeTextEditorResource;
-use Filament\Pages\Actions;
-use Filament\Resources\Pages\EditRecord;
-use PDOException;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
+use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
+use PDOException;
 
 class EditBadgeTextEditor extends EditRecord
 {
@@ -33,7 +32,7 @@ class EditBadgeTextEditor extends EditRecord
             return parent::handleRecordUpdate($record, $data);
         } catch (PDOException $e) {
             if ($e->getCode() === '23000') {
-                  Log::error('Duplicate badge key error: ' . $e->getMessage());
+                Log::error('Duplicate badge key error: '.$e->getMessage());
 
                 Notification::make()
                     ->title('Duplicate Badge Key')

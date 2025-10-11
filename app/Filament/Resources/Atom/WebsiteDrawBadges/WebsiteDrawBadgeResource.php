@@ -2,30 +2,28 @@
 
 namespace App\Filament\Resources\Atom\WebsiteDrawBadges;
 
-use Filament\Schemas\Schema;
+use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\EditWebsiteDrawBadge;
+use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\ListWebsiteDrawBadge;
+use App\Models\WebsiteDrawBadge;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\ListWebsiteDrawBadge;
-use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\EditWebsiteDrawBadge;
-use App\Models\WebsiteDrawBadge;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use App\Filament\Resources\Atom\WebsiteDrawBadgeResource\Pages;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 class WebsiteDrawBadgeResource extends Resource
 {
     protected static ?string $model = WebsiteDrawBadge::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-trophy';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-trophy';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'draw-badges';
 
@@ -64,14 +62,14 @@ class WebsiteDrawBadgeResource extends Resource
                     ->sortable(),
                 TextColumn::make('user_id')
                     ->label(__('User ID')),
-				TextColumn::make('user.username')
+                TextColumn::make('user.username')
                     ->label(__('Username'))
                     ->sortable()
                     ->searchable(),
-				TextColumn::make('badge_name')
-					->limit(8)
+                TextColumn::make('badge_name')
+                    ->limit(8)
                     ->label(__('Badge Name')),
-				TextColumn::make('badge_desc')
+                TextColumn::make('badge_desc')
                     ->label(__('Badge description'))
                     ->limit(35)
                     ->tooltip(function (TextColumn $column): ?string {
@@ -79,6 +77,7 @@ class WebsiteDrawBadgeResource extends Resource
                         if (strlen($state) <= $column->getCharacterLimit()) {
                             return null;
                         }
+
                         return $state;
                     }),
                 TextColumn::make('created_at')
@@ -86,7 +85,7 @@ class WebsiteDrawBadgeResource extends Resource
                     ->dateTime(),
                 ImageColumn::make('badge_url')
                     ->label(__('Badge'))
-                    ->getStateUsing(fn ($record) => config('app.url') . $record->badge_url)
+                    ->getStateUsing(fn ($record) => config('app.url').$record->badge_url)
                     ->extraAttributes(['style' => 'image-rendering: pixelated'])
                     ->size(40),
                 ToggleColumn::make('published')

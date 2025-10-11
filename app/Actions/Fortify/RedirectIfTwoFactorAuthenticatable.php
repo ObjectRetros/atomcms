@@ -15,8 +15,8 @@ use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\LoginRateLimiter;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Symfony\Component\HttpFoundation\Response;
 use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
+use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfTwoFactorAuthenticatable
 {
@@ -56,7 +56,7 @@ class RedirectIfTwoFactorAuthenticatable
 
         if (Fortify::confirmsTwoFactorAuthentication()) {
             if ($user?->two_factor_secret &&
-                !is_null($user?->two_factor_confirmed_at) &&
+                ! is_null($user?->two_factor_confirmed_at) &&
                 in_array(TwoFactorAuthenticatable::class, class_uses_recursive($user))) {
                 return $this->twoFactorChallengeResponse($request, $user);
             } else {
@@ -81,7 +81,7 @@ class RedirectIfTwoFactorAuthenticatable
     {
         if (Fortify::$authenticateUsingCallback) {
             return tap(call_user_func(Fortify::$authenticateUsingCallback, $request), function ($user) use ($request) {
-                if (!$user) {
+                if (! $user) {
                     $this->fireFailedEvent($request);
 
                     $this->throwFailedAuthenticationException($request);
@@ -97,7 +97,7 @@ class RedirectIfTwoFactorAuthenticatable
                 $this->convertUserPassword($user, $request->input('password'));
             }
 
-            if (!$user || !$this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
+            if (! $user || ! $this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
                 $this->fireFailedEvent($request, $user);
 
                 $this->throwFailedAuthenticationException($request);
@@ -135,7 +135,7 @@ class RedirectIfTwoFactorAuthenticatable
     /**
      * Fire the failed authentication attempt event with the given arguments.
      */
-    protected function fireFailedEvent(Request $request, Authenticatable $user = null): void
+    protected function fireFailedEvent(Request $request, ?Authenticatable $user = null): void
     {
         event(new Failed(config('fortify.guard'), $user, [
             Fortify::username() => $request->{Fortify::username()},
@@ -146,7 +146,7 @@ class RedirectIfTwoFactorAuthenticatable
     /**
      * Get the two factor authentication enabled response.
      *
-     * @param mixed $user
+     * @param  mixed  $user
      */
     protected function twoFactorChallengeResponse(Request $request, $user): Response
     {
@@ -176,7 +176,7 @@ class RedirectIfTwoFactorAuthenticatable
         $rules = [];
 
         if (setting('google_recaptcha_enabled')) {
-            $rules['g-recaptcha-response'] = ['required', 'string', new GoogleRecaptchaRule()];
+            $rules['g-recaptcha-response'] = ['required', 'string', new GoogleRecaptchaRule];
         }
 
         if (setting('cloudflare_turnstile_enabled')) {

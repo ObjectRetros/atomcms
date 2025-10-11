@@ -5,12 +5,13 @@ namespace App\Models\User;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Ban extends Model
 {
-	use LogsActivity;
+    use LogsActivity;
+
     protected $guarded = ['id'];
 
     public $timestamps = false;
@@ -24,10 +25,10 @@ class Ban extends Model
     {
         return $this->belongsTo(User::class, 'user_staff_id');
     }
-	
-	public function getActivitylogOptions(): LogOptions
+
+    public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-        ->logOnly(['user_id', 'ip', 'ban_expire', 'ban_reason', 'type']);
+            ->logOnly(['user_id', 'ip', 'ban_expire', 'ban_reason', 'type']);
     }
 }

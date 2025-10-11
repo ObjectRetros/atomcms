@@ -10,7 +10,7 @@ class ArticleCommentFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule()],
+            'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule],
         ];
     }
 

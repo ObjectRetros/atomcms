@@ -3,9 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Article;
+use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
-use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
 
 class ArticlesAggregateChart extends ChartWidget
@@ -42,10 +42,10 @@ class ArticlesAggregateChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => $label,
-                    'data' => $data->map(fn(TrendValue $value) => $value->aggregate),
+                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],
-            'labels' => $data->map(fn(TrendValue $value) => $value->date),
+            'labels' => $data->map(fn (TrendValue $value) => $value->date),
         ];
     }
 

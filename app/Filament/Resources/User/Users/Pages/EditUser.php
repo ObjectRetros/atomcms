@@ -2,20 +2,18 @@
 
 namespace App\Filament\Resources\User\Users\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Actions\SendCurrency;
 use App\Enums\CurrencyTypes;
+use App\Filament\Resources\User\Users\UserResource;
 use App\Models\Game\Player\UserCurrency;
-use Filament\Actions;
 use App\Services\RconService;
-use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\Eloquent\Model;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Filament\Resources\User\Users\UserResource;
 
 class EditUser extends EditRecord
 {
@@ -61,14 +59,15 @@ class EditUser extends EditRecord
 
         $rcon = app(RconService::class);
 
-        if (!$user->online) {
+        if (! $user->online) {
             DB::transaction(function () use ($user, $data) {
                 $this->treatChangedCurrenciesWithoutRcon($user, $data);
             });
+
             return;
         }
 
-        if ($user->online && !$rcon->isConnected()) {
+        if ($user->online && ! $rcon->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -91,38 +90,40 @@ class EditUser extends EditRecord
     }
 
     private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
-	{
-		$user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-        $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
-		if ($updatedCurrencyAmount == $currency->amount) {
-			return;
-		}
+    {
+        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
+            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
+            if ($updatedCurrencyAmount == $currency->amount) {
+                return;
+            }
 
-        $updated = $user->currencies()->where('type', $currency->type)->update(['amount' => $updatedCurrencyAmount]);
+            $updated = $user->currencies()->where('type', $currency->type)->update(['amount' => $updatedCurrencyAmount]);
 
-        if ($updated) {
-            activity()
-                ->performedOn($currency)
-                ->withProperties(['old_amount' => $currency->amount, 'new_amount' => $updatedCurrencyAmount, 'user_id' => $user->id, 'type' => $currency->type])
-                ->event('updated')
-                ->log("Currency updated for user {$user->username}");
+            if ($updated) {
+                activity()
+                    ->performedOn($currency)
+                    ->withProperties(['old_amount' => $currency->amount, 'new_amount' => $updatedCurrencyAmount, 'user_id' => $user->id, 'type' => $currency->type])
+                    ->event('updated')
+                    ->log("Currency updated for user {$user->username}");
 
-        } else {
-            activity()
-                ->withProperties(['user_id' => $user->id, 'type' => $currency->type])
-                ->event('failed_update')
-                ->log("Failed to update currency for user {$user->username}");
-        }
-    });
+            } else {
+                activity()
+                    ->withProperties(['user_id' => $user->id, 'type' => $currency->type])
+                    ->event('failed_update')
+                    ->log("Failed to update currency for user {$user->username}");
+            }
+        });
 
-    $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
-	}
+        $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+    }
 
     private function checkUsernameChangedPermission(Model $user, array $data, RconService $rcon): void
     {
-        if ($data['allow_change_username'] == $user->settings->can_change_name) return;
+        if ($data['allow_change_username'] == $user->settings->can_change_name) {
+            return;
+        }
 
-        if (!$rcon->isConnected()) {
+        if (! $rcon->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -138,7 +139,7 @@ class EditUser extends EditRecord
 
     private function treatChangedCurrencies(Model $user, array $data, RconService $rcon): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user, $rcon) {
+        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
             $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
             $currencyType = match ($currency->type) {
                 CurrencyTypes::Duckets => 'duckets',
@@ -146,7 +147,9 @@ class EditUser extends EditRecord
                 CurrencyTypes::Points => 'points',
             };
 
-            if ($updatedCurrencyAmount == $currency->amount) return;
+            if ($updatedCurrencyAmount == $currency->amount) {
+                return;
+            }
 
             app(SendCurrency::class)->execute($user, $currencyType, -$currency->amount + $updatedCurrencyAmount);
         });
@@ -154,10 +157,14 @@ class EditUser extends EditRecord
 
     private function treatChangedUserRank(Model $user, array $data, RconService $rcon): void
     {
-        if ($data['rank'] == $user->rank) return;
-        if ($data['rank'] > auth()->user()->rank) return;
+        if ($data['rank'] == $user->rank) {
+            return;
+        }
+        if ($data['rank'] > auth()->user()->rank) {
+            return;
+        }
 
-        if ($user->online && !$rcon->isConnected()) {
+        if ($user->online && ! $rcon->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -167,7 +174,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        if (!$user->online) {
+        if (! $user->online) {
             $user->update(['rank' => $data['rank']]);
 
             return;
@@ -182,9 +189,11 @@ class EditUser extends EditRecord
 
     private function treatChangedUserMotto(Model $user, array $data, RconService $rcon): void
     {
-        if ($data['motto'] == $user->motto) return;
+        if ($data['motto'] == $user->motto) {
+            return;
+        }
 
-        if ($user->online && !$rcon->isConnected()) {
+        if ($user->online && ! $rcon->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -194,7 +203,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        if (!$user->online) {
+        if (! $user->online) {
             $user->update(['motto' => $data['motto']]);
 
             return;

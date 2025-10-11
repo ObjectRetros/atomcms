@@ -10,7 +10,7 @@ class GuestbookFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'message' => ['required', 'string', 'max:32', new WebsiteWordfilterRule()],
+            'message' => ['required', 'string', 'max:32', new WebsiteWordfilterRule],
         ];
     }
 }

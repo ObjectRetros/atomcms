@@ -2,7 +2,4 @@
 
 namespace App\Services\Community\RareValues;
 
-class RareValuesService
-{
-
-}
+class RareValuesService {}

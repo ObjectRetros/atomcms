@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Articles\Pages;
 
-use Filament\Actions\DeleteAction;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\Atom\Articles\ArticleResource;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
 
 class EditArticle extends EditRecord
 {

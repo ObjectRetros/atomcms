@@ -2,11 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Articles\Pages;
 
-use App\Models\User;
-use App\Models\Article;
-use App\Enums\NotificationType;
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\Atom\Articles\ArticleResource;
+use App\Models\Article;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateArticle extends CreateRecord
 {
@@ -17,7 +15,9 @@ class CreateArticle extends CreateRecord
         /** @var null|Article $articleCreated */
         $articleCreated = $this->getRecord();
 
-        if (!$articleCreated || !$articleCreated->visible) return;
+        if (! $articleCreated || ! $articleCreated->visible) {
+            return;
+        }
 
         $articleCreated->createFollowersNotification();
     }

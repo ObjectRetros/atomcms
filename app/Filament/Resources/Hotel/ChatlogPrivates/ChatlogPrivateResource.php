@@ -2,18 +2,16 @@
 
 namespace App\Filament\Resources\Hotel\ChatlogPrivates;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\ViewAction;
 use App\Filament\Resources\Hotel\ChatlogPrivates\Pages\ManageChatlogPrivates;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\ChatlogPrivate;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
 use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\ChatlogPrivateResource\Pages;
+use App\Models\ChatlogPrivate;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class ChatlogPrivateResource extends Resource
 {
@@ -21,9 +19,9 @@ class ChatlogPrivateResource extends Resource
 
     protected static ?string $model = ChatlogPrivate::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Logs';
+    protected static string|\UnitEnum|null $navigationGroup = 'Logs';
 
     public static string $translateIdentifier = 'chatlog-private';
 
@@ -35,18 +33,18 @@ class ChatlogPrivateResource extends Resource
             ->components([
                 TextInput::make('sender')
                     ->disabled()
-                    ->formatStateUsing(fn($record) => $record->sender?->username)
+                    ->formatStateUsing(fn ($record) => $record->sender?->username)
                     ->label(__('filament::resources.inputs.sender')),
 
                 TextInput::make('receiver')
                     ->disabled()
-                    ->formatStateUsing(fn($record) => $record->receiver?->username)
+                    ->formatStateUsing(fn ($record) => $record->receiver?->username)
                     ->label(__('filament::resources.inputs.receiver')),
 
                 Textarea::make('message')
                     ->label(__('filament::resources.inputs.message'))
                     ->columnSpanFull()
-                    ->disabled()
+                    ->disabled(),
             ]);
     }
 

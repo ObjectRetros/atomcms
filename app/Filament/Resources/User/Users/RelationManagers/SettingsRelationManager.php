@@ -2,19 +2,19 @@
 
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use App\Filament\Traits\TranslatableResource;
+use Carbon\CarbonInterval;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Carbon\CarbonInterval;
-use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Traits\TranslatableResource;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Table;
 
 class SettingsRelationManager extends RelationManager
 {
@@ -146,12 +146,12 @@ class SettingsRelationManager extends RelationManager
 
                 TextColumn::make('online_time')
                     ->label(__('filament::resources.columns.online_time'))
-                    ->formatStateUsing(fn(string $state) => __(':m minutes', ['m' => round(CarbonInterval::seconds($state)->totalMinutes)]))
+                    ->formatStateUsing(fn (string $state) => __(':m minutes', ['m' => round(CarbonInterval::seconds($state)->totalMinutes)]))
                     ->toggleable(),
 
                 IconColumn::make('can_trade')
                     ->label(__('filament::resources.columns.can_trade'))
-                    ->icon(fn(string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'success' => '1',
                         'danger' => '0',
@@ -159,7 +159,7 @@ class SettingsRelationManager extends RelationManager
 
                 IconColumn::make('can_change_name')
                     ->label(__('filament::resources.columns.can_change_name'))
-                    ->icon(fn(string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (string $state) => $state === '1' ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'success' => '1',
                         'danger' => '0',
@@ -173,11 +173,11 @@ class SettingsRelationManager extends RelationManager
                     ->label('Settings Tip')
                     ->icon('heroicon-o-exclamation-triangle')
                     ->tooltip('You can only change the offline user settings.')
-                    ->extraAttributes(['style' => 'cursor: default !important'])
+                    ->extraAttributes(['style' => 'cursor: default !important']),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->disabled(fn(RelationManager $livewire) => $livewire->getOwnerRecord()->online),
+                    ->disabled(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->online),
             ])
             ->toolbarActions([]);
     }

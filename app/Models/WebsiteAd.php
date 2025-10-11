@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Services\SettingsService;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
-use App\Services\SettingsService;
+use Illuminate\Support\Facades\Storage;
 
 class WebsiteAd extends Model
 {
@@ -25,11 +25,11 @@ class WebsiteAd extends Model
             return $settingsService->getOrDefault('ads_picture_path');
         });
 
-        if (!str_starts_with($adsPicturePath, 'http')) {
-            $adsPicturePath = rtrim(config('app.url'), '/') . '/' . ltrim($adsPicturePath, '/');
+        if (! str_starts_with($adsPicturePath, 'http')) {
+            $adsPicturePath = rtrim(config('app.url'), '/').'/'.ltrim($adsPicturePath, '/');
         }
 
-        return rtrim($adsPicturePath, '/') . '/' . $this->image;
+        return rtrim($adsPicturePath, '/').'/'.$this->image;
     }
 
     protected static function booted()

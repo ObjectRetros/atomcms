@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class MigrationFailedException extends Exception
-{
-}
+class MigrationFailedException extends Exception {}

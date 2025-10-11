@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserCurrency extends Model
 {
     protected $guarded = [];
+
     protected $table = 'users_currency';
 
     protected $primaryKey = 'user_id';

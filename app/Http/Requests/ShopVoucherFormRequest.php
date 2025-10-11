@@ -12,7 +12,7 @@ class ShopVoucherFormRequest extends FormRequest
     {
         return [
             'code' => ['required', 'string'],
-            'g-recaptcha-response' => [new GoogleRecaptchaRule()],
+            'g-recaptcha-response' => [new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
         ];
     }

@@ -13,7 +13,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class WebsiteArticle extends Model
 {
-    use SoftDeletes, HasSlug;
+    use HasSlug, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -44,7 +44,7 @@ class WebsiteArticle extends Model
 
     public function userHasReachedArticleCommentLimit(): bool
     {
-        return $this->comments()->where('user_id', '=', Auth::id())->count() >= (int)setting('max_comment_per_article');
+        return $this->comments()->where('user_id', '=', Auth::id())->count() >= (int) setting('max_comment_per_article');
     }
 
     protected static function boot()

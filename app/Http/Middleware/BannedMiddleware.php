@@ -23,22 +23,22 @@ class BannedMiddleware
             return $next($request);
         }
 
-        if (!$authenticated && !$ipBan && $request->is('banned')) {
+        if (! $authenticated && ! $ipBan && $request->is('banned')) {
             return to_route('login');
         }
 
-        if ($ipBan && !$request->is('banned')) {
+        if ($ipBan && ! $request->is('banned')) {
             return to_route('banned.show');
         }
 
         if ($authenticated) {
             $accountBan = $request->user()?->ban;
 
-            if ($accountBan && !$request->is('banned')) {
+            if ($accountBan && ! $request->is('banned')) {
                 return to_route('banned.show');
             }
 
-            if (!$ipBan && !$accountBan && $request->is('banned')) {
+            if (! $ipBan && ! $accountBan && $request->is('banned')) {
                 return to_route('me.show');
             }
         }

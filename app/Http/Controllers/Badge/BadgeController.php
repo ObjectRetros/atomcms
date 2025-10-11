@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Badge;
 
-use App\Http\Controllers\Controller;
 use App\Actions\SendCurrency;
 use App\Enums\CurrencyTypes;
+use App\Http\Controllers\Controller;
 use App\Models\WebsiteDrawBadge;
 use App\Services\SettingsService;
 use Illuminate\Http\Request;
@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Auth;
 class BadgeController extends Controller
 {
     private const BADGE_WIDTH = 40;
+
     private const BADGE_HEIGHT = 40;
+
     private const MAX_BADGE_SIZE_BYTES = 40960;
 
     public function show(SettingsService $settingsService)
@@ -25,13 +27,13 @@ class BadgeController extends Controller
         $folderError = false;
         $errorMessage = '';
 
-        if (!$badgesPath) {
+        if (! $badgesPath) {
             $folderError = true;
             $errorMessage = 'Badges path not configured.';
-        } elseif (!file_exists($badgesPath)) {
+        } elseif (! file_exists($badgesPath)) {
             $folderError = true;
             $errorMessage = 'Badges path not configured.';
-        } elseif (!is_writable($badgesPath)) {
+        } elseif (! is_writable($badgesPath)) {
             $folderError = true;
             $errorMessage = 'Badges folder does not have write access.';
         }
@@ -54,17 +56,17 @@ class BadgeController extends Controller
         };
 
         if ($currentAmount < $cost) {
-            return response()->json(['success' => false, 'message' => 'Insufficient ' . $currencyType . '.'], 400);
+            return response()->json(['success' => false, 'message' => 'Insufficient '.$currencyType.'.'], 400);
         }
 
         $result = $sendCurrency->execute($user, $currencyType, -$cost);
 
         if ($result === false) {
-            return response()->json(['success' => false, 'message' => 'Failed to deduct ' . $currencyType . '.'], 500);
+            return response()->json(['success' => false, 'message' => 'Failed to deduct '.$currencyType.'.'], 500);
         }
 
         $badgeData = $request->input('badge_data');
-        if (!$badgeData) {
+        if (! $badgeData) {
             return response()->json(['success' => false, 'message' => 'No badge data provided.'], 400);
         }
 
@@ -95,22 +97,23 @@ class BadgeController extends Controller
         }
 
         $badgesPath = $settingsService->getOrDefault('badge_path_filesystem');
-        if (!$badgesPath) {
+        if (! $badgesPath) {
             return response()->json(['success' => false, 'message' => 'Badges path not configured.'], 500);
         }
 
-        $filename = $user->id . '_' . time() . '.gif';
-        $fullPath = rtrim($badgesPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+        $filename = $user->id.'_'.time().'.gif';
+        $fullPath = rtrim($badgesPath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$filename;
 
-        if (!imagegif($image, $fullPath)) {
+        if (! imagegif($image, $fullPath)) {
             imagedestroy($image);
+
             return response()->json(['success' => false, 'message' => 'Failed to save badge file.'], 500);
         }
 
         imagedestroy($image);
 
         $baseUrl = $settingsService->getOrDefault('badges_path', '/badges/');
-        $badgeUrl = rtrim($baseUrl, '/') . '/' . $filename;
+        $badgeUrl = rtrim($baseUrl, '/').'/'.$filename;
 
         WebsiteDrawBadge::create([
             'user_id' => $user->id,

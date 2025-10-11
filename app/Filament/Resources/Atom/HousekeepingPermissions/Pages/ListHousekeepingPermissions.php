@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Atom\HousekeepingPermissions\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Atom\HousekeepingPermissions\HousekeepingPermissionResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListHousekeepingPermissions extends ListRecords

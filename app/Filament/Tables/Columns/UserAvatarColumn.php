@@ -17,7 +17,9 @@ class UserAvatarColumn extends Column
         $record = $this->getRecord();
         $figureImagerUrl = setting('avatar_imager');
 
-        if (!$figureImagerUrl) return '';
+        if (! $figureImagerUrl) {
+            return '';
+        }
 
         $figure = ! $this->figurePointer
             ? $record->look

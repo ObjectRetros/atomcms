@@ -2,18 +2,17 @@
 
 namespace App\Filament\Resources\User\Users\Pages;
 
+use App\Enums\NotificationType;
+use App\Filament\Resources\User\Users\UserResource;
+use App\Models\User;
+use App\Models\User\UserNotification;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
-use App\Models\User;
-use Filament\Actions;
-use App\Enums\NotificationType;
-use App\Models\User\UserNotification;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\User\Users\UserResource;
 
 class ListUsers extends ListRecords
 {
@@ -54,7 +53,7 @@ class ListUsers extends ListRecords
                     $allUsersId = collect($data['users'])->values();
                     $senderId = $data['as_staff'] ? null : auth()->id();
 
-                    if($allUsersId->isEmpty()) {
+                    if ($allUsersId->isEmpty()) {
                         $allUsersId = User::select('id')->get()->pluck('id');
                     }
 

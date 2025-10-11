@@ -3,8 +3,8 @@
 namespace Tests;
 
 use Database\Seeders\TestingSeeder;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
 
 abstract class TestCase extends BaseTestCase
@@ -16,10 +16,10 @@ abstract class TestCase extends BaseTestCase
         if (! RefreshDatabase::$migrated) {
             // Create database if it doesn't exist
             $this->createTestDatabase();
-            
+
             // Run migrations (including CoreSqlFile migration)
             $this->artisan('migrate:fresh');
-            
+
             // Force TestingSeeder to run
             $this->artisan('db:seed', ['--class' => TestingSeeder::class]);
 
@@ -33,7 +33,7 @@ abstract class TestCase extends BaseTestCase
     {
         $database = config('database.connections.mariadb.database');
         $connection = config('database.connections.mariadb');
-        
+
         // Connect to MariaDB without specifying database
         $tempConnection = [
             'driver' => 'mysql',
@@ -42,9 +42,9 @@ abstract class TestCase extends BaseTestCase
             'username' => $connection['username'],
             'password' => $connection['password'],
         ];
-        
+
         config(['database.connections.temp' => $tempConnection]);
-        
+
         DB::connection('temp')->statement("CREATE DATABASE IF NOT EXISTS `{$database}`");
         DB::purge('temp');
     }

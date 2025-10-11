@@ -14,18 +14,19 @@ class LocalizationMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Schema::hasTable('website_settings'))
+        if (Schema::hasTable('website_settings')) {
 
-        if (Session::has('locale')) {
-            App::setLocale(Session::get('locale'));
+            if (Session::has('locale')) {
+                App::setLocale(Session::get('locale'));
 
-            return $next($request);
+                return $next($request);
+            }
         }
 
         $countryCode = config('habbo.site.default_language');
-        if (isset($_SERVER["HTTP_CF_IPCOUNTRY"])) {
-            $countryCode = strtolower($_SERVER["HTTP_CF_IPCOUNTRY"]);
-        } else if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        if (isset($_SERVER['HTTP_CF_IPCOUNTRY'])) {
+            $countryCode = strtolower($_SERVER['HTTP_CF_IPCOUNTRY']);
+        } elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
             $countryCode = strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2));
         }
 

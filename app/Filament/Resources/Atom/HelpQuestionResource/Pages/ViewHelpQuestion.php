@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Atom\HelpQuestionResource\Pages;
 
-use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\Atom\HelpQuestionResource;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewHelpQuestion extends ViewRecord
 {

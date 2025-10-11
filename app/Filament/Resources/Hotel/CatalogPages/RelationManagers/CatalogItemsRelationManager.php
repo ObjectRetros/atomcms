@@ -2,27 +2,25 @@
 
 namespace App\Filament\Resources\Hotel\CatalogPages\RelationManagers;
 
-use Filament\Schemas\Schema;
+use App\Models\Game\Furniture\ItemBase;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Actions\CreateAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Models\Game\Furniture\ItemBase;
-use Filament\Forms;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -222,6 +220,7 @@ class CatalogItemsRelationManager extends RelationManager
                     ]),
             ]);
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -318,7 +317,7 @@ class CatalogItemsRelationManager extends RelationManager
                     ->modalHeading('Edit Item Base')
                     ->fillForm(function ($record) {
                         $itemBase = $record->itemBase;
-                        if (!$itemBase) {
+                        if (! $itemBase) {
                             return [];
                         }
 
@@ -452,6 +451,7 @@ class CatalogItemsRelationManager extends RelationManager
                             if (is_bool($value)) {
                                 return $value ? '1' : '0';
                             }
+
                             return $value;
                         })->toArray();
 

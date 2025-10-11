@@ -2,37 +2,33 @@
 
 namespace App\Filament\Resources\Atom\Permissions;
 
+use App\Filament\Resources\Atom\Permissions\Pages\CreatePermission;
+use App\Filament\Resources\Atom\Permissions\Pages\EditPermission;
+use App\Filament\Resources\Atom\Permissions\Pages\ListPermissions;
+use App\Filament\Resources\Atom\Permissions\Pages\ViewPermission;
+use App\Filament\Tables\Columns\HabboBadgeColumn;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Game\Permission;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Str;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use App\Filament\Resources\Atom\Permissions\Pages\ListPermissions;
-use App\Filament\Resources\Atom\Permissions\Pages\CreatePermission;
-use App\Filament\Resources\Atom\Permissions\Pages\ViewPermission;
-use App\Filament\Resources\Atom\Permissions\Pages\EditPermission;
-use App\Models\Game\Permission;
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ToggleColumn;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\ToggleButtons;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Resources\Atom\PermissionResource\Pages;
-use Filament\Pages\Page;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
+use Str;
 
 class PermissionResource extends Resource
 {
@@ -40,9 +36,9 @@ class PermissionResource extends Resource
 
     protected static ?string $model = Permission::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/permissions';
 
@@ -55,15 +51,17 @@ class PermissionResource extends Resource
     public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         /**
-         * @param string $name
-         * @param bool $needsSecondOption = false
+         * @param  string  $name
+         * @param  bool  $needsSecondOption  = false
          */
         $groupedToggleButton = fn (string $name, bool $needsSecondOption = false): ToggleButtons => ToggleButtons::make($name)
-            ->label(function() use ($name) {
+            ->label(function () use ($name) {
                 $translationKey = "filament::resources.permissions.{$name}";
                 $translation = __($translationKey);
 
-                if($translationKey == $translation) return $name;
+                if ($translationKey == $translation) {
+                    return $name;
+                }
 
                 return $translation;
             })
@@ -73,7 +71,9 @@ class PermissionResource extends Resource
                     '1' => __('filament::resources.options.yes'),
                 ];
 
-                if ($needsSecondOption) $options['2'] = __('filament::resources.options.rights');
+                if ($needsSecondOption) {
+                    $options['2'] = __('filament::resources.options.rights');
+                }
 
                 return $options;
             })
@@ -103,7 +103,7 @@ class PermissionResource extends Resource
 
                                 TextInput::make('room_effect')
                                     ->label(__('filament::resources.inputs.room_effect'))
-                                    ->required()
+                                    ->required(),
                             ]),
 
                         Tab::make(__('filament::resources.tabs.In-game Permissions'))
@@ -115,28 +115,30 @@ class PermissionResource extends Resource
                                             ->columns([
                                                 'sm' => 2,
                                                 'md' => 3,
-                                                'lg' => 3
+                                                'lg' => 3,
                                             ])
                                             ->schema(function () use ($groupedToggleButton) {
                                                 $columns = Schema::getColumns('permissions');
 
-                                                $arcturusPermissions = collect($columns)->filter(function(array $column) {
+                                                $arcturusPermissions = collect($columns)->filter(function (array $column) {
                                                     $columnName = $column['name'] ?? null;
 
-                                                    if(!$columnName) return false;
+                                                    if (! $columnName) {
+                                                        return false;
+                                                    }
 
                                                     return str_starts_with($columnName, 'cmd')
                                                         || str_starts_with($columnName, 'acc')
                                                         || str_ends_with($columnName, 'cmd');
                                                 })->values();
 
-                                                return $arcturusPermissions->map(function(array $column) use ($groupedToggleButton) {
+                                                return $arcturusPermissions->map(function (array $column) use ($groupedToggleButton) {
                                                     $columnName = $column['name'];
                                                     $needsSecondOption = $column['type_name'] == 'enum' && str_ends_with($column['type'], "'2')");
 
                                                     return $groupedToggleButton($columnName, $needsSecondOption);
                                                 })->toArray();
-                                            })
+                                            }),
                                     ]),
 
                             ]),
@@ -155,13 +157,13 @@ class PermissionResource extends Resource
 
                                         TextInput::make('prefix')
                                             ->label(__('filament::resources.inputs.prefix'))
-		                                    ->maxLength(5)
-											->required(),
-											
+                                            ->maxLength(5)
+                                            ->required(),
+
                                         ColorPicker::make('prefix_color')
                                             ->label(__('filament::resources.inputs.prefix_color'))
-											->required(),
-											
+                                            ->required(),
+
                                         Toggle::make('hidden_rank')
                                             ->label(__('filament::resources.inputs.is_hidden'))
                                             ->columnSpanFull(),
@@ -170,7 +172,7 @@ class PermissionResource extends Resource
                                             ->schema([
                                                 Grid::make()
                                                     ->columns([
-                                                        'md' => 2
+                                                        'md' => 2,
                                                     ])
                                                     ->schema([
                                                         TextInput::make('auto_credits_amount')
@@ -189,13 +191,13 @@ class PermissionResource extends Resource
                                                         TextInput::make('auto_points_amount')
                                                             ->label(__('filament::resources.inputs.auto_points_amount'))
                                                             ->required(),
-                                                    ])
-                                            ])
-                                    ])
+                                                    ]),
+                                            ]),
+                                    ]),
                             ]),
                     ])
                     ->columnSpanFull()
-                    ->persistTabInQueryString()
+                    ->persistTabInQueryString(),
             ]);
     }
 
@@ -217,7 +219,9 @@ class PermissionResource extends Resource
                     ->tooltip(function (Model $record): ?string {
                         $description = $record->description;
 
-                        if (strlen($description) <= 40) return null;
+                        if (strlen($description) <= 40) {
+                            return null;
+                        }
 
                         return $description;
                     })

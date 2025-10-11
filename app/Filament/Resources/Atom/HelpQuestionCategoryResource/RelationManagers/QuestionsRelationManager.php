@@ -2,15 +2,14 @@
 
 namespace App\Filament\Resources\Atom\HelpQuestionCategoryResource\RelationManagers;
 
-use Filament\Schemas\Schema;
+use App\Filament\Resources\Atom\HelpQuestionResource;
+use App\Filament\Traits\TranslatableResource;
 use Filament\Actions\AttachAction;
 use Filament\Actions\DetachAction;
 use Filament\Actions\DetachBulkAction;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Atom\HelpQuestionResource;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 
 class QuestionsRelationManager extends RelationManager
 {
@@ -32,7 +31,7 @@ class QuestionsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table->columns(HelpQuestionResource::getTable())
-            ->modifyQueryUsing(fn($query) => $query->latest())
+            ->modifyQueryUsing(fn ($query) => $query->latest())
             ->filters([
                 //
             ])
