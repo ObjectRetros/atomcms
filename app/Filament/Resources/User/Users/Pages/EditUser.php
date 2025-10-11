@@ -30,7 +30,7 @@ class EditUser extends EditRecord
     {
         return static::$resource::fillWithOutsideData(
             $this->getRecord(),
-            $data
+            $data,
         );
     }
 

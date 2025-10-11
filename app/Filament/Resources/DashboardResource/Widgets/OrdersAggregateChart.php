@@ -48,9 +48,9 @@ class OrdersAggregateChart extends ChartWidget
         ];
 
         $data = $pendingOrder->map(fn (TrendValue $value) => $value->date)->merge(
-            $cancelledOrder->map(fn (TrendValue $value) => $value->date)
+            $cancelledOrder->map(fn (TrendValue $value) => $value->date),
         )->merge(
-            $completedOrder->map(fn (TrendValue $value) => $value->date)
+            $completedOrder->map(fn (TrendValue $value) => $value->date),
         )->unique()->sort()->flatten();
 
         return [

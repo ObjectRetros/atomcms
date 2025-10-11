@@ -72,7 +72,7 @@ class WebsiteRareValuesController extends Controller
         });
 
         if ((bool) setting('enable_caching')) {
-            Cache::remember('allItems_'.$value->id, setting('cache_timer'), function () use ($items) {
+            Cache::remember('allItems_' . $value->id, setting('cache_timer'), function () use ($items) {
                 return $items;
             });
         }

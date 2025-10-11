@@ -39,13 +39,13 @@ class BadgePage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('view::admin::'.static::$roleName);
+        return auth()->user()->can('view::admin::' . static::$roleName);
     }
 
     public function getTitle(): string|Htmlable
     {
         return __(
-            sprintf('filament::resources.resources.%s.navigation_label', static::$translateIdentifier)
+            sprintf('filament::resources.resources.%s.navigation_label', static::$translateIdentifier),
         );
     }
 
@@ -61,7 +61,7 @@ class BadgePage extends Page
                             ->afterStateUpdated(function (?string $state, Set $set) {
                                 $set('code', strtoupper($state));
                             })
-                            ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode())
+                            ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode()),
                             ),
 
                         TextInput::make('image')
@@ -140,7 +140,7 @@ class BadgePage extends Page
                     $badgeData['nitro']['title'] ?? null,
                     $badgeData['nitro']['description'] ?? null,
                     $badgeData['flash']['title'] ?? null,
-                    $badgeData['flash']['description'] ?? null
+                    $badgeData['flash']['description'] ?? null,
                 ),
             ];
 
@@ -165,7 +165,7 @@ class BadgePage extends Page
         ?string $nitroTitle = null,
         ?string $nitroDesc = null,
         ?string $flashTitle = null,
-        ?string $flashDesc = null
+        ?string $flashDesc = null,
     ): array {
         return [
             'image' => $badgeImageUrl ?? '',
@@ -224,7 +224,7 @@ class BadgePage extends Page
                 $externalTextsParser->updateFlashBadgeTexts($this->data['code'], ...$this->data['flash']);
             }
         } catch (Throwable $exception) {
-            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: '.$exception->getMessage());
+            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
 
             Notification::make()
                 ->icon('heroicon-o-exclamation-triangle')
@@ -286,7 +286,7 @@ class BadgePage extends Page
         $uploadPath = public_path(sprintf('%s%s%s.gif',
             rtrim(config('hotel.client.flash.relative_files_path'), '\//'),
             '/c_images/album1584/',
-            $this->data['code']
+            $this->data['code'],
         ));
 
         imagegif($gdImage, $uploadPath);

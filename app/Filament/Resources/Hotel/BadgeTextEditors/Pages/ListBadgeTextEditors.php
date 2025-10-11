@@ -80,14 +80,14 @@ class ListBadgeTextEditors extends ListRecords
         }
 
         foreach ($badges as $badge) {
-            $jsonData['badge_desc_'.$badge->badge_key] = $badge->badge_description;
-            $jsonData['badge_name_'.$badge->badge_key] = $badge->badge_name;
+            $jsonData['badge_desc_' . $badge->badge_key] = $badge->badge_description;
+            $jsonData['badge_name_' . $badge->badge_key] = $badge->badge_name;
         }
 
         try {
             $result = file_put_contents(
                 $jsonPath,
-                json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             );
 
             if ($result === false) {
@@ -100,7 +100,7 @@ class ListBadgeTextEditors extends ListRecords
                 ->success()
                 ->send();
         } catch (Exception $e) {
-            Log::error('Failed to export badge data: '.$e->getMessage());
+            Log::error('Failed to export badge data: ' . $e->getMessage());
 
             Notification::make()
                 ->title('Export Failed')
@@ -134,12 +134,12 @@ class ListBadgeTextEditors extends ListRecords
             return;
         }
 
-        $backupPath = dirname($jsonPath).'/ExternalTexts_'.time().'.json';
+        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . time() . '.json';
 
         if (copy($jsonPath, $backupPath)) {
             Notification::make()
                 ->title('Backup Successful')
-                ->body('A backup of the JSON file has been created: '.basename($backupPath))
+                ->body('A backup of the JSON file has been created: ' . basename($backupPath))
                 ->success()
                 ->send();
         } else {

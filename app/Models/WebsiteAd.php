@@ -26,10 +26,10 @@ class WebsiteAd extends Model
         });
 
         if (! str_starts_with($adsPicturePath, 'http')) {
-            $adsPicturePath = rtrim(config('app.url'), '/').'/'.ltrim($adsPicturePath, '/');
+            $adsPicturePath = rtrim(config('app.url'), '/') . '/' . ltrim($adsPicturePath, '/');
         }
 
-        return rtrim($adsPicturePath, '/').'/'.$this->image;
+        return rtrim($adsPicturePath, '/') . '/' . $this->image;
     }
 
     protected static function booted()

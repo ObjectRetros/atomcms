@@ -53,7 +53,7 @@ class Article extends Model
     public function syncPaginatedComments(): void
     {
         $this->setRelation('comments',
-            $this->comments()->defaultRelationships()->paginate(10)->fragment('comments')
+            $this->comments()->defaultRelationships()->paginate(10)->fragment('comments'),
         );
     }
 
@@ -128,7 +128,7 @@ class Article extends Model
     public function titleColor(): Attribute
     {
         return new Attribute(
-            get: fn () => isDarkColor($this->predominant_color) ? '#fff' : '#000'
+            get: fn () => isDarkColor($this->predominant_color) ? '#fff' : '#000',
         );
     }
 
@@ -136,7 +136,7 @@ class Article extends Model
     {
         $this->user->followers()
             ->with('user:id,username')
-            ->each(fn (AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl())
+            ->each(fn (AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl()),
             );
     }
 }

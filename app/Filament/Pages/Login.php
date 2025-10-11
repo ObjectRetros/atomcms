@@ -93,6 +93,7 @@ class Login extends \Filament\Auth\Pages\Login
 
     /**
      * @param  array<string, mixed>  $data
+     *
      * @return array<string, mixed>
      */
     protected function getCredentialsFromFormData(array $data): array

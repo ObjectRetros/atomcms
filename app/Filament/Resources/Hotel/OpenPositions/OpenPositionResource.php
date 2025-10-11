@@ -103,7 +103,7 @@ class OpenPositionResource extends Resource
                         Notification::make()
                             ->success()
                             ->title('Open Position Deleted')
-                            ->body('The open position and its related staff applications have been deleted successfully.')
+                            ->body('The open position and its related staff applications have been deleted successfully.'),
                     ),
             ])
             ->toolbarActions([
@@ -116,7 +116,7 @@ class OpenPositionResource extends Resource
                         Notification::make()
                             ->success()
                             ->title('Open Positions Deleted')
-                            ->body('The selected open positions and their related staff applications have been deleted successfully.')
+                            ->body('The selected open positions and their related staff applications have been deleted successfully.'),
                     ),
             ]);
     }

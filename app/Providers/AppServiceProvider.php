@@ -23,22 +23,22 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             Vite::class,
-            ViteService::class
+            ViteService::class,
         );
 
         $this->app->singleton(
             SettingsService::class,
-            fn () => new SettingsService
+            fn () => new SettingsService,
         );
 
         $this->app->singleton(
             PermissionsService::class,
-            fn () => new PermissionsService
+            fn () => new PermissionsService,
         );
 
         $this->app->singleton(
             RconService::class,
-            fn () => new RconService
+            fn () => new RconService,
         );
     }
 

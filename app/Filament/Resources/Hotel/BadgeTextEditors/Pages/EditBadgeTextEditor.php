@@ -32,7 +32,7 @@ class EditBadgeTextEditor extends EditRecord
             return parent::handleRecordUpdate($record, $data);
         } catch (PDOException $e) {
             if ($e->getCode() === '23000') {
-                Log::error('Duplicate badge key error: '.$e->getMessage());
+                Log::error('Duplicate badge key error: ' . $e->getMessage());
 
                 Notification::make()
                     ->title('Duplicate Badge Key')

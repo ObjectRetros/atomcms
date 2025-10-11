@@ -58,7 +58,7 @@ class ImportAdsData extends Command
     private function getImageFiles(string $adsPath): array
     {
         return array_filter(scandir($adsPath), function ($file) use ($adsPath) {
-            $filePath = $adsPath.DIRECTORY_SEPARATOR.$file;
+            $filePath = $adsPath . DIRECTORY_SEPARATOR . $file;
 
             return is_file($filePath) &&
                    in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS);
@@ -82,7 +82,7 @@ class ImportAdsData extends Command
 
         $newFiles->chunk(self::CHUNK_SIZE)->each(function ($chunk) {
             WebsiteAd::insert($chunk->toArray());
-            $this->info('Processed '.$chunk->count().' files.');
+            $this->info('Processed ' . $chunk->count() . ' files.');
         });
     }
 }

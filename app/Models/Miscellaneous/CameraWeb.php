@@ -61,7 +61,7 @@ class CameraWeb extends Model
     public function formattedDate(): Attribute
     {
         return new Attribute(
-            get: fn () => Carbon::parse($this->timestamp)->format('Y-m-d H:i')
+            get: fn () => Carbon::parse($this->timestamp)->format('Y-m-d H:i'),
         );
     }
 }

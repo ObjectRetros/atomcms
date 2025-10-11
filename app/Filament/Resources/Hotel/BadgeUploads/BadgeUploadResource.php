@@ -31,7 +31,7 @@ class BadgeUploadResource extends Resource
                     ->getUploadedFileNameForStorageUsing(
                         function (TemporaryUploadedFile $file): string {
                             return strtolower(str_replace([' ', '-', 'æ', 'ø', 'å'], ['_', '_', 'ae', 'oe', 'aa'], $file->getClientOriginalName()));
-                        }
+                        },
                     ),
             ]);
     }

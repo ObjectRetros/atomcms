@@ -14,7 +14,7 @@ class SendFurniture
         foreach ($furniture as $furni) {
             if ($this->rcon->isConnected) {
                 for ($i = 0; $i < $furni['amount']; $i++) {
-                    $this->rcon->sendGift($user, $furni['item_id'], 'Thank you for supporting '.setting('hotel_name'));
+                    $this->rcon->sendGift($user, $furni['item_id'], 'Thank you for supporting ' . setting('hotel_name'));
                 }
             } else {
                 for ($i = 0; $i < $furni['amount']; $i++) {
