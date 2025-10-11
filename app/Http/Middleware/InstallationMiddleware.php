@@ -43,15 +43,18 @@ class InstallationMiddleware
 
     private function ensureInstallationTableExists()
     {
-        if (! Schema::hasTable('website_installation')) {
+        if ( Schema::hasTable('website_installation')) {
             Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('website_installation')]);
 
-            if (! Schema::hasTable('website_installation')) {
+            if (! Schema::hasTable('website_installation'))
+            {
+
                 throw new MigrationFailedException('website_installation');
             }
         }
 
-        if (! Schema::hasTable('sessions')) {
+        if (!
+        Schema::hasTable('sessions')) {
             Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('sessions')]);
         }
     }
