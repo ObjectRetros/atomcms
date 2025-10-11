@@ -10,9 +10,7 @@ use Illuminate\Http\RedirectResponse;
 
 class StaffApplicationsController extends Controller
 {
-    public function __construct(private readonly StaffApplicationService $staffApplicationService)
-    {
-    }
+    public function __construct(private readonly StaffApplicationService $staffApplicationService) {}
 
     public function index()
     {
@@ -36,7 +34,7 @@ class StaffApplicationsController extends Controller
             ]);
         }
 
-        if (!$this->staffApplicationService->isPositionOpenForApplication($position)) {
+        if (! $this->staffApplicationService->isPositionOpenForApplication($position)) {
             return redirect()->back()->withErrors([
                 'message' => __('You cannot apply for this position.'),
             ]);

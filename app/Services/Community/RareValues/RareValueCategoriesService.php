@@ -13,7 +13,6 @@ class RareValueCategoriesService
         return WebsiteRareValueCategory::all();
     }
 
-
     public function fetchCategoriesByPriority(): Builder|Collection
     {
         return WebsiteRareValueCategory::orderBy('priority')->with('furniture')->get();
@@ -27,10 +26,10 @@ class RareValueCategoriesService
     public function searchCategories(string $searchTerm): Collection
     {
         return WebsiteRareValueCategory::orderBy('priority')->whereHas('furniture', function ($query) use ($searchTerm) {
-            $query->where('name', 'like', '%' . $searchTerm . '%');
+            $query->where('name', 'like', '%'.$searchTerm.'%');
         })
             ->with(['furniture' => function ($query) use ($searchTerm) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
+                $query->where('name', 'like', '%'.$searchTerm.'%');
             }])
             ->get();
     }

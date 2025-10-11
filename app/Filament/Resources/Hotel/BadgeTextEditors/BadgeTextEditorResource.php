@@ -2,34 +2,34 @@
 
 namespace App\Filament\Resources\Hotel\BadgeTextEditors;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\ListBadgeTextEditors;
 use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\CreateBadgeTextEditor;
 use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\EditBadgeTextEditor;
-use App\Filament\Resources\Hotel\BadgeTextEditorResource\Pages;
+use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\ListBadgeTextEditors;
 use App\Models\WebsiteBadge;
 use App\Services\SettingsService;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Support\Str;
-
 
 class BadgeTextEditorResource extends Resource
 {
     protected static ?string $model = WebsiteBadge::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-pencil-square';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
+
     protected static ?string $navigationLabel = 'Badge Editor';
+
     protected static ?string $modelLabel = 'Badge Text';
+
     protected static ?string $slug = 'hotel/badge-text-editor';
 
     public static function form(Schema $schema): Schema
@@ -40,7 +40,7 @@ class BadgeTextEditorResource extends Resource
                     ->required()
                     ->label('Badge Key - Expl. ATOM101')
                     ->placeholder('This is the badge code'),
-				TextInput::make('badge_name')
+                TextInput::make('badge_name')
                     ->required()
                     ->label('Badge Name')
                     ->placeholder('This is the name of the badge: Expl. The ATOM Badge'),
@@ -62,21 +62,22 @@ class BadgeTextEditorResource extends Resource
                     ->label('Badge Image')
                     ->getStateUsing(function ($record) use ($badgesPath) {
                         $badgeName = str_replace('badge_desc_', '', $record->badge_key);
-                        $imageUrl = asset($badgesPath . $badgeName . '.gif');
+                        $imageUrl = asset($badgesPath.$badgeName.'.gif');
+
                         return $imageUrl;
                     })
                     ->width(50)
                     ->height(50),
                 TextColumn::make('badge_name')
-					->label('Badge Code & Name')
-					->formatStateUsing(function ($record) {
-						return $record->badge_key . ' : ' . $record->badge_name;
-					})
-					->searchable(query: function ($query, $search) {
-						$query->where('badge_key', 'like', "%{$search}%")
-						->orWhere('badge_name', 'like', "%{$search}%");
-					})
-					->sortable(),
+                    ->label('Badge Code & Name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->badge_key.' : '.$record->badge_name;
+                    })
+                    ->searchable(query: function ($query, $search) {
+                        $query->where('badge_key', 'like', "%{$search}%")
+                            ->orWhere('badge_name', 'like', "%{$search}%");
+                    })
+                    ->sortable(),
                 TextColumn::make('badge_description')
                     ->label('Badge Description')
                     ->getStateUsing(fn ($record) => Str::limit($record->badge_description, 65))

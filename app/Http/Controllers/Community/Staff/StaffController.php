@@ -8,9 +8,7 @@ use Illuminate\View\View;
 
 class StaffController extends Controller
 {
-    public function __construct(private readonly StaffService $staffService)
-    {
-    }
+    public function __construct(private readonly StaffService $staffService) {}
 
     public function __invoke(): View
     {

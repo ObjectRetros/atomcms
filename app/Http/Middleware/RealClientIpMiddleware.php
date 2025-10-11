@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Middleware;
 
 use Closure;
@@ -15,11 +14,11 @@ class RealClientIpMiddleware
             'HTTP_X_FORWARDED_FOR',
             'HTTP_X_REAL_IP',
             'HTTP_CLIENT_IP',
-            'HTTP_TRUE_CLIENT_IP'
+            'HTTP_TRUE_CLIENT_IP',
         ];
 
         foreach ($proxyHeaders as $header) {
-            if (!empty($_SERVER[$header])) {
+            if (! empty($_SERVER[$header])) {
                 $ip = $_SERVER[$header];
                 if (strpos($ip, ',') !== false) {
                     [$ip] = explode(',', $ip);
@@ -35,7 +34,7 @@ class RealClientIpMiddleware
 
         // Special handling for REMOTE_ADDR with multiple IPs
         $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
-        if (!empty($remoteAddr) && strpos($remoteAddr, ',') !== false) {
+        if (! empty($remoteAddr) && strpos($remoteAddr, ',') !== false) {
             [$ip] = explode(',', $remoteAddr);
             $ip = trim($ip);
             if (filter_var($ip, FILTER_VALIDATE_IP)) {

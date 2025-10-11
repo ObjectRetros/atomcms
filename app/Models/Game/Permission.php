@@ -2,15 +2,16 @@
 
 namespace App\Models\Game;
 
-use App\Models\User;
 use App\Models\Compositions\HasBadge;
 use App\Models\StaffApplication;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Permission extends Model implements HasBadge
 {
     protected $table = 'permissions';
+
     public $timestamps = false;
 
     protected $guarded = ['id', 'rank_name'];

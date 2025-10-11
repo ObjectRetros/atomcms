@@ -2,16 +2,14 @@
 
 namespace App\Filament\Resources\Hotel\BadgeTextEditors\Pages;
 
-use Filament\Actions\CreateAction;
-use Filament\Actions\Action;
-use Exception;
 use App\Filament\Resources\Hotel\BadgeTextEditors\BadgeTextEditorResource;
 use App\Models\WebsiteBadge;
 use App\Services\SettingsService;
-use Filament\Pages\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Exception;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\File;
+use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Log;
 
 class ListBadgeTextEditors extends ListRecords
@@ -23,7 +21,7 @@ class ListBadgeTextEditors extends ListRecords
         return [
             CreateAction::make()
                 ->label('Add Badge')
-				        ->color('info')
+                ->color('info')
                 ->modalHeading('Add a New Badge')
                 ->modalButton('Create Badge')
                 ->after(function () {
@@ -53,15 +51,17 @@ class ListBadgeTextEditors extends ListRecords
                 ->body('The JSON file path is not configured in the website settings.')
                 ->danger()
                 ->send();
+
             return;
         }
 
-        if (!file_exists($jsonPath)) {
+        if (! file_exists($jsonPath)) {
             Notification::make()
                 ->title('Export Failed')
                 ->body('The JSON file does not exist at the specified path.')
                 ->danger()
                 ->send();
+
             return;
         }
 
@@ -73,15 +73,15 @@ class ListBadgeTextEditors extends ListRecords
         foreach ($jsonData as $key => $value) {
             if (
                 (str_starts_with($key, 'badge_desc_') || str_starts_with($key, 'badge_name_')) &&
-                !in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $badgeKeys)
+                ! in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $badgeKeys)
             ) {
                 unset($jsonData[$key]);
             }
         }
 
         foreach ($badges as $badge) {
-            $jsonData['badge_desc_' . $badge->badge_key] = $badge->badge_description;
-            $jsonData['badge_name_' . $badge->badge_key] = $badge->badge_name;
+            $jsonData['badge_desc_'.$badge->badge_key] = $badge->badge_description;
+            $jsonData['badge_name_'.$badge->badge_key] = $badge->badge_name;
         }
 
         try {
@@ -100,7 +100,7 @@ class ListBadgeTextEditors extends ListRecords
                 ->success()
                 ->send();
         } catch (Exception $e) {
-            Log::error('Failed to export badge data: ' . $e->getMessage());
+            Log::error('Failed to export badge data: '.$e->getMessage());
 
             Notification::make()
                 ->title('Export Failed')
@@ -120,24 +120,26 @@ class ListBadgeTextEditors extends ListRecords
                 ->body('The JSON file path is not configured in the website settings.')
                 ->danger()
                 ->send();
+
             return;
         }
 
-        if (!file_exists($jsonPath)) {
+        if (! file_exists($jsonPath)) {
             Notification::make()
                 ->title('Backup Failed')
                 ->body('The JSON file does not exist at the specified path.')
                 ->danger()
                 ->send();
+
             return;
         }
 
-        $backupPath = dirname($jsonPath) . '/ExternalTexts_' . time() . '.json';
+        $backupPath = dirname($jsonPath).'/ExternalTexts_'.time().'.json';
 
         if (copy($jsonPath, $backupPath)) {
             Notification::make()
                 ->title('Backup Successful')
-                ->body('A backup of the JSON file has been created: ' . basename($backupPath))
+                ->body('A backup of the JSON file has been created: '.basename($backupPath))
                 ->success()
                 ->send();
         } else {

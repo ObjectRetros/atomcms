@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Atom\NavigationResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\Atom\NavigationResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateNavigation extends CreateRecord
 {

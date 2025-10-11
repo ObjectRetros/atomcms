@@ -2,37 +2,36 @@
 
 namespace App\Filament\Resources\User\Users;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use App\Filament\Resources\User\Users\RelationManagers\SettingsRelationManager;
-use App\Filament\Resources\User\Users\RelationManagers\BadgesRelationManager;
-use App\Filament\Resources\User\Users\RelationManagers\ChatLogRelationManager;
-use App\Filament\Resources\User\Users\RelationManagers\ChatLogPrivateRelationManager;
-use App\Filament\Resources\User\Users\Pages\ListUsers;
 use App\Filament\Resources\User\Users\Pages\CreateUser;
-use App\Filament\Resources\User\Users\Pages\ViewUser;
 use App\Filament\Resources\User\Users\Pages\EditUser;
+use App\Filament\Resources\User\Users\Pages\ListUsers;
+use App\Filament\Resources\User\Users\Pages\ViewUser;
+use App\Filament\Resources\User\Users\RelationManagers\BadgesRelationManager;
+use App\Filament\Resources\User\Users\RelationManagers\ChatLogPrivateRelationManager;
+use App\Filament\Resources\User\Users\RelationManagers\ChatLogRelationManager;
+use App\Filament\Resources\User\Users\RelationManagers\SettingsRelationManager;
+use App\Filament\Tables\Columns\UserAvatarColumn;
+use App\Filament\Traits\TranslatableResource;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Hash;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Traits\TranslatableResource;
-use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Tables\Columns\UserAvatarColumn;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -40,9 +39,9 @@ class UserResource extends Resource
 
     protected static ?string $model = User::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'User Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
 
     protected static ?string $slug = 'user-management/users';
 
@@ -73,28 +72,28 @@ class UserResource extends Resource
                                     ->label(__('filament::resources.inputs.gender'))
                                     ->options([
                                         'M' => __('filament::resources.common.Male'),
-                                        'F' => __('filament::resources.common.Female')
+                                        'F' => __('filament::resources.common.Female'),
                                     ])
                                     ->required(),
 
                                 DateTimePicker::make('account_created')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn(Model $record) => $record->account_created)
+                                    ->dehydrateStateUsing(fn (Model $record) => $record->account_created)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.created_at')),
 
                                 DateTimePicker::make('last_login')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn(Model $record) => $record->last_login)
+                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_login)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_login')),
 
                                 DateTimePicker::make('last_online')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn(Model $record) => $record->last_online)
+                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_online)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_online')),
 
@@ -119,7 +118,7 @@ class UserResource extends Resource
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.team_id'))
                                     ->options(WebsiteTeam::all()->pluck('rank_name', 'id'))
-                                    ->columnSpanFull()
+                                    ->columnSpanFull(),
                             ])->columns(['sm' => 2]),
 
                         Tab::make(__('filament::resources.tabs.Currencies'))
@@ -156,7 +155,7 @@ class UserResource extends Resource
                                     ->description(__('filament::resources.helpers.change_username_description'))
                                     ->schema([
                                         Toggle::make('allow_change_username')
-                                            ->label(__('filament::resources.inputs.allow_change_username'))
+                                            ->label(__('filament::resources.inputs.allow_change_username')),
                                     ])->collapsible()->collapsed(),
 
                                 Section::make(__('filament::resources.tabs.Change Email'))
@@ -164,7 +163,7 @@ class UserResource extends Resource
                                         TextInput::make('mail')
                                             ->label(__('filament::resources.inputs.email'))
                                             ->email()
-                                            ->required()
+                                            ->required(),
                                     ])->collapsible()->collapsed(),
 
                                 Section::make(__('filament::resources.tabs.Change Password'))
@@ -172,8 +171,8 @@ class UserResource extends Resource
                                     ->schema([
                                         TextInput::make('password')
                                             ->label(__('filament::resources.inputs.new_password'))
-                                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                                            ->dehydrated(fn($state) => filled($state))
+                                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                                            ->dehydrated(fn ($state) => filled($state))
                                             ->password()
                                             ->confirmed(),
 
@@ -194,11 +193,11 @@ class UserResource extends Resource
 
                                         Toggle::make('is_hidden')
                                             ->label(__('filament::resources.inputs.is_hidden'))
-                                            ->default(false)
+                                            ->default(false),
                                     ])->collapsible()
                                     ->collapsed(),
-                            ])
-                    ])->columnSpanFull()
+                            ]),
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -239,7 +238,7 @@ class UserResource extends Resource
 
                 IconColumn::make('online')
                     ->label(__('filament::resources.columns.online'))
-                    ->icon(fn(Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'danger' => false,
                         'success' => true,
@@ -248,7 +247,7 @@ class UserResource extends Resource
                 TextColumn::make('account_created')
                     ->toggleable()
                     ->date('Y-m-d H:i')
-                    ->label(__('filament::resources.columns.created_at'))
+                    ->label(__('filament::resources.columns.created_at')),
             ])
             ->filters([
                 //

@@ -13,5 +13,4 @@ class WebsiteShopArticleFeature extends Model
     {
         return $this->belongsTo(WebsiteShopArticle::class, 'article_id', 'id');
     }
-
 }

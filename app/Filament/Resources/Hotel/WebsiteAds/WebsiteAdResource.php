@@ -2,30 +2,28 @@
 
 namespace App\Filament\Resources\Hotel\WebsiteAds;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\FileUpload;
-use Filament\Actions\DeleteAction;
-use App\Filament\Resources\Hotel\WebsiteAds\Pages\ListWebsiteAds;
 use App\Filament\Resources\Hotel\WebsiteAds\Pages\CreateWebsiteAd;
-use App\Filament\Resources\Hotel\WebsiteAdResource\Pages;
+use App\Filament\Resources\Hotel\WebsiteAds\Pages\ListWebsiteAds;
 use App\Models\WebsiteAd;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Stack;
-use Illuminate\Support\Facades\Artisan;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class WebsiteAdResource extends Resource
 {
     protected static ?string $model = WebsiteAd::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
     protected static ?string $navigationLabel = 'ADS Images';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-sparkles';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
 
     public static function form(Schema $schema): Schema
     {
@@ -44,7 +42,7 @@ class WebsiteAdResource extends Resource
                         function (TemporaryUploadedFile $file): string {
                             return strtolower(str_replace([' ', '-', 'æ', 'ø', 'å'], ['_', '_', 'ae', 'oe', 'aa'], $file->getClientOriginalName()));
                         }
-                    )
+                    ),
             ]);
     }
 

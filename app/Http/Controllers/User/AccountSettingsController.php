@@ -7,18 +7,14 @@ use App\Http\Requests\AccountSettingsFormRequest;
 use App\Services\RconService;
 use App\Services\User\SessionService;
 use App\Services\User\UserService;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Jenssegers\Agent\Agent;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly UserService $userService, private readonly RconService $rconService)
-    {
-    }
+    public function __construct(private readonly SessionService $sessionService, private readonly UserService $userService, private readonly RconService $rconService) {}
 
     public function edit(): View
     {
@@ -46,7 +42,7 @@ class AccountSettingsController extends Controller
 
         // $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
 
-        if (!$this->rconService->isConnected() && Auth::user()->online === '1') {
+        if (! $this->rconService->isConnected() && Auth::user()->online === '1') {
             return back()->withErrors('You must be offline to change your account settings');
         }
 
@@ -54,7 +50,6 @@ class AccountSettingsController extends Controller
             $this->rconService->disconnectUser($user);
             $this->userService->updateField($user, 'username', $request->input('username'));
         } **/
-
         if ($user->mail !== $request->input('mail')) {
             $this->userService->updateField($user, 'mail', $request->input('mail'));
         }
@@ -66,6 +61,7 @@ class AccountSettingsController extends Controller
 
         return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
     }
+
     public function twoFactor(): View
     {
         return view('user.settings.two-factor');

@@ -2,22 +2,20 @@
 
 namespace App\Filament\Resources\User\Bans;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
+use App\Filament\Resources\User\Bans\Pages\ManageBans;
+use App\Filament\Tables\Columns\UserAvatarColumn;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\User\Ban;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\User\Bans\Pages\ManageBans;
-use App\Models\User\Ban;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use App\Filament\Traits\TranslatableResource;
-use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Tables\Columns\UserAvatarColumn;
-use App\Filament\Resources\User\BanResource\Pages;
+use Filament\Tables\Table;
 
 class BanResource extends Resource
 {
@@ -25,9 +23,9 @@ class BanResource extends Resource
 
     protected static ?string $model = Ban::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-exclamation';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-exclamation';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'User Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
 
     protected static ?string $slug = 'user-management/bans';
 
@@ -90,7 +88,9 @@ class BanResource extends Resource
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
 
-                        if (strlen($state) <= $column->getCharacterLimit()) return null;
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
 
                         return $state;
                     })

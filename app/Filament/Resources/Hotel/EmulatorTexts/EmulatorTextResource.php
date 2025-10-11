@@ -2,19 +2,17 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorTexts;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
+use App\Filament\Resources\Hotel\EmulatorTexts\Pages\ManageEmulatorTexts;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\EmulatorText;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Hotel\EmulatorTexts\Pages\ManageEmulatorTexts;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\EmulatorText;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\EmulatorTextResource\Pages;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class EmulatorTextResource extends Resource
 {
@@ -22,9 +20,9 @@ class EmulatorTextResource extends Resource
 
     protected static ?string $model = EmulatorText::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     protected static ?string $slug = 'hotel/emulator-texts';
 

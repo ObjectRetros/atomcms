@@ -2,31 +2,30 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Throwable;
-use Filament\Pages\Page;
-use Filament\Actions\ActionGroup;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use App\Filament\Compositions\HasRoleName;
-use Filament\Actions\Action as PageAction;
-use Illuminate\Contracts\Support\Htmlable;
 use App\Filament\Traits\TranslatableResource;
 use App\Services\Parsers\ExternalTextsParser;
+use Filament\Actions\Action as PageAction;
+use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class BadgePage extends Page
 {
-    use TranslatableResource, InteractsWithForms;
+    use InteractsWithForms, TranslatableResource;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     protected string $view = 'filament.pages.badge-page';
 
@@ -40,10 +39,10 @@ class BadgePage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can("view::admin::" . static::$roleName);
+        return auth()->user()->can('view::admin::'.static::$roleName);
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         return __(
             sprintf('filament::resources.resources.%s.navigation_label', static::$translateIdentifier)
@@ -62,8 +61,7 @@ class BadgePage extends Page
                             ->afterStateUpdated(function (?string $state, Set $set) {
                                 $set('code', strtoupper($state));
                             })
-                            ->suffixAction(fn (): PageAction =>
-                                PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode())
+                            ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode())
                             ),
 
                         TextInput::make('image')
@@ -72,19 +70,18 @@ class BadgePage extends Page
                             ->autocomplete()
                             ->visible(fn (Get $get) => isset($this->data['image']) ?? false)
                             ->prefixAction(
-                                fn (?string $state): PageAction =>
-                                PageAction::make('visit')
+                                fn (?string $state): PageAction => PageAction::make('visit')
                                     ->icon('heroicon-s-arrow-top-right-on-square')
                                     ->tooltip(__('filament::resources.common.Open link'))
                                     ->url($state)
-                                    ->visible(fn () => !empty($state))
+                                    ->visible(fn () => ! empty($state))
                                     ->openUrlInNewTab(),
-                            )
+                            ),
                     ]),
 
                 Section::make('Nitro Texts')
                     ->collapsible()
-                    ->visible(fn () => isset($this->data['nitro']) && !empty($this->data['nitro']))
+                    ->visible(fn () => isset($this->data['nitro']) && ! empty($this->data['nitro']))
                     ->schema([
                         TextInput::make('nitro.title')
                             ->label(__('filament::resources.inputs.badge_title'))
@@ -99,7 +96,7 @@ class BadgePage extends Page
 
                 Section::make('Flash Texts')
                     ->collapsible()
-                    ->visible(fn () => isset($this->data['flash']) && !empty($this->data['flash']))
+                    ->visible(fn () => isset($this->data['flash']) && ! empty($this->data['flash']))
                     ->schema([
                         TextInput::make('flash.title')
                             ->label(__('filament::resources.inputs.badge_title'))
@@ -121,6 +118,7 @@ class BadgePage extends Page
 
         if (empty($badgeCode)) {
             $this->notify('danger', __('filament::resources.notifications.badge_code_required'));
+
             return;
         }
 
@@ -143,7 +141,7 @@ class BadgePage extends Page
                     $badgeData['nitro']['description'] ?? null,
                     $badgeData['flash']['title'] ?? null,
                     $badgeData['flash']['description'] ?? null
-                )
+                ),
             ];
 
             return;
@@ -158,7 +156,7 @@ class BadgePage extends Page
 
         $this->data = [
             'code' => $badgeCode,
-            ...$this->getDefaultDataBehavior()
+            ...$this->getDefaultDataBehavior(),
         ];
     }
 
@@ -173,12 +171,12 @@ class BadgePage extends Page
             'image' => $badgeImageUrl ?? '',
             'nitro' => [
                 'title' => $nitroTitle ?? '',
-                'description' => $nitroDesc ?? ''
+                'description' => $nitroDesc ?? '',
             ],
             'flash' => [
                 'title' => $flashTitle ?? '',
-                'description' => $flashDesc ?? ''
-            ]
+                'description' => $flashDesc ?? '',
+            ],
         ];
     }
 
@@ -188,7 +186,7 @@ class BadgePage extends Page
         $flashEnabled = config('hotel.client.flash.enabled');
 
         // image and code fields are required when creating a new badge
-        if(!$this->badgeWasPreviouslyCreated && (empty($this->data['image']) || empty($this->data['code']))) {
+        if (! $this->badgeWasPreviouslyCreated && (empty($this->data['image']) || empty($this->data['code']))) {
             $notificationTitle = empty($this->data['image']) ?
                 __('filament::resources.notifications.badge_image_required') :
                 __('filament::resources.notifications.badge_code_required');
@@ -205,7 +203,7 @@ class BadgePage extends Page
 
         $externalTextsParser = app(ExternalTextsParser::class);
 
-        if((empty($this->data['nitro']) && $nitroEnabled) || (empty($this->data['flash']) && $flashEnabled)) {
+        if ((empty($this->data['nitro']) && $nitroEnabled) || (empty($this->data['flash']) && $flashEnabled)) {
             Notification::make()
                 ->icon('heroicon-o-exclamation-triangle')
                 ->iconColor('danger')
@@ -219,10 +217,14 @@ class BadgePage extends Page
         try {
             $this->uploadBadgeImage($externalTextsParser);
 
-            if(!empty($this->data['nitro']) && $nitroEnabled) $externalTextsParser->updateNitroBadgeTexts($this->data['code'], ...$this->data['nitro']);
-            if(!empty($this->data['flash']) && $flashEnabled) $externalTextsParser->updateFlashBadgeTexts($this->data['code'], ...$this->data['flash']);
+            if (! empty($this->data['nitro']) && $nitroEnabled) {
+                $externalTextsParser->updateNitroBadgeTexts($this->data['code'], ...$this->data['nitro']);
+            }
+            if (! empty($this->data['flash']) && $flashEnabled) {
+                $externalTextsParser->updateFlashBadgeTexts($this->data['code'], ...$this->data['flash']);
+            }
         } catch (Throwable $exception) {
-            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
+            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: '.$exception->getMessage());
 
             Notification::make()
                 ->icon('heroicon-o-exclamation-triangle')
@@ -247,13 +249,19 @@ class BadgePage extends Page
 
     protected function uploadBadgeImage(ExternalTextsParser $parser): void
     {
-        if (empty($this->data['image']) || !filter_var($this->data['image'], FILTER_VALIDATE_URL)) return;
+        if (empty($this->data['image']) || ! filter_var($this->data['image'], FILTER_VALIDATE_URL)) {
+            return;
+        }
 
-        if($this->data['image'] == $parser->getBadgeImageUrl($this->data['code'])) return;
+        if ($this->data['image'] == $parser->getBadgeImageUrl($this->data['code'])) {
+            return;
+        }
 
         $image = Http::get($this->data['image']);
 
-        if(!$image->successful()) return;
+        if (! $image->successful()) {
+            return;
+        }
 
         $contentType = $image->header('content-type');
 
@@ -300,7 +308,7 @@ class BadgePage extends Page
                 ->label(__('filament::resources.common.Create'))
                 ->action(fn () => $this->create())
                 ->color('success')
-                ->visible(fn () => isset($this->data['code']) && !$this->badgeWasPreviouslyCreated)
+                ->visible(fn () => isset($this->data['code']) && ! $this->badgeWasPreviouslyCreated),
         ];
     }
 }

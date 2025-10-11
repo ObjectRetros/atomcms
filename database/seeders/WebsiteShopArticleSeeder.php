@@ -123,7 +123,7 @@ class WebsiteShopArticleSeeder extends Seeder
                 'duckets' => $article['duckets'] ?? null,
                 'diamonds' => $article['diamonds'] ?? null,
                 'badges' => $article['badges'] ?? null,
-                'furniture' =>  $article['furniture'] ?? null,
+                'furniture' => $article['furniture'] ?? null,
             ]);
         }
     }

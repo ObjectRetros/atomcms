@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\StaffApplications\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Hotel\StaffApplications\StaffApplicationResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditStaffApplication extends EditRecord

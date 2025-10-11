@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Shop\WebsiteShopArticleFeature;
 use App\Models\Shop\WebsiteShopArticle;
+use App\Models\Shop\WebsiteShopArticleFeature;
 use Illuminate\Database\Seeder;
 
 class WebsiteArticleFeatureSeeder extends Seeder
@@ -15,7 +15,7 @@ class WebsiteArticleFeatureSeeder extends Seeder
         $secondArticle = $articles[1];
         $thirdArticle = $articles[2];
 
-        if (!$firstArticle || !$secondArticle || !$thirdArticle) {
+        if (! $firstArticle || ! $secondArticle || ! $thirdArticle) {
             return;
         }
 

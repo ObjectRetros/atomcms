@@ -20,7 +20,7 @@ class MaintenanceMiddleware
             'two-factor.confirm',
         ];
 
-        if ($maintenanceEnabled && $isPostRequest && !Auth::check()) {
+        if ($maintenanceEnabled && $isPostRequest && ! Auth::check()) {
             return $next($request);
         }
 
@@ -41,15 +41,15 @@ class MaintenanceMiddleware
             return to_route('me.show');
         }
 
-        if ($maintenanceEnabled && !$isMaintenanceRequest && !$isPostRequest) {
+        if ($maintenanceEnabled && ! $isMaintenanceRequest && ! $isPostRequest) {
             return to_route('maintenance.show');
         }
 
-        if (!$maintenanceEnabled && $isMaintenanceRequest && !$isPostRequest) {
+        if (! $maintenanceEnabled && $isMaintenanceRequest && ! $isPostRequest) {
             return to_route('welcome');
         }
 
-        if ($maintenanceEnabled && !$isMaintenanceRequest && Auth::check() && Auth::user()->rank < setting('min_maintenance_login_rank')) {
+        if ($maintenanceEnabled && ! $isMaintenanceRequest && Auth::check() && Auth::user()->rank < setting('min_maintenance_login_rank')) {
             return to_route('maintenance.show');
         }
 

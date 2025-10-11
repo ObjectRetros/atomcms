@@ -2,19 +2,18 @@
 
 namespace App\Filament\Resources\Hotel\CatalogPages;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Hotel\CatalogPages\Pages\ListCatalogPages;
 use App\Filament\Resources\Hotel\CatalogPages\Pages\CreateCatalogPage;
 use App\Filament\Resources\Hotel\CatalogPages\Pages\EditCatalogPage;
-use App\Filament\Resources\Hotel\CatalogPageResource\Pages;
+use App\Filament\Resources\Hotel\CatalogPages\Pages\ListCatalogPages;
 use App\Filament\Resources\Hotel\CatalogPages\RelationManagers\CatalogItemsRelationManager;
 use App\Models\Game\Furniture\CatalogPage;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -23,9 +22,9 @@ class CatalogPageResource extends Resource
 {
     protected static ?string $model = CatalogPage::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     public static string $translateIdentifier = 'catalog-pages';
 

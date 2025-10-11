@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use Throwable;
-use App\Models\Miscellaneous\WebsitePermission;
 use App\Models\Miscellaneous\WebsiteSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class SettingsService
 {
@@ -28,10 +27,10 @@ class SettingsService
 
     public function getOrDefault(string $settingName, ?string $default = null): string
     {
-        if (!$this->settings) {
-            return (string)$default;
+        if (! $this->settings) {
+            return (string) $default;
         }
 
-        return (string)$this->settings->get($settingName, $default);
+        return (string) $this->settings->get($settingName, $default);
     }
 }

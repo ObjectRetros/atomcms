@@ -2,20 +2,20 @@
 
 namespace App\Filament\Resources\Atom\NavigationResource\RelationManagers;
 
-use Filament\Schemas\Schema;
 use Filament\Actions\CreateAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DissociateAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\DissociateAction;
+use Filament\Actions\DissociateBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\ToggleColumn;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Table;
 
 class SubNavigationsRelationManager extends RelationManager
 {
@@ -49,7 +49,7 @@ class SubNavigationsRelationManager extends RelationManager
                     ->label(__('filament::resources.columns.new_tab')),
             ])
             ->columns([
-                'sm' => 2
+                'sm' => 2,
             ]);
     }
 
@@ -69,7 +69,7 @@ class SubNavigationsRelationManager extends RelationManager
                     ->label(__('filament::resources.columns.new_tab')),
 
                 TextColumn::make('order')
-                    ->label(__('filament::resources.columns.order'))
+                    ->label(__('filament::resources.columns.order')),
             ])
             ->reorderable('order')
             ->filters([

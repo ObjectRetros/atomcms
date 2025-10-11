@@ -25,7 +25,7 @@ class UserActions
         ]);
     }
 
-    public function updateField($user, string $field, string|null $value): void
+    public function updateField($user, string $field, ?string $value): void
     {
         $user->update([
             $field => $value,

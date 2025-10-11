@@ -26,7 +26,7 @@ class LeaderboardController extends Controller
             ->take(9)
             ->get();
 
-        $getUserCurrency = fn($type) => UserCurrency::query()
+        $getUserCurrency = fn ($type) => UserCurrency::query()
             ->whereNotIn('user_id', $this->staffIds)
             ->where('type', $type)
             ->orderByDesc('amount')

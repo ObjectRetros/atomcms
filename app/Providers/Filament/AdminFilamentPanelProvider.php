@@ -2,26 +2,22 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages\Dashboard;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
-use App\Filament\Resources\Audit\UserAuditResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
+use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
+use Filament\Widgets\AccountWidget;
+use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Rmsramos\Activitylog\ActivitylogPlugin;
 
 class AdminFilamentPanelProvider extends PanelProvider
 {
@@ -59,6 +55,6 @@ class AdminFilamentPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-			->plugins([]);
+            ->plugins([]);
     }
 }

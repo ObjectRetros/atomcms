@@ -196,7 +196,7 @@ return [
         App\Providers\Filament\AdminFilamentPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
-		Spatie\Activitylog\ActivitylogServiceProvider::class,
+        Spatie\Activitylog\ActivitylogServiceProvider::class,
     ],
 
     /*
@@ -209,8 +209,8 @@ return [
     | the aliases are "lazy" loaded so they don't hinder performance.
     |
     */
-	
-	'Activity' => Spatie\Activitylog\Facades\Activity::class,
+
+    'Activity' => Spatie\Activitylog\Facades\Activity::class,
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),

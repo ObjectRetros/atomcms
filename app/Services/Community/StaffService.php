@@ -3,8 +3,8 @@
 namespace App\Services\Community;
 
 use App\Models\Game\Permission;
-use Illuminate\Database\Eloquent\Collection;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -20,21 +20,21 @@ class StaffService
 
         $employees = Permission::query()
             ->select('id', 'rank_name', 'badge', 'staff_color', 'job_description')
-            ->when(Auth::user()->rank < (int)setting('min_rank_to_see_hidden_staff'), function ($query) {
+            ->when(Auth::user()->rank < (int) setting('min_rank_to_see_hidden_staff'), function ($query) {
                 return $query->where('hidden_rank', false);
             })
             ->where('id', '>=', setting('min_staff_rank'))
             ->orderByDesc('id')
             ->with(['users' => function ($query) {
-                    $query->select('id', 'username', 'rank', 'look', 'hidden_staff', 'online')
-                        ->when(Auth::user()->rank < (int)setting('min_rank_to_see_hidden_staff'), function ($query) {
-                            return $query->where('hidden_staff', false);
-                        });
+                $query->select('id', 'username', 'rank', 'look', 'hidden_staff', 'online')
+                    ->when(Auth::user()->rank < (int) setting('min_rank_to_see_hidden_staff'), function ($query) {
+                        return $query->where('hidden_staff', false);
+                    });
             }])
             ->get();
 
         if ($cacheEnabled) {
-            $cacheTimer = (int)setting('cache_timer');
+            $cacheTimer = (int) setting('cache_timer');
             Cache::put('staff_positions', $employees, now()->addMinutes($cacheTimer));
         }
 
@@ -55,7 +55,7 @@ class StaffService
             ->pluck('id')->toArray();
 
         if ($cacheEnabled) {
-            $cacheTimer = (int)setting('cache_timer');
+            $cacheTimer = (int) setting('cache_timer');
             Cache::put('staff_ids', $staffIds, now()->addMinutes($cacheTimer));
         }
 

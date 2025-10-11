@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Miscellaneous\WebsiteSetting;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class WebsiteSettingPolicy

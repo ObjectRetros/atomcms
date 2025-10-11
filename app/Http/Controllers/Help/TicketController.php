@@ -12,9 +12,9 @@ class TicketController extends Controller
 {
     public function index()
     {
-        if (!hasPermission('manage_website_tickets')) {
+        if (! hasPermission('manage_website_tickets')) {
             return redirect()->back()->with([
-                'message' => __('You cannot access this page')
+                'message' => __('You cannot access this page'),
             ]);
         }
 
@@ -40,9 +40,9 @@ class TicketController extends Controller
 
     public function edit(WebsiteHelpCenterTicket $ticket)
     {
-        if (!$ticket->canManageTicket()) {
+        if (! $ticket->canManageTicket()) {
             return redirect()->back()->with([
-                'message' => __('You cannot manage others tickets.')
+                'message' => __('You cannot manage others tickets.'),
             ]);
         }
 
@@ -61,9 +61,9 @@ class TicketController extends Controller
 
     public function update(WebsiteHelpCenterTicket $ticket, WebsiteTicketFormRequest $request)
     {
-        if (!$ticket->canManageTicket()) {
+        if (! $ticket->canManageTicket()) {
             return redirect()->back()->with([
-                'message' => __('You cannot manage others tickets.')
+                'message' => __('You cannot manage others tickets.'),
             ]);
         }
 
@@ -74,9 +74,9 @@ class TicketController extends Controller
 
     public function show(WebsiteHelpCenterTicket $ticket)
     {
-        if (!$ticket->canManageTicket()) {
+        if (! $ticket->canManageTicket()) {
             return redirect()->back()->with([
-                'message' => __('You cannot view others tickets.')
+                'message' => __('You cannot view others tickets.'),
             ]);
         }
 
@@ -94,9 +94,9 @@ class TicketController extends Controller
 
     public function destroy(WebsiteHelpCenterTicket $ticket)
     {
-        if (!$ticket->canDeleteTicket()) {
+        if (! $ticket->canDeleteTicket()) {
             return redirect()->back()->with([
-                'message' => __('You cannot delete others tickets.')
+                'message' => __('You cannot delete others tickets.'),
             ]);
         }
 
@@ -107,14 +107,14 @@ class TicketController extends Controller
 
     public function toggleTicketStatus(WebsiteHelpCenterTicket $ticket)
     {
-        if (!$ticket->canManageTicket()) {
+        if (! $ticket->canManageTicket()) {
             return redirect()->back()->with([
-                'message' => __('You manage others tickets.')
+                'message' => __('You manage others tickets.'),
             ]);
         }
 
         $ticket->open ? $ticket->update(['open' => false]) : $ticket->update(['open' => true]);
 
-        return  redirect()->back()->with('success', __('The ticket status has been changed!'));
+        return redirect()->back()->with('success', __('The ticket status has been changed!'));
     }
 }

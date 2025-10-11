@@ -21,7 +21,7 @@ class ProfileController extends Controller
             'friends' => $friends,
             'groups' => $groups,
             'guestbook' => $user->profileGuestbook()->with('user')->latest()->limit(5)->get(),
-            'photos' => $user->photos()->limit(3)->get()
+            'photos' => $user->photos()->limit(3)->get(),
         ]);
     }
 

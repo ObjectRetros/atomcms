@@ -25,15 +25,15 @@ class CameraWeb extends Model
 
     public function scopePeriod(Builder $query, $period): void
     {
-        if($period == 'today') {
+        if ($period == 'today') {
             $query->where('timestamp', '>=', Carbon::today()->timestamp);
         }
 
-        if($period == 'last_week') {
+        if ($period == 'last_week') {
             $query->whereBetween('timestamp', [now()->subWeek()->timestamp, now()->timestamp]);
         }
 
-        if($period == 'last_month') {
+        if ($period == 'last_month') {
             $query->whereBetween('timestamp', [now()->subMonth()->timestamp, now()->timestamp]);
         }
     }
@@ -65,5 +65,3 @@ class CameraWeb extends Model
         );
     }
 }
-
-

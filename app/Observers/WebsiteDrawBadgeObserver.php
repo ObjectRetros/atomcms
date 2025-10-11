@@ -9,46 +9,46 @@ class WebsiteDrawBadgeObserver
 {
     public function updated(WebsiteDrawBadge $websiteDrawBadge): void
     {
-        if (!$websiteDrawBadge->wasChanged() || !$websiteDrawBadge->badge_path) {
-    return;
-}
+        if (! $websiteDrawBadge->wasChanged() || ! $websiteDrawBadge->badge_path) {
+            return;
+        }
 
-$badgeCode = pathinfo($websiteDrawBadge->badge_path, PATHINFO_FILENAME);
+        $badgeCode = pathinfo($websiteDrawBadge->badge_path, PATHINFO_FILENAME);
 
-if (!$websiteDrawBadge->published) {
-    DB::table('users_badges')
-        ->where('user_id', $websiteDrawBadge->user_id)
-        ->where('badge_code', $badgeCode)
-        ->delete();
+        if (! $websiteDrawBadge->published) {
+            DB::table('users_badges')
+                ->where('user_id', $websiteDrawBadge->user_id)
+                ->where('badge_code', $badgeCode)
+                ->delete();
 
-    // Remove from JSON
-    $this->updateExternalTexts(false, $badgeCode);
-    
-    return;
-}
+            // Remove from JSON
+            $this->updateExternalTexts(false, $badgeCode);
 
-$exists = DB::table('users_badges')
-    ->where('user_id', $websiteDrawBadge->user_id)
-    ->where('badge_code', $badgeCode)
-    ->exists();
+            return;
+        }
 
-if (!$exists) {
-    DB::table('users_badges')->insert([
-        'user_id' => $websiteDrawBadge->user_id,
-        'slot_id' => 0,
-        'badge_code' => $badgeCode,
-    ]);
-}
+        $exists = DB::table('users_badges')
+            ->where('user_id', $websiteDrawBadge->user_id)
+            ->where('badge_code', $badgeCode)
+            ->exists();
 
-// Add to JSON
-$this->updateExternalTexts(true, $badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
+        if (! $exists) {
+            DB::table('users_badges')->insert([
+                'user_id' => $websiteDrawBadge->user_id,
+                'slot_id' => 0,
+                'badge_code' => $badgeCode,
+            ]);
+        }
+
+        // Add to JSON
+        $this->updateExternalTexts(true, $badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
     }
 
     protected function updateExternalTexts(bool $add, string $badgeCode, ?string $name = null, ?string $desc = null): void
     {
         $filePath = DB::table('website_settings')->where('key', 'nitro_external_texts_file')->value('value');
 
-        if (!$filePath || !file_exists($filePath) || !is_writable($filePath)) {
+        if (! $filePath || ! file_exists($filePath) || ! is_writable($filePath)) {
             return;
         }
 
@@ -57,7 +57,7 @@ $this->updateExternalTexts(true, $badgeCode, $websiteDrawBadge->badge_name, $web
         if ($add) {
             $json = array_merge($json, [
                 "badge_name_{$badgeCode}" => $name,
-                "badge_desc_{$badgeCode}" => $desc
+                "badge_desc_{$badgeCode}" => $desc,
             ]);
         } else {
             unset($json["badge_name_{$badgeCode}"]);

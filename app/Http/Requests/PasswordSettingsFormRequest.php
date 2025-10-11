@@ -17,7 +17,7 @@ class PasswordSettingsFormRequest extends FormRequest
         return [
             'current_password' => ['required', 'string', new CurrentPasswordRule],
             'password' => $this->passwordRules(),
-            'g-recaptcha-response' => [new GoogleRecaptchaRule()],
+            'g-recaptcha-response' => [new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
         ];
     }

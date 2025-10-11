@@ -2,25 +2,22 @@
 
 namespace App\Filament\Resources\Atom\Teams;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Atom\Teams\Pages\ListTeams;
 use App\Filament\Resources\Atom\Teams\Pages\CreateTeam;
 use App\Filament\Resources\Atom\Teams\Pages\EditTeam;
-use App\Models\Community\Staff\WebsiteTeam;
-use App\Models\Team;
-use Filament\Tables;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Resources\Atom\Teams\Pages\ListTeams;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Resources\Atom\TeamResource\Pages;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Community\Staff\WebsiteTeam;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 class TeamResource extends Resource
@@ -29,9 +26,9 @@ class TeamResource extends Resource
 
     protected static ?string $model = WebsiteTeam::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/teams';
 
@@ -56,7 +53,7 @@ class TeamResource extends Resource
                         TextInput::make('badge')
                             ->maxLength(255)
                             ->label(__('filament::resources.inputs.badge_code'))
-							->required(),
+                            ->required(),
 
                         Toggle::make('hidden_rank')
                             ->label(__('filament::resources.inputs.is_hidden')),
@@ -77,8 +74,8 @@ class TeamResource extends Resource
 
                 TextColumn::make('rank_name')
                     ->label(__('filament::resources.columns.name')),
-					
-				TextColumn::make('job_description')
+
+                TextColumn::make('job_description')
                     ->label(__('filament::resources.inputs.description')),
 
                 IconColumn::make('hidden_rank')

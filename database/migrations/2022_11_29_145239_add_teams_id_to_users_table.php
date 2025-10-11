@@ -15,7 +15,7 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'team_id')) {
+            if (! Schema::hasColumn('users', 'team_id')) {
                 $table->unsignedBigInteger('team_id')->nullable();
             }
 

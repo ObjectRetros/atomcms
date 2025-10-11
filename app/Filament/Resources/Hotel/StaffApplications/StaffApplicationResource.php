@@ -2,31 +2,28 @@
 
 namespace App\Filament\Resources\Hotel\StaffApplications;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\EditAction;
+use App\Filament\Resources\Hotel\StaffApplications\Pages\EditStaffApplication;
+use App\Filament\Resources\Hotel\StaffApplications\Pages\ListStaffApplications;
+use App\Models\Community\Staff\WebsiteStaffApplications;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Hotel\StaffApplications\Pages\ListStaffApplications;
-use App\Filament\Resources\Hotel\StaffApplications\Pages\EditStaffApplication;
-use App\Filament\Resources\Hotel\StaffApplicationResource\Pages;
-use App\Models\Community\Staff\WebsiteStaffApplications;
-use Filament\Forms;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class StaffApplicationResource extends Resource
 {
     protected static ?string $model = WebsiteStaffApplications::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
-	
-	public static function canCreate(): bool
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
+    public static function canCreate(): bool
     {
         return false;
     }

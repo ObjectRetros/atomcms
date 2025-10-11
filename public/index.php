@@ -5,7 +5,9 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-if(! defined('STDIN')) define('STDIN', fopen("php://stdin","r"));
+if (! defined('STDIN')) {
+    define('STDIN', fopen('php://stdin', 'r'));
+}
 
 /*
 |--------------------------------------------------------------------------

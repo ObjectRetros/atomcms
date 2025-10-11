@@ -1,18 +1,17 @@
 <?php
+
 namespace App\Models\Community\Staff;
 
 use App\Models\Game\Permission;
-use App\Models\Community\Staff\WebsiteStaffApplications;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class WebsiteOpenPosition extends Model
 {
     protected $guarded = ['id'];
+
     protected $table = 'website_open_positions';
-    
+
     use HasFactory;
 
     protected $fillable = [

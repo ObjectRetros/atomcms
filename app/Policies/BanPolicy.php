@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\Response;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class BanPolicy
 {
@@ -13,7 +13,6 @@ class BanPolicy
     /**
      * Determine whether the user can view any models.
      *
-     * @param User $user
      * @return Response|bool
      */
     public function viewAny(User $user)
@@ -21,12 +20,10 @@ class BanPolicy
         return hasHousekeepingPermission('manage_bans');
     }
 
-
     /**
      * Determine whether the user can delete the model.
      *
-     * @param User $user
-     * @param \App\Models\Ban $ban
+     * @param  \App\Models\Ban  $ban
      * @return Response|bool
      */
     public function delete(User $user)

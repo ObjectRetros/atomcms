@@ -19,7 +19,7 @@ class CommandLog extends Model
     public $timestamps = false;
 
     protected $casts = [
-        'timestamp' => 'datetime'
+        'timestamp' => 'datetime',
     ];
 
     public function user(): BelongsTo

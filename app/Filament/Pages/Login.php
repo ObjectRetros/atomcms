@@ -2,15 +2,15 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
-use Filament\Schemas\Components\Component;
-use Filament\Facades\Filament;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Checkbox;
-use Filament\Notifications\Notification;
-use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Validation\ValidationException;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\TextInput;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Component;
+use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Auth\Pages\Login
 {
@@ -38,7 +38,7 @@ class Login extends \Filament\Auth\Pages\Login
 
         $data = $this->form->getState();
 
-        if (!Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
             $this->throwFailureValidationException();
         }
 
@@ -46,7 +46,7 @@ class Login extends \Filament\Auth\Pages\Login
 
         if (
             ($user instanceof FilamentUser) &&
-            (!$user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
+            (! $user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
         ) {
             Filament::auth()->logout();
 
@@ -92,7 +92,7 @@ class Login extends \Filament\Auth\Pages\Login
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     protected function getCredentialsFromFormData(array $data): array

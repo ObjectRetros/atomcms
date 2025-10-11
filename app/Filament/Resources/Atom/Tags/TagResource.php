@@ -2,28 +2,25 @@
 
 namespace App\Filament\Resources\Atom\Tags;
 
-use Filament\Schemas\Schema;
+use App\Filament\Resources\Atom\Tags\Pages\CreateTag;
+use App\Filament\Resources\Atom\Tags\Pages\EditTag;
+use App\Filament\Resources\Atom\Tags\Pages\ListTags;
+use App\Filament\Resources\Atom\Tags\Pages\ViewTag;
+use App\Filament\Resources\Atom\Tags\RelationManagers\ArticlesRelationManager;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Articles\Tag;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Atom\Tags\RelationManagers\ArticlesRelationManager;
-use App\Filament\Resources\Atom\Tags\Pages\ListTags;
-use App\Filament\Resources\Atom\Tags\Pages\CreateTag;
-use App\Filament\Resources\Atom\Tags\Pages\ViewTag;
-use App\Filament\Resources\Atom\Tags\Pages\EditTag;
-use App\Models\Articles\Tag;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
-use Filament\Forms\Components\ColorPicker;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Atom\TagResource\Pages;
-use App\Filament\Resources\Atom\TagResource\RelationManagers;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class TagResource extends Resource
 {
@@ -31,9 +28,9 @@ class TagResource extends Resource
 
     protected static ?string $model = Tag::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Website';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
     protected static ?string $slug = 'website/tags';
 
@@ -65,7 +62,7 @@ class TagResource extends Resource
                                 ->required()
                                 ->columnSpan('full'),
                         ]),
-                ])->columnSpanFull()
+                ])->columnSpanFull(),
         ];
     }
 
@@ -102,14 +99,14 @@ class TagResource extends Resource
                 ->searchable()
                 ->copyable()
                 ->copyMessage(__('filament::resources.common.Sucessfull'))
-                ->copyMessageDuration(1500)
+                ->copyMessageDuration(1500),
         ];
     }
 
     public static function getRelations(): array
     {
         return [
-            ArticlesRelationManager::class
+            ArticlesRelationManager::class,
         ];
     }
 

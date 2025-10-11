@@ -15,7 +15,7 @@ class WebsiteShopArticle extends Model
 
     public function furniItems(): Collection
     {
-        if (!$this->furniture) {
+        if (! $this->furniture) {
             return collect();
         }
 

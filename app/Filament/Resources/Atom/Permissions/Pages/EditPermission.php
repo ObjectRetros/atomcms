@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Permissions\Pages;
 
+use App\Filament\Resources\Atom\Permissions\PermissionResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use App\Filament\Resources\Atom\Permissions\PermissionResource;
 
 class EditPermission extends EditRecord
 {

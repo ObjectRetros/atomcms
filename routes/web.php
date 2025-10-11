@@ -8,7 +8,6 @@ use App\Http\Controllers\Client\FlashController;
 use App\Http\Controllers\Client\NitroController;
 use App\Http\Controllers\Community\LeaderboardController;
 use App\Http\Controllers\Community\PhotosController;
-use App\Http\Controllers\Community\RoomController;
 use App\Http\Controllers\Community\Staff\StaffApplicationsController;
 use App\Http\Controllers\Community\Staff\StaffController;
 use App\Http\Controllers\Community\Staff\WebsiteTeamsController;
@@ -64,7 +63,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
     // Exceptions to the 2FA check and must only be visited if not logged in
     Route::middleware(['guest', 'throttle:15,1'])->withoutMiddleware('force.staff.2fa')->group(function () {
-        Route::get('/login', static fn() => to_route('welcome'))->name('login');
+        Route::get('/login', static fn () => to_route('welcome'))->name('login');
         Route::get('/', HomeController::class)->name('welcome');
 
         Route::get('/register', [RegisteredUserController::class, 'create']);
@@ -98,15 +97,15 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::get('/session-logs', [AccountSettingsController::class, 'sessionLogs'])->name('settings.session-logs');
 
                 Route::get('/two-factor', [TwoFactorAuthenticationController::class, 'index'])->name('settings.two-factor');
-				Route::post('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('user.two-factor.enable');
-				Route::post('/2fa-verify', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
-				Route::delete('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->name('user.two-factor.disable');
+                Route::post('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('user.two-factor.enable');
+                Route::post('/2fa-verify', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
+                Route::delete('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->name('user.two-factor.disable');
             });
         });
 
-		// Drawbadge
-		Route::get('/draw-badge', [BadgeController::class, 'show'])->name('draw-badge');
-		Route::post('/buy-badge', [BadgeController::class, 'buy'])->name('badge.buy');
+        // Drawbadge
+        Route::get('/draw-badge', [BadgeController::class, 'show'])->name('draw-badge');
+        Route::post('/buy-badge', [BadgeController::class, 'buy'])->name('badge.buy');
 
         // Profiles
         Route::get('/profile/{user:username}', ProfileController::class)->name('profile.show');
@@ -175,7 +174,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         });
 
         // Paypal routes
-        Route::controller(PayPalController::class)->prefix('paypal')->group(function() {
+        Route::controller(PayPalController::class)->prefix('paypal')->group(function () {
             Route::get('/process-transaction', 'process')->name('paypal.process-transaction');
             Route::get('/successful-transaction', 'successful')->name('paypal.successful-transaction');
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');

@@ -5,7 +5,7 @@ namespace App\Services;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 
-/*Credits to Kani for this*/
+/* Credits to Kani for this */
 
 class FindRetrosService
 {
@@ -23,8 +23,6 @@ class FindRetrosService
 
     /**
      * The guzzle client instance
-     *
-     * @var Client
      */
     protected Client $client;
 
@@ -41,7 +39,7 @@ class FindRetrosService
      */
     public function checkHasVoted(): bool
     {
-        if (!config('habbo.findretros.enabled')) {
+        if (! config('habbo.findretros.enabled')) {
             return true;
         }
 

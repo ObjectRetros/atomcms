@@ -3,18 +3,15 @@
 namespace App\Actions;
 
 use App\Enums\CurrencyTypes;
-use App\Models\User;
 use App\Services\RconService;
 
 class SendCurrency
 {
-    public function __construct(protected RconService $rcon)
-    {
-    }
+    public function __construct(protected RconService $rcon) {}
 
     public function execute($user, string $type, ?int $amount)
     {
-        if (!$amount && $amount <= 0) {
+        if (! $amount && $amount <= 0) {
             return false;
         }
 

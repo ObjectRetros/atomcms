@@ -3,9 +3,8 @@
 namespace App\Http\Resources;
 
 use Illuminate\Contracts\Support\Arrayable;
-use JsonSerializable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use JsonSerializable;
 
 class OnlineUserCountResource extends JsonResource
 {

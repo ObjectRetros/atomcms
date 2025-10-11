@@ -35,7 +35,7 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         $ip = request()?->ip();
-        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
+        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
             throw ValidationException::withMessages([
                 'registration' => __('Your IP address seems to be invalid'),
             ]);
@@ -119,7 +119,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
             'beta_code' => ['sometimes', 'string', new BetaCodeRule],
             'terms' => ['required', 'accepted'],
-            'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule()],
+            'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
         ];
 
@@ -145,7 +145,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         // Log the error in-case webhook wasn't sent
-        if (!$request->successful()) {
+        if (! $request->successful()) {
             Log::error('Failed to send Discord webhook notification', [
                 'username' => $username,
                 'ip' => $ip,

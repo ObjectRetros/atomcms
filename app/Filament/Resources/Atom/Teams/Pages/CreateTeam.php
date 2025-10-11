@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Atom\Teams\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\Atom\Teams\TeamResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateTeam extends CreateRecord
 {

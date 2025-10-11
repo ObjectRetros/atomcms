@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources\Hotel\WebsiteAds\Pages;
 
-use Filament\Actions\CreateAction;
-use Filament\Actions\Action;
 use App\Filament\Resources\Hotel\WebsiteAds\WebsiteAdResource;
-use Filament\Pages\Actions;
+use App\Models\WebsiteAd;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
-use App\Models\WebsiteAd;
 
 class ListWebsiteAds extends ListRecords
 {
@@ -19,7 +18,7 @@ class ListWebsiteAds extends ListRecords
         return [
             CreateAction::make()
                 ->label('Create new ADS')
-				->color('success'),
+                ->color('success'),
             Action::make('importAdsData')
                 ->label('Import ADS Images from folder')
                 ->color('info')

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorSettings\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Hotel\EmulatorSettings\EmulatorSettingResource;
-use Filament\Pages\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditEmulatorSetting extends EditRecord

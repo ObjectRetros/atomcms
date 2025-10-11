@@ -8,13 +8,10 @@ use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Services\Articles\CommentService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class WebsiteArticleCommentsController extends Controller
 {
-    public function __construct(public readonly CommentService $commentService)
-    {
-    }
+    public function __construct(public readonly CommentService $commentService) {}
 
     public function store(WebsiteArticle $article, ArticleCommentFormRequest $request): RedirectResponse
     {

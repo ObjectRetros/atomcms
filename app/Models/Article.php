@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use App\Enums\NotificationType;
+use App\Models\Article\ArticleComment;
+use App\Models\Article\ArticleReaction;
 use App\Models\Compositions\HasNotificationUrl;
-use App\Models\Article\{ArticleComment, ArticleReaction};
 use Auth;
-use Illuminate\Database\Eloquent\{Model, Builder, Casts\Attribute, Relations\HasMany, Factories\HasFactory,};
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Str;
 
 class Article extends Model
@@ -23,7 +28,7 @@ class Article extends Model
         'fixed' => 'boolean',
         'allow_comments' => 'boolean',
         'is_promotion' => 'boolean',
-        'promotion_ends_at' => 'datetime'
+        'promotion_ends_at' => 'datetime',
     ];
 
     public static function boot()
@@ -55,7 +60,7 @@ class Article extends Model
     public static function fromIdAndSlug(string $id, string $slug, bool $withDefaultRelationships = true): Builder
     {
         return Article::valid()
-            ->when($withDefaultRelationships, fn($query) => $query->defaultRelationships())
+            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
             ->whereId($id)
             ->whereSlug($slug);
     }
@@ -63,11 +68,13 @@ class Article extends Model
     public static function getLatestValidArticle(bool $withDefaultRelationships = true): ?Article
     {
         $article = Article::valid()
-            ->when($withDefaultRelationships, fn($query) => $query->defaultRelationships())
+            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
             ->latest()
             ->first();
 
-        if (!$article) return null;
+        if (! $article) {
+            return null;
+        }
 
         $article->syncPaginatedComments();
 
@@ -93,8 +100,8 @@ class Article extends Model
         $query->with([
             'user:id,username,look,gender',
             'tags',
-            'reactions' => fn($query) => $query->defaultRelationships(),
-            'user.followers'
+            'reactions' => fn ($query) => $query->defaultRelationships(),
+            'user.followers',
         ]);
     }
 
@@ -121,7 +128,7 @@ class Article extends Model
     public function titleColor(): Attribute
     {
         return new Attribute(
-            get: fn() => isDarkColor($this->predominant_color) ? '#fff' : '#000'
+            get: fn () => isDarkColor($this->predominant_color) ? '#fff' : '#000'
         );
     }
 
@@ -129,7 +136,7 @@ class Article extends Model
     {
         $this->user->followers()
             ->with('user:id,username')
-            ->each(fn(AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl())
+            ->each(fn (AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl())
             );
     }
 }

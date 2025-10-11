@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection(config('activitylog.database_connection'))->table(config('activitylog.table_name'), function (Blueprint $table) {
-            if (!columnExists(config('activitylog.table_name'), 'batch_uuid')) {
+            if (! columnExists(config('activitylog.table_name'), 'batch_uuid')) {
                 $table->uuid('batch_uuid')->nullable()->after('properties');
             }
         });

@@ -2,7 +2,6 @@
 
 use App\Providers\RouteServiceProvider;
 
-
 test('new users can register', function () {
     $response = $this->post('/register', [
         'username' => 'Test_User',

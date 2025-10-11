@@ -6,14 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OnlineUserCountResource;
 use App\Http\Resources\OnlineUsersResource;
 use App\Http\Resources\UserResource;
-use App\Models\User;
 use App\Services\User\UserApiService;
 
 class HotelApiController extends Controller
 {
-    public function __construct(private readonly UserApiService $userApiService)
-    {
-    }
+    public function __construct(private readonly UserApiService $userApiService) {}
 
     public function fetchUser(string $username, array $columns = ['username', 'motto', 'look']): UserResource
     {

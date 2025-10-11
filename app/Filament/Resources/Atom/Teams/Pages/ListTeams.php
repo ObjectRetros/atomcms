@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Teams\Pages;
 
-use Filament\Actions\CreateAction;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\Atom\Teams\TeamResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
 
 class ListTeams extends ListRecords
 {

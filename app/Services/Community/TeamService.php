@@ -25,7 +25,7 @@ class TeamService
             ->get();
 
         if ($cacheEnabled) {
-            $cacheTimer = (int)setting('cache_timer');
+            $cacheTimer = (int) setting('cache_timer');
             Cache::put('hotel_teams', $employees, now()->addMinutes($cacheTimer));
         }
 

@@ -3,14 +3,10 @@
 namespace App\Models;
 
 use App\Models\Compositions\HasBadge;
-use Illuminate\Database\Eloquent\{
-    Model,
-    Factories\HasFactory
-};
+use Illuminate\Database\Eloquent\Model;
 
 class Achievement extends Model implements HasBadge
 {
-
     public $timestamps = false;
 
     protected $guarded = [];

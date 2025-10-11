@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\DashboardResource\Widgets;
 
 use App\Models\User\UserOrder;
+use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
-use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
 
 class OrdersAggregateChart extends ChartWidget
@@ -14,12 +14,12 @@ class OrdersAggregateChart extends ChartWidget
 
     protected string $color = 'secondary';
 
-    public function getHeading(): string | Htmlable | null
+    public function getHeading(): string|Htmlable|null
     {
         return __('filament::resources.stats.orders_chart.title');
     }
 
-    public function getDescription(): string | Htmlable | null
+    public function getDescription(): string|Htmlable|null
     {
         return __('filament::resources.stats.orders_chart.description');
     }
@@ -65,7 +65,7 @@ class OrdersAggregateChart extends ChartWidget
             'label' => $label,
             'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
             'backgroundColor' => $backgroundColor,
-            'borderColor' => $borderColor
+            'borderColor' => $borderColor,
         ];
     }
 

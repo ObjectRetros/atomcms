@@ -7,7 +7,7 @@ use App\Models\User;
 
 class UserService extends UserActions
 {
-    public function getUser(string $username): User|null
+    public function getUser(string $username): ?User
     {
         return User::where('username', $username)->first();
     }

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Atom\CameraWebs\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Atom\CameraWebs\CameraWebResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCameraWeb extends EditRecord

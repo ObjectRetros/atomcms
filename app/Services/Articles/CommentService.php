@@ -5,7 +5,6 @@ namespace App\Services\Articles;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CommentService
@@ -18,7 +17,7 @@ class CommentService
             ]);
         }
 
-        if (!$article->can_comment) {
+        if (! $article->can_comment) {
             return redirect()->back()->withErrors([
                 'message' => __('This article has been locked from receiving comments'),
             ]);
@@ -38,7 +37,7 @@ class CommentService
             ]);
         }
 
-        if (!$comment->delete()) {
+        if (! $comment->delete()) {
             return redirect()->back()->withErrors([
                 'message' => __('An error occurred while deleting the comment'),
             ]);

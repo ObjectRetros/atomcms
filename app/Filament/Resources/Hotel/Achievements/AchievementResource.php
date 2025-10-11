@@ -2,29 +2,27 @@
 
 namespace App\Filament\Resources\Hotel\Achievements;
 
-use Filament\Schemas\Schema;
+use App\Enums\AchievementCategory;
+use App\Enums\CurrencyTypes;
+use App\Filament\Resources\Hotel\Achievements\Pages\CreateAchievement;
+use App\Filament\Resources\Hotel\Achievements\Pages\EditAchievement;
+use App\Filament\Resources\Hotel\Achievements\Pages\ListAchievements;
+use App\Filament\Resources\Hotel\Achievements\Pages\ViewAchievement;
+use App\Filament\Tables\Columns\HabboBadgeColumn;
+use App\Filament\Traits\TranslatableResource;
+use App\Models\Achievement;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use App\Filament\Resources\Hotel\Achievements\Pages\ListAchievements;
-use App\Filament\Resources\Hotel\Achievements\Pages\CreateAchievement;
-use App\Filament\Resources\Hotel\Achievements\Pages\ViewAchievement;
-use App\Filament\Resources\Hotel\Achievements\Pages\EditAchievement;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Enums\CurrencyTypes;
-use App\Models\Achievement;
-use Filament\Resources\Resource;
-use App\Enums\AchievementCategory;
-use Filament\Forms\Components\Select;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Traits\TranslatableResource;
-use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Resources\Hotel\AchievementResource\Pages;
+use Filament\Tables\Table;
 
 class AchievementResource extends Resource
 {
@@ -32,9 +30,9 @@ class AchievementResource extends Resource
 
     protected static ?string $model = Achievement::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     public static string $translateIdentifier = 'achievements';
 
@@ -66,7 +64,7 @@ class AchievementResource extends Resource
                                 Select::make('category')
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.category'))
-                                    ->options(AchievementCategory::toInput())
+                                    ->options(AchievementCategory::toInput()),
                             ]),
 
                         Tab::make(__('filament::resources.tabs.Configurations'))
@@ -100,9 +98,9 @@ class AchievementResource extends Resource
                                     ->label(__('filament::resources.inputs.progress_needed'))
                                     ->helperText(__('filament::resources.helpers.achievement_progress_needed'))
                                     ->numeric()
-                                    ->required()
-                            ])
-                    ])->columnSpanFull()
+                                    ->required(),
+                            ]),
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -133,7 +131,7 @@ class AchievementResource extends Resource
                 ToggleColumn::make('visible')
                     ->label(__('filament::resources.columns.visible'))
                     ->disabled()
-                    ->toggleable()
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('visible')

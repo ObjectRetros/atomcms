@@ -35,7 +35,7 @@ return new class extends Migration
                 'key' => 'drawbadge_currency_type',
                 'value' => 'credits',
                 'comment' => 'Adjust here the currency type (credits, duckets, diamonds, points)',
-            ]
+            ],
         ]);
     }
 
@@ -48,7 +48,7 @@ return new class extends Migration
 
         DB::table('website_settings')->whereIn('key', [
             'drawbadge_currency_value',
-            'drawbadge_currency_type'
+            'drawbadge_currency_type',
         ])->delete();
     }
 };

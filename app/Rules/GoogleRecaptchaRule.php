@@ -15,7 +15,7 @@ class GoogleRecaptchaRule implements InvokableRule
             return true;
         }
 
-        $client = new Client();
+        $client = new Client;
 
         $response = $client->request(
             'POST', 'https://www.google.com/recaptcha/api/siteverify', [

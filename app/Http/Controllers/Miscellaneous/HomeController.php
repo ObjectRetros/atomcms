@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Miscellaneous;
 use App\Http\Controllers\Controller;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Miscellaneous\CameraWeb;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class HomeController extends Controller

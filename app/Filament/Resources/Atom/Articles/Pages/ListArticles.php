@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources\Atom\Articles\Pages;
 
-use Filament\Actions\CreateAction;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\Atom\Articles\ArticleResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
 
 class ListArticles extends ListRecords
 {

@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 class PaypalController extends Controller
 {
     private const STATUS_CANCELLED = 'CANCELLED';
+
     private const STATUS_COMPLETED = 'COMPLETED';
 
     public function __construct(private PayPalClient $provider)
@@ -33,15 +34,15 @@ class PaypalController extends Controller
                 'brand_name' => setting('hotel_name'),
                 'landing_page' => 'BILLING',
                 'shipping_preference' => 'NO_SHIPPING',
-                'user_action' => 'CONTINUE'
+                'user_action' => 'CONTINUE',
             ],
             'purchase_units' => [
                 0 => [
                     'amount' => [
                         'currency_code' => config('habbo.paypal.currency'),
-                        'value' => (string)$amount
+                        'value' => (string) $amount,
                     ],
-                ]
+                ],
             ],
         ];
 
@@ -49,6 +50,7 @@ class PaypalController extends Controller
 
         if (isset($response['id']) === false) {
             Log::error('Error creating order', ['response' => $response]);
+
             return to_route('shop.index')->withErrors(
                 ['message' => $response['message'] ?? __('Something went wrong')]
             );
@@ -86,8 +88,9 @@ class PaypalController extends Controller
         $response = $this->provider->capturePaymentOrder($request['token']);
         $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
 
-        if (!isset($response['status'], $paymentDetails)) {
+        if (! isset($response['status'], $paymentDetails)) {
             Log::error('Invalid response from PayPal', ['response' => $response]);
+
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
         }
 
@@ -105,9 +108,9 @@ class PaypalController extends Controller
         $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
 
         $transaction->update([
-          'status' => $paymentDetails['status'],
-          'amount' => $paymentDetails['amount']['value'],
-          'currency' => $paymentDetails['amount']['currency_code'],
+            'status' => $paymentDetails['status'],
+            'amount' => $paymentDetails['amount']['value'],
+            'currency' => $paymentDetails['amount']['currency_code'],
         ]);
 
         if ($response['status'] !== self::STATUS_COMPLETED) {

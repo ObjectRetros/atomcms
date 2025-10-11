@@ -110,7 +110,7 @@ class WebsiteSettingsSeeder extends Seeder
                 'value' => '/client/flash/c_images/album1584',
                 'comment' => 'The path to the badges folder, for the frontend',
             ],
-			[
+            [
                 'key' => 'badge_path_filesystem',
                 'value' => '/var/www/gamedata/c_images/album1584',
                 'comment' => 'The path to the badges folder, for the backend',
@@ -120,17 +120,17 @@ class WebsiteSettingsSeeder extends Seeder
                 'value' => '/client/flash/c_images/Badgeparts/generated',
                 'comment' => 'The path that contains all the generated group badges',
             ],
-			[
+            [
                 'key' => 'ads_path_filesystem',
                 'value' => '/var/www/gamedata/custom',
                 'comment' => 'The path for loading ADS from disk - for the Backend',
             ],
-			[
+            [
                 'key' => 'ads_picture_path',
                 'value' => '/gamedata/custom',
                 'comment' => 'The path for loading ADS from the CMS - for the Frontend',
             ],
-			[
+            [
                 'key' => 'nitro_external_texts_file',
                 'value' => '/var/www/gamedata/config/ExternalTexts.json',
                 'comment' => 'The path for loading ExternalTexts',
@@ -147,7 +147,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'maintenance_message',
-                'value' => "We're working very hard on making " . setting('hotel_name') . " the best possible version of itself 💛<br><br> We want to make sure " . setting('hotel_name') . " lives up to the standards you deserve, hence we currently have no ETA for when we can open our doors.<br><br>We promise that once we feel confident that " . setting('hotel_name') . " is ready for launch, we'll let everyone know about it.<br><br>- The " . setting('hotel_name') . " team ⭐",
+                'value' => "We're working very hard on making ".setting('hotel_name').' the best possible version of itself 💛<br><br> We want to make sure '.setting('hotel_name').' lives up to the standards you deserve, hence we currently have no ETA for when we can open our doors.<br><br>We promise that once we feel confident that '.setting('hotel_name')." is ready for launch, we'll let everyone know about it.<br><br>- The ".setting('hotel_name').' team ⭐',
                 'comment' => 'The maintenance message displayed to users while maintenance is activated',
             ],
             [

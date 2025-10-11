@@ -3,8 +3,8 @@
 namespace App\Services\Articles;
 
 use App\Models\Articles\WebsiteArticle;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class ArticleService
 {

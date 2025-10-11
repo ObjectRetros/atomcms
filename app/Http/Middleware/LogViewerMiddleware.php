@@ -11,11 +11,11 @@ class LogViewerMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return to_route('login');
         }
 
-        if (!hasPermission('view_server_logs')) {
+        if (! hasPermission('view_server_logs')) {
             abort(403);
         }
 

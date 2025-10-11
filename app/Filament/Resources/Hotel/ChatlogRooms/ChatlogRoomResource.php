@@ -2,19 +2,16 @@
 
 namespace App\Filament\Resources\Hotel\ChatlogRooms;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\ViewAction;
 use App\Filament\Resources\Hotel\ChatlogRooms\Pages\ManageChatlogRooms;
-use Filament\Tables;
-use Filament\Tables\Table;
-use App\Models\ChatlogRoom;
-use Filament\Resources\Resource;
 use App\Filament\Traits\TranslatableResource;
-use App\Filament\Resources\Hotel\ChatlogRoomResource\Pages;
+use App\Models\ChatlogRoom;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
+use Filament\Tables\Table;
 
 class ChatlogRoomResource extends Resource
 {
@@ -22,9 +19,9 @@ class ChatlogRoomResource extends Resource
 
     protected static ?string $model = ChatlogRoom::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Logs';
+    protected static string|\UnitEnum|null $navigationGroup = 'Logs';
 
     public static string $translateIdentifier = 'chatlog-rooms';
 
@@ -36,18 +33,18 @@ class ChatlogRoomResource extends Resource
             ->components([
                 TextInput::make('room')
                     ->label(__('filament::resources.inputs.room'))
-                    ->formatStateUsing(fn($record) => $record->room?->name)
+                    ->formatStateUsing(fn ($record) => $record->room?->name)
                     ->columnSpanFull()
                     ->disabled(),
 
                 TextInput::make('sender')
                     ->label(__('filament::resources.inputs.sender'))
-                    ->formatStateUsing(fn($record) => $record->sender?->username)
+                    ->formatStateUsing(fn ($record) => $record->sender?->username)
                     ->disabled(),
 
                 TextInput::make('receiver')
                     ->label(__('filament::resources.inputs.receiver'))
-                    ->formatStateUsing(fn($record) => $record->receiver?->username)
+                    ->formatStateUsing(fn ($record) => $record->receiver?->username)
                     ->disabled(),
 
                 Textarea::make('message')

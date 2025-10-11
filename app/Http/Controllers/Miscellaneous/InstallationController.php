@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Miscellaneous;
 
-use Exception;
-use App\Exceptions\MigrationFailedException;
 use App\Http\Controllers\Controller;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InstallationController extends Controller
@@ -37,9 +34,9 @@ class InstallationController extends Controller
 
     public function showStep($currentStep)
     {
-        $settings = $this->getSettingsForStep((int)$currentStep);
+        $settings = $this->getSettingsForStep((int) $currentStep);
 
-        return view('installation.step-' . $currentStep, [
+        return view('installation.step-'.$currentStep, [
             'settings' => $settings,
         ]);
     }

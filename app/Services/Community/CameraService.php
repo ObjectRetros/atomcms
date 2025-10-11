@@ -11,6 +11,7 @@ class CameraService
         $photos = CameraWeb::where('visible', true)
             ->latest('id')
             ->with('user:id,username,look');
+
         return $paginate ? $photos->paginate($perPage) : $photos->get();
     }
 }

@@ -2,19 +2,21 @@
 
 namespace App\Filament\Resources\Hotel\BadgeUploads;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use App\Filament\Resources\Hotel\BadgeUploads\Pages\ManageBadgeUploads;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class BadgeUploadResource extends Resource
 {
-    protected static string | \UnitEnum | null $navigationGroup = 'Hotel';
-	  protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-gif';
+    protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-gif';
+
     protected static ?string $label = 'Badge Upload';
 
     public static function form(Schema $schema): Schema

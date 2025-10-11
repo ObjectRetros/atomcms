@@ -2,20 +2,19 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\ItemDefinition;
 use App\Models\Miscellaneous\CameraWeb;
 use App\Models\Room;
 use App\Models\User;
-use App\Models\Camera;
 use App\Models\WebsiteBadge;
-use App\Models\ItemDefinition;
-use Illuminate\Support\Number;
 use Filament\Support\Enums\IconPosition;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Number;
 
 class TopDashboardOverview extends BaseWidget
 {
-	protected static ?int $sort = 1;
+    protected static ?int $sort = 1;
 
     protected function getStats(): array
     {
@@ -42,13 +41,13 @@ class TopDashboardOverview extends BaseWidget
                 ->description(__('filament::resources.stats.photos_count.description'))
                 ->descriptionIcon('heroicon-m-camera', IconPosition::Before)
                 ->chart([20, 20])
-				->color('success'),
-				
-			Stat::make(__('filament::resources.stats.badge_count.title'), Number::format(WebsiteBadge::count(), '0', '1', app()->getLocale()))
+                ->color('success'),
+
+            Stat::make(__('filament::resources.stats.badge_count.title'), Number::format(WebsiteBadge::count(), '0', '1', app()->getLocale()))
                 ->description(__('filament::resources.stats.badge_count.description'))
                 ->descriptionIcon('heroicon-m-gif', IconPosition::Before)
                 ->chart([20, 20])
-                ->color('success')
+                ->color('success'),
         ];
     }
 }

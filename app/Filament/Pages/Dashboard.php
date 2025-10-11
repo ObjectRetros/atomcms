@@ -9,11 +9,11 @@ class Dashboard extends FilamentDashboard
 {
     use TranslatableResource;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Dashboard';
+    protected static string|\UnitEnum|null $navigationGroup = 'Dashboard';
 
     protected static ?string $navigationLabel = 'Homepage';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
 
     public static string $translateIdentifier = 'dashboard';
 
@@ -21,6 +21,6 @@ class Dashboard extends FilamentDashboard
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can("view::admin::" . static::$roleName);
+        return auth()->user()->can('view::admin::'.static::$roleName);
     }
 }
