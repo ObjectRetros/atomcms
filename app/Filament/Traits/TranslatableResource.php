@@ -9,7 +9,7 @@ trait TranslatableResource
     public static function getNavigationGroup(): ?string
     {
         return __(
-            sprintf('filament::resources.navigations.%s', static::$navigationGroup)
+            sprintf('filament::resources.navigations.%s', static::$navigationGroup),
         );
     }
 
@@ -19,21 +19,21 @@ trait TranslatableResource
             Str::endsWith(static::class, 'RelationManager')
                 ? 'filament::resources.resources.%s.navigation_label'
                 : 'filament::resources.resources.%s.plural',
-            static::$translateIdentifier
+            static::$translateIdentifier,
         ));
     }
 
     public static function getNavigationLabel(): string
     {
         return __(
-            sprintf('filament::resources.resources.%s.navigation_label', static::$translateIdentifier)
+            sprintf('filament::resources.resources.%s.navigation_label', static::$translateIdentifier),
         );
     }
 
     public static function getModelLabel(): string
     {
         return __(
-            sprintf('filament::resources.resources.%s.label', static::$translateIdentifier)
+            sprintf('filament::resources.resources.%s.label', static::$translateIdentifier),
         );
     }
 }

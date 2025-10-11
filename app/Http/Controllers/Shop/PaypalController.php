@@ -52,7 +52,7 @@ class PaypalController extends Controller
             Log::error('Error creating order', ['response' => $response]);
 
             return to_route('shop.index')->withErrors(
-                ['message' => $response['message'] ?? __('Something went wrong')]
+                ['message' => $response['message'] ?? __('Something went wrong')],
             );
         }
 
@@ -68,7 +68,7 @@ class PaypalController extends Controller
         }
 
         return to_route('shop.index')->withErrors(
-            ['message' => $response['message'] ?? __('Something went wrong')]
+            ['message' => $response['message'] ?? __('Something went wrong')],
         );
     }
 
@@ -115,7 +115,7 @@ class PaypalController extends Controller
 
         if ($response['status'] !== self::STATUS_COMPLETED) {
             return to_route('shop.index')->withErrors(
-                ['message' => $response['message'] ?? __('Something went wrong')]
+                ['message' => $response['message'] ?? __('Something went wrong')],
             );
         }
 
@@ -139,7 +139,7 @@ class PaypalController extends Controller
         }
 
         return to_route('shop.index')->withErrors(
-            ['message' => __('You have canceled the transaction')]
+            ['message' => __('You have canceled the transaction')],
         );
     }
 }

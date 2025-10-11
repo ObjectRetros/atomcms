@@ -21,6 +21,6 @@ class Dashboard extends FilamentDashboard
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('view::admin::'.static::$roleName);
+        return auth()->user()->can('view::admin::' . static::$roleName);
     }
 }

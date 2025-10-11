@@ -21,7 +21,7 @@ class ImportBadgeData extends Command
     private const BADGE_PREFIX = 'badge_desc_';
 
     public function __construct(
-        private readonly SettingsService $settingsService
+        private readonly SettingsService $settingsService,
     ) {
         parent::__construct();
     }
@@ -38,7 +38,7 @@ class ImportBadgeData extends Command
             $this->processBadgeData($jsonPath);
             $this->info('Badge data imported successfully.');
         } catch (Exception $e) {
-            Log::error('Failed to import badge data: '.$e->getMessage());
+            Log::error('Failed to import badge data: ' . $e->getMessage());
             $this->error('Failed to import badge data. Check the logs for details.');
         }
     }
@@ -52,7 +52,7 @@ class ImportBadgeData extends Command
         }
 
         if (! file_exists($jsonPath)) {
-            $this->error('The JSON file does not exist at the specified path: '.$jsonPath);
+            $this->error('The JSON file does not exist at the specified path: ' . $jsonPath);
 
             return false;
         }
@@ -85,10 +85,10 @@ class ImportBadgeData extends Command
             WebsiteBadge::upsert(
                 $chunk->toArray(),
                 ['badge_key'],
-                ['badge_name', 'badge_description']
+                ['badge_name', 'badge_description'],
             );
 
-            $this->info('Processed '.$chunk->count().' badges.');
+            $this->info('Processed ' . $chunk->count() . ' badges.');
         });
     }
 }
