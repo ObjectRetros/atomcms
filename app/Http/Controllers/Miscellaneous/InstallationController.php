@@ -36,7 +36,7 @@ class InstallationController extends Controller
     {
         $settings = $this->getSettingsForStep((int) $currentStep);
 
-        return view('installation.step-'.$currentStep, [
+        return view('installation.step-' . $currentStep, [
             'settings' => $settings,
         ]);
     }

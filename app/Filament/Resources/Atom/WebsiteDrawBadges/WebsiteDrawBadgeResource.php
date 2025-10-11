@@ -85,7 +85,7 @@ class WebsiteDrawBadgeResource extends Resource
                     ->dateTime(),
                 ImageColumn::make('badge_url')
                     ->label(__('Badge'))
-                    ->getStateUsing(fn ($record) => config('app.url').$record->badge_url)
+                    ->getStateUsing(fn ($record) => config('app.url') . $record->badge_url)
                     ->extraAttributes(['style' => 'image-rendering: pixelated'])
                     ->size(40),
                 ToggleColumn::make('published')

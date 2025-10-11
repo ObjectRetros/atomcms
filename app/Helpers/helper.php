@@ -68,7 +68,7 @@ if (! function_exists('dropForeignKeyIfExists')) {
     function dropForeignKeyIfExists(string $table, string $column): void
     {
         $connection = Schema::getConnection();
-        $tableWithPrefix = $connection->getTablePrefix().$table;
+        $tableWithPrefix = $connection->getTablePrefix() . $table;
 
         $foreignKeys = collect($connection->select('SELECT CONSTRAINT_NAME
             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE

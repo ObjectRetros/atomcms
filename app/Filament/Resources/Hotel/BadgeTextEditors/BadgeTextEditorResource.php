@@ -62,7 +62,7 @@ class BadgeTextEditorResource extends Resource
                     ->label('Badge Image')
                     ->getStateUsing(function ($record) use ($badgesPath) {
                         $badgeName = str_replace('badge_desc_', '', $record->badge_key);
-                        $imageUrl = asset($badgesPath.$badgeName.'.gif');
+                        $imageUrl = asset($badgesPath . $badgeName . '.gif');
 
                         return $imageUrl;
                     })
@@ -71,7 +71,7 @@ class BadgeTextEditorResource extends Resource
                 TextColumn::make('badge_name')
                     ->label('Badge Code & Name')
                     ->formatStateUsing(function ($record) {
-                        return $record->badge_key.' : '.$record->badge_name;
+                        return $record->badge_key . ' : ' . $record->badge_name;
                     })
                     ->searchable(query: function ($query, $search) {
                         $query->where('badge_key', 'like', "%{$search}%")

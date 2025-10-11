@@ -13,7 +13,7 @@ class SessionService
     public function fetchSessionLogs(Request $request): Collection
     {
         return collect(
-            Auth::user()->sessions
+            Auth::user()->sessions,
         )->map(function ($session) use ($request) {
             $agent = $this->createAgent($session);
 

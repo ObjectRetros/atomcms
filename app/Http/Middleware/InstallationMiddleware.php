@@ -44,7 +44,7 @@ class InstallationMiddleware
     private function ensureInstallationTableExists()
     {
         if (! Schema::hasTable('website_installation')) {
-            Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('website_installation')]);
+            Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('website_installation')]);
 
             if (! Schema::hasTable('website_installation')) {
                 throw new MigrationFailedException('website_installation');
@@ -52,7 +52,7 @@ class InstallationMiddleware
         }
 
         if (! Schema::hasTable('sessions')) {
-            Artisan::call('migrate', ['--path' => 'database/migrations/'.findMigration('sessions')]);
+            Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('sessions')]);
         }
     }
 
@@ -72,7 +72,7 @@ class InstallationMiddleware
 
             return $installation;
         } catch (Exception $e) {
-            Log::error('Error fetching or creating WebsiteInstallation: '.$e->getMessage());
+            Log::error('Error fetching or creating WebsiteInstallation: ' . $e->getMessage());
             abort(500, 'An error occurred while setting up the installation.');
         }
     }

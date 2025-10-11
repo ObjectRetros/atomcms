@@ -12,14 +12,14 @@ class FindRetrosService
     /**
      * The findretros verification uri.
      */
-    const FIND_RETROS_VERIFY_URI = '%s/validate.php?user=%s&ip=%s';
+    public const FIND_RETROS_VERIFY_URI = '%s/validate.php?user=%s&ip=%s';
 
     /**
      * The findretros redirect uri.
      */
-    const FIND_RETROS_REDIRECT_URI = '%s/servers/%s/vote?minimal=1&return=1';
+    public const FIND_RETROS_REDIRECT_URI = '%s/servers/%s/vote?minimal=1&return=1';
 
-    const FIND_RETROS_CACHE_KEY = 'voted.%s';
+    public const FIND_RETROS_CACHE_KEY = 'voted.%s';
 
     /**
      * The guzzle client instance

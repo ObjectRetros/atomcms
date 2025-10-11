@@ -56,13 +56,13 @@ class BadgeController extends Controller
         };
 
         if ($currentAmount < $cost) {
-            return response()->json(['success' => false, 'message' => 'Insufficient '.$currencyType.'.'], 400);
+            return response()->json(['success' => false, 'message' => 'Insufficient ' . $currencyType . '.'], 400);
         }
 
         $result = $sendCurrency->execute($user, $currencyType, -$cost);
 
         if ($result === false) {
-            return response()->json(['success' => false, 'message' => 'Failed to deduct '.$currencyType.'.'], 500);
+            return response()->json(['success' => false, 'message' => 'Failed to deduct ' . $currencyType . '.'], 500);
         }
 
         $badgeData = $request->input('badge_data');
@@ -101,8 +101,8 @@ class BadgeController extends Controller
             return response()->json(['success' => false, 'message' => 'Badges path not configured.'], 500);
         }
 
-        $filename = $user->id.'_'.time().'.gif';
-        $fullPath = rtrim($badgesPath, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$filename;
+        $filename = $user->id . '_' . time() . '.gif';
+        $fullPath = rtrim($badgesPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
 
         if (! imagegif($image, $fullPath)) {
             imagedestroy($image);
@@ -113,7 +113,7 @@ class BadgeController extends Controller
         imagedestroy($image);
 
         $baseUrl = $settingsService->getOrDefault('badges_path', '/badges/');
-        $badgeUrl = rtrim($baseUrl, '/').'/'.$filename;
+        $badgeUrl = rtrim($baseUrl, '/') . '/' . $filename;
 
         WebsiteDrawBadge::create([
             'user_id' => $user->id,

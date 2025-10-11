@@ -204,8 +204,8 @@ if (Features::enabled(Features::twoFactorAuthentication())) {
     Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store'])
         ->middleware(
             array_filter([
-                'guest:'.config('fortify.guard'),
-                $twoFactorLimiter ? 'throttle:'.$twoFactorLimiter : null,
-            ])
+                'guest:' . config('fortify.guard'),
+                $twoFactorLimiter ? 'throttle:' . $twoFactorLimiter : null,
+            ]),
         );
 }

@@ -24,7 +24,7 @@ class GoogleRecaptchaRule implements InvokableRule
                     'response' => $value,
                     'remoteip' => request()->ip(),
                 ],
-            ]
+            ],
         );
 
         if ($response->getStatusCode() !== 200) {
