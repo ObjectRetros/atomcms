@@ -1,49 +1,70 @@
 <div align="center">
 <img src="https://i.imgur.com/9ePNdJ4.png" alt="Atom CMS"/>
+
+A modern, community-driven Retro CMS built with Laravel 12.x
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/pP6HyZedAj)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
+
+[Live Demos](#-live-preview) • [Installation](#-installation) • [Documentation](https://github.com/atom-retros/atomcms/wiki) • [Contributing](#-contributing)
+
 </div>
 
-<div align="center">
-    <a href="https://discord.gg/rX3aShUHdg" target="_blank">
-        Join the official Atom CMS Discord server
-    </a>
-</div>
+>[!NOTE]
+>Disclaimer: Educational Use Only
+> 
+> Atom CMS is provided as an educational resource for learning purposes only. The creators and contributors are not responsible for any misuse or unintended consequences arising from its use. By using Atom CMS, you agree to take full responsibility for your actions and ensure compliance with all applicable laws and regulations in your jurisdiction.
 
-### 📢 Disclaimer
-Please note that Atom CMS is provided as an educational resource for learning purposes only. The creators and contributors to Atom CMS are not responsible for any misuse or unintended consequences arising from the use of Atom CMS. By using Atom CMS, you agree to take full responsibility for your actions and any consequences resulting from your use of Atom CMS. It is your responsibility to ensure that you are using Atom CMS in compliance with all applicable laws and regulations.
 
-### 💙 A Community-Driven Retro CMS
-The creation of Atom CMS was driven by the desire to widen the options available for people when choosing a CMS for their new journey. By valuing community input and collaboration, Atom aims to offer a modern and user-friendly system that is easy to understand and work with. Additionally, Atom CMS includes a built-in theme system allowing you the flexibility to use any CSS framework you prefer or even opt for a fully customized vanilla approach. This enables you to tailor the platform to your specific needs and preferences, ensuring a truly unique user experience.
+## 🎯 About
 
-Check out the fantastic trio that brings it all together:
-- **PHP (Laravel 12.x)**: At the core of Atom CMS lies Laravel 12.x, a modern and elegant PHP framework that simplifies the development process. Laravel's extensive documentation can be found [here](https://laravel.com/docs/11.x).
-- **Vite**: As a next-generation frontend build tool, Vite empowers Atom CMS with lightning-fast development and production speeds. Dive into the Vite documentation [here](https://vitejs.dev/) to explore its full potential.
-- **TailwindCSS**: To ensure a visually stunning and responsive design, Atom CMS incorporates TailwindCSS, a utility-first CSS framework. Learn more about TailwindCSS and its installation process from the official [docs](https://tailwindcss.com/docs/installation)
+Atom CMS is a modern, community-driven CMS designed to provide a flexible and user-friendly platform for retro hotel management. Built on Laravel 12.x with a focus on extensibility and ease of use, Atom CMS features a built-in theme system that allows you to use any CSS framework or create fully customized vanilla designs.
 
-### 🤝 Contributions
-We appreciate any type of contribution towards Atom CMS, how ever to maintain a certain standard that make the reviewing process the most streamlined, we have defined some [contribution guidelines](https://github.com/ObjectRetros/atomcms/wiki/0.-Contribution-guidelines). Please take a moment to read them if you're considering contributing towards the CMS, thank you!
+### Built With
 
-### 🧙‍♂️ Learning Laravel
-If you are new to Laravel and want to build your own features, we highly recommend the following free resources:
+- **[Laravel 12.x](https://laravel.com/docs/11.x)** - Elegant PHP framework powering the backend
+- **[Vite](https://vitejs.dev/)** - Next-generation frontend tooling for blazing-fast builds
+- **[TailwindCSS](https://tailwindcss.com/)** - Utility-first CSS framework for responsive design
 
-- Laravel 11 from Scratch: [https://laracasts.com/series/30-days-to-learn-laravel-11](https://laracasts.com/series/30-days-to-learn-laravel-11)
+---
 
-Laracasts is considered an official learning platform for Laravel, so you can trust the quality of the content and learn best practices from some of the best and most experienced teacher within the field.
+## ✨ Features
 
-### 🤝 Migrating from Another CMS
-If you're migrating from another CMS like Cosmic CMS and is unsure what tables to remove or worry about colliding tables names, then fear no more!
+- 🎨 **Built-in Theme System** - Use any CSS framework or create custom themes
+- 🔐 **Secure Authentication** - Laravel-powered authentication and authorization
+- 🌍 **Multi-language Support** - Built-in localization for global audiences
+- 📊 **Integrated Housekeeping** - Comprehensive admin panel
+- 🔄 **Rcon System** - Real-time server communication
+- 📱 **Responsive Design** - Mobile-first approach with TailwindCSS
+- 🚀 **Modern Stack** - Latest PHP 8.2+ features
 
-Even tho we **highly recommend** to do a proper cleanup yourself, Atom CMS has a built-in option to rename colliding table names and drop matching foreign keys.
+---
 
-All you have to do is to change `RENAME_COLLIDING_TABLES=false` to `RENAME_COLLIDING_TABLES=true` within your `.env`file (You'll get to the .env file in the next step). Once the feature is enabled, Atom CMS will **attempt** to solve any conflicts that might happen due to the use of another CMS.
+## 👀 Live Preview
 
-### 🚧 Requirements
-- PHP 8.2 or above [PHP Downloads](https://www.php.net/downloads.php)
-- MySQL >= 8.x or  MariaDB >= 10.x
-- Composer v2 [Composer Download](https://getcomposer.org/download/)
-- NPM (LTS) [Node Download](https://nodejs.org/en/download/)
-- An Arcturus Morningstar database [Database repository](https://git.krews.org/morningstar/arcturus-morningstar-base-database)
+Experience Atom CMS with our official themes:
 
-Please verify the following extensions are enabled inside your php.ini file. If they have a ";" in front of them it means that they're commented out and not enabled. Simply remove the ";" to enable them.
+- **Dusk Theme**: [https://dusk.atomcms.dev](https://dusk.atomcms.dev)
+- **Atom Theme**: [https://atom.atomcms.dev](https://atom.atomcms.dev)
+
+---
+
+## 🚧 Requirements
+
+| Requirement | Version |
+|------------|---------|
+| PHP | 8.2 or higher |
+| MySQL | 8.x or higher |
+| MariaDB | 10.x or higher |
+| Composer | v2 |
+| Node.js | LTS |
+| Database | [Arcturus Morningstar](https://github.com/ObjectRetros/retro-hotel-files/blob/main/arcturus-3-5-3-database.sql) |
+
+### Required PHP Extensions
+
+Ensure the following extensions are enabled in your `php.ini`:
+
 ```ini
 extension=curl
 extension=fileinfo
@@ -55,116 +76,224 @@ extension=sockets
 extension=intl
 ```
 
-## Setup guide
-### 💻 Windows Setup
-```shell
+**Note:** Remove the semicolon (`;`) prefix if the extension is commented out.
+
+---
+
+## 📦 Installation
+
+### Windows Setup
+
+```bash
+# Clone the repository
 git clone https://github.com/ObjectRetros/atomcms.git
 cd atomcms
-copy .env.example .env (Do not forget to edit the database credentials inside the .env)
+
+# Configure environment
+copy .env.example .env
+# Edit .env and update your database credentials
+
+# Install dependencies
 composer install
+npm install
+
+# Set up database and generate key
 php artisan migrate --seed
 php artisan key:generate
-npm install && npm run build:atom (For development run: npm run dev:[theme-name] - eg. npm run dev:atom)
+
+# Build assets
+npm run build:atom
+# For development: npm run dev:atom
 ```
 
-_Don't forget to link your IIS site to the "public" folder inside for "atomcms"_
+#### IIS Configuration
 
-**If you are using Atom CMS in production, don't forget to change the following variables:**
+Point your IIS site to the `public` folder inside the `atomcms` directory.
 
-```dotenv
-APP_ENV=local to APP_ENV=production
-APP_DEBUG=true to APP_DEBUG=false
-```
+#### Required Permissions
 
-#### Required permissions
-Please make sure the "atomcms" folder is granted "Full control" for both the IUSR & the IIS_IUSRS.
+Grant "Full control" to both `IUSR` and `IIS_IUSRS` for the atomcms folder.
 
-Here's a GIF of me doing it on a different folder: [https://gyazo.com/7d5f38525a762c1b26bbd7552ca93478](https://gyazo.com/7d5f38525a762c1b26bbd7552ca93478) the principle is the same, you just do it on the "atomhk" folder.
+**Visual guide:** [Permission setup tutorial](https://gyazo.com/7d5f38525a762c1b26bbd7552ca93478)
 
-#### cURL error
-If you're receiving a cURL 60 error due to eg. setting up findretros, then make sure you download the latest cacert.pem from [https://curl.se/docs/caextract.html](https://curl.se/docs/caextract.html). Once downloaded place it in eg. "C:/" folder and then open your php.ini file, search for `curl.cainfo` uncomment (Remove the ";" infront of the line) it and put the absolute path + file name to your certificate (Eg. "C:/cacert-2022-07-19.pem"). Save the file and your problem should now be solved.
+#### Troubleshooting cURL SSL Errors
 
-#### Windows Tutorial
-Have you always wanted to set up your own hotel from scratch, but are unsure how? Then you can follow my **three** parts series on DevBest which will take you through any step necessary to get everything up and running.
+If you encounter cURL 60 errors:
 
--   Part 1: [https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-1.92532/](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-1.92532/)
--   Part 2: [https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-2.92533/](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-2.92533/)
--   Part 3: [https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-3.92543/](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-3.92543/)
+1. Download the latest [cacert.pem](https://curl.se/docs/caextract.html)
+2. Place it in `C:/`
+3. Edit `php.ini` and update:
+   ```ini
+   curl.cainfo = "C:/cacert-2025-09-09.pem"
+   ```
+4. Restart your web server
 
+#### Complete Windows Tutorial
 
-### 🧙‍♂️ Linux Setup
-```shell
+New to retro hotel setup? Follow our comprehensive three-part series:
+
+- [Part 1: Basic Setup](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-1.92532/)
+- [Part 2: Configuration](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-2.92533/)
+- [Part 3: Finalization](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-3.92543/)
+
+---
+
+### Linux Setup
+
+```bash
+# Clone the repository
 git clone https://github.com/ObjectRetros/atomcms.git
 cd atomcms
-cp .env.example .env (Do not forget to edit the database credentials inside the .env)
+
+# Configure environment
+cp .env.example .env
+# Edit .env and update your database credentials
+
+# Install dependencies
 composer install
+npm install
+
+# Set up database and generate key
 php artisan migrate --seed
 php artisan key:generate
-npm install && npm run build:atom (For development run: npm run dev:[theme-name] (eg. npm run dev:atom))
+
+# Build assets
+npm run build:atom
+# For development: npm run dev:atom
 ```
 
-**Grant necessary permissions to used folders. Within your atomcms directory, enter the 4 commands below:**
-```shell
+#### Set Permissions
+
+```bash
 sudo chown -R $USER:www-data storage
 sudo chown -R $USER:www-data bootstrap/cache
 chmod -R 775 storage
 chmod -R 775 bootstrap/cache
 ```
 
-For NGINX, you can copy the config a base configuration from here: [Deploy a site on nginx](https://laravel.com/docs/9.x/deployment#nginx)
+#### NGINX Configuration
 
-**If you are using Atom CMS in production, don't forget to change the following variables:**
+For NGINX setup, refer to Laravel's [deployment documentation](https://laravel.com/docs/12.x/deployment#nginx).
+
+#### Complete Linux Tutorial
+
+Need help setting up your retro hotel on Linux? Follow our comprehensive Ubuntu tutorial:
+
+- [Complete Ubuntu Setup Guide](https://git.krews.org/duckietm/ubuntu-tutorial) - Step-by-step instructions for Ubuntu
+
+---
+
+## ⚙️ Configuration
+
+### Production Environment
+
+Update these variables in your `.env` file for production:
+
 ```dotenv
-APP_ENV=local to APP_ENV=production
-APP_DEBUG=true to APP_DEBUG=false
+APP_ENV=production
+APP_DEBUG=false
+FORCE_HTTPS=true  # If using Cloudflare's "Always use HTTPS"
 ```
 
-### Testing
-AtomCMS contains a small, but growing set of tests. To get started with tests, you have to have a file called `testing.sqlite` in the `database` directory. You can simply create an empty file with that name, and you will be all set!
+### Cloudflare Turnstile Captcha
 
-To run all tests, run `vendor/bin/pest`. You can also use `php artisan test`
+Protect your site from bots:
 
-### 🔒️ Using HTTPS
-In case you're using HTTPs through Cloudflares "Always redirect to HTTPs" feature, you should set `FORCE_HTTPS=` within your `.env` file to `true` this it to make sure everything is properly using HTTPs. This is necessary for some features in Atom CMS to work properly when you're letting cloudflare handle the HTTPs redirects without a dedicated SSL certificate.
+1. Visit [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/)
+2. Sign in and select your site
+3. Copy the site and secret keys to your `.env` file
 
-### 🔒️ Settings up Cloudflare turnstile captcha
-To set up the cloudflare turnstile captcha, to avoid potential bots from mass spamming your hotel, you'll first have to go to [https://www.cloudflare.com/products/turnstile/](https://www.cloudflare.com/products/turnstile/), sign-in or sign-up, next select your cloudflare site & copy the site & secret key to your .env file.
+### Important: Disable Rocket Loader
 
-### 🚨 Disable rocket loader
-Atom CMS uses Javascript in certain areas, which unfortunately conflicts with Cloudflares Rocket Loader feature. So in-case you have Rocket Loader enabled on Cloudflare, you will have to disable it, otherwise you **will** run into various annoying issues when using Atom CMS.
+Atom CMS uses JavaScript that conflicts with Cloudflare's Rocket Loader. To disable:
 
-To disable or check if Rocket Loader is enabled on Cloudflare, all you have to do is, head to your Cloudflare dashboard and find "Speed" -> "Optimization" in the navigation menu, once you've clicked on the "Optimization" menu point, scroll about halfway down until you find "Rocket Loader™" and then un-toggle it in-case it's enabled. That's it! Rocket loader is now disabled, and you're all good to go.
+1. Go to your Cloudflare dashboard
+2. Navigate to **Speed** → **Optimization**
+3. Find **Rocket Loader™** and disable it
 
-### 📝 Further documentation
-Atom comes with its own dedicated documentation site - this makes it a lot easier for you to read about **exactly** what you want, rather than having to read through a giant README file!
+### Migrating from Another CMS
 
-As Atom CMS comes packed with **tons** of features, to improve the CMS experience for you and your users it only makes sense to have such a site to make the experience the best possible.
+If migrating from Cosmic CMS or similar platforms:
 
-You can find the documentation, addons, and tips & tricks on **[https://github.com/atom-retros/atomcms/wiki](https://github.com/atom-retros/atomcms/wiki)**
+Set `RENAME_COLLIDING_TABLES=true` in your `.env` file. Atom CMS will automatically handle table conflicts.
 
-### 🔥 Credits
-Atom CMS is made possible by the contributions of numerous developers, designers, and community members.
+**Note:** We recommend proper manual cleanup, but this feature helps avoid common migration issues.
 
--   **Kasja** - Helping with various design choices, designing Dusk theme, ideas & GFX
--   **Inicollas** - Dark mode, Turbolinks, Performance improvements, Article reactions, User sessions, Layout improvements, PT-BR translations, originally creating the integrated housekeeping.
--   **Kani** - Rcon system & FindRetros API & creating/maintaining Atom CMS v2
--   **Dominic** - Performance improvements & User sessions, generally helping improving the CMS
--   **Beny** - Findretros API fixes & CF Fixes
--   **Live** - French translations, bugfixes & tweaks
--   **MisterDeen** - Custom Discord widget, bugfixes & tweaks
--   **EntenKoeniq** - Automatic language registration, auto color scheme selection, rooms page & profile page fixes,
--   **DuckieTM** - Adjustments to the integreated housekeeping,
--   **DamienJolly** - Bugfixes
--   **Danbo** - Bugfixes
--   **Diddy/Josh** - Code readability improvements
--   **Oliver** - Finnish translations
--   **Damue & EntenKoeniq** - German translations
--   **Talion** - Turkish translations
--   **CentralCee, Rille & Tuborgs** - Swedish translations
--   **Yannick** - Netherland translations
--   **Gedomi** - Spanish translations
--   **Lorenzune** - Italian translations
--   **Twana** - Norwegian translations
--   **Plow** - French translations
--   **Sonay** - Creating material theme
--   **Raizer** - Circinus
+---
+
+## 🧪 Testing
+
+Atom CMS includes a growing test suite using Pest.
+
+### Run Tests
+
+```bash
+# Using Pest
+vendor/bin/pest
+
+# Using Artisan
+php artisan test
+```
+
+---
+
+## 📚 Documentation
+
+For detailed documentation, addons, tips, and tricks, visit our [official wiki](https://github.com/atom-retros/atomcms/wiki).
+
+### Learning Laravel
+
+New to Laravel? These free resources will help:
+- [Official bootcamp & course](https://learn.laravel.com) - Official Laravel bootcamp & course
+- [Laravel 11 from Scratch](https://laracasts.com/series/30-days-to-learn-laravel-11) - Official Laracasts course
+---
+
+## 🤝 Contributing
+
+We welcome contributions! To maintain code quality and streamline reviews, please read our [contribution guidelines](https://github.com/ObjectRetros/atomcms/wiki/0.-Contribution-guidelines) before submitting a pull request.
+
+---
+
+## 🏆 Credits
+
+Atom CMS is made possible by our amazing community:
+
+### Core Contributors
+
+- **Kasja** - Design direction, Dusk theme, ideas & graphics
+- **INicollas** - Dark mode, Turbolinks, article reactions, user sessions, PT-BR translations, Orion Housekeeping
+- **Kani** - Rcon system, FindRetros API, Atom CMS v2 creator/maintainer
+- **DuckieTM** - Badge drawer, bugfixes, housekeeping features
+- **EntenKoeniq** - Auto language registration, color scheme selection, various page fixes
+
+### Contributors
+
+- **Dominic** - Performance improvements, user sessions
+- **Beny** - FindRetros API fixes, Cloudflare fixes
+- **Live** - French translations, bugfixes
+- **MisterDeen** - Custom Discord widget
+- **DamienJolly**, **Danbo**, **Diddy/Josh** - Various bugfixes and improvements
+- **Sonay** - Material theme inspiration
+- **Raizer** - Circinus
+
+### Translations
+
+- **Oliver** - Finnish
+- **Damue & EntenKoeniq** - German
+- **Talion** - Turkish
+- **CentralCee, Rille & Tuborgs** - Swedish
+- **Yannick** - Dutch
+- **Gedomi** - Spanish
+- **Lorenzune** - Italian
+- **Twana** - Norwegian
+- **Plow** - French
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#atom-cms)**
+
+Made with ❤️ by the Atom CMS Community
+
+</div>
