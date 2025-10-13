@@ -88,7 +88,7 @@
                             {{ __('Groups') }}
                         </x-slot:title>
 
-                        <div class="flex justify-between">
+                        <div class="flex flex-wrap gap-4 justify-between">
                             @forelse($groups as $group)
                                 <div class="h-[70px] w-[70px] rounded-full border-2 dark:border-gray-700 overflow-hidden flex items-center justify-center p-1 rounded-md cursor-pointer friend"
                                     data-tippy-content="{{ $group->name ?? 'Unknown' }}">
