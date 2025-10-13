@@ -51,18 +51,18 @@
                 </div>
             </div>
 
-            <div class="hidden grid-cols-2 gap-x-14 md:grid">
+            <div class="grid gap-14 grid-cols-1 md:grid-cols-2">
                 <div class="col-span-1">
                     <x-user.profile-info-card col-span="1">
                         <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/badges.png') }}" alt="">
+                            <img class="h-[140px] object-cover object-left" src="{{ asset('/assets/images/profile/badges.png') }}" alt="">
                         </x-slot:image>
 
                         <x-slot:title>
                             {{ __('Badges') }}
                         </x-slot:title>
 
-                        <div class="flex justify-between">
+                        <div class="flex flex-wrap gap-2 justify-between">
                             @forelse($user->badges as $badge)
                                 <div data-tippy-content="{{ $badge->badge_code }}"
                                     class="user-badge h-[70px] w-[70px] border-2 dark:border-gray-700 rounded-full flex items-center justify-center cursor-pointer">
@@ -81,7 +81,7 @@
                 <div class="col-span-1">
                     <x-user.profile-info-card col-span="1">
                         <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/groups.png') }}" alt="">
+                            <img class="h-[140px] object-cover object-left" src="{{ asset('/assets/images/profile/groups.png') }}" alt="">
                         </x-slot:image>
 
                         <x-slot:title>
@@ -106,25 +106,25 @@
                 </div>
             </div>
 
-            <div class="hidden grid-cols-2 gap-x-14 md:grid">
+            <div class="grid gap-14 grid-cols-1 md:grid-cols-2">
                 <div class="col-span-1">
                     <x-user.profile-info-card col-span="1">
                         <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/rooms.png') }}" alt="">
+                            <img class="h-[140px] object-cover object-left" src="{{ asset('/assets/images/profile/rooms.png') }}" alt="">
                         </x-slot:image>
 
                         <x-slot:title>
                             {{ __('Rooms') }}
                         </x-slot:title>
 
-                        <div class="flex space-x-1 justify-between">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 space-x-1">
                             @forelse($user->rooms as $room)
                                 <div
-                                    class="flex w-[120px] flex-col gap-y-1 rounded-md dark:bg-gray-900 bg-gray-200 p-1 overflow-hidden">
+                                    class="flex flex-col gap-y-1 rounded-md dark:bg-gray-900 bg-gray-200 p-1 overflow-hidden">
                                     <div class="h-full inline-block">
                                         <div class="h-full relative border border-gray-500 dark:border-gray-700 rounded flex items-center justify-center flex-col">
                                             <img
-                                                class="rounded"
+                                                class="rounded mt-1 mb-1"
                                                 src="{{ setting('room_thumbnail_path') }}/{{ $room->id }}.png"
                                                 alt="{{ $room->name }}"
                                                 onerror="this.onerror=null;this.src='{{ asset('/assets/images/profile/room_placeholder.png') }}';"
@@ -172,7 +172,7 @@
                 <div class="col-span-1">
                     <x-user.profile-info-card col-span="1">
                         <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/friends.png') }}" alt="">
+                            <img class="h-[140px] object-cover object-left" src="{{ asset('/assets/images/profile/friends.png') }}" alt="">
                         </x-slot:image>
 
                         <x-slot:title>
@@ -184,7 +184,7 @@
                                 <a href="{{ route('profile.show', $friend->user->username ?? 'SystemAccount') }}"
                                     class="h-[70px] w-[70px] rounded-full border-2 dark:border-gray-700 overflow-hidden flex items-center p-1 rounded-md cursor-pointer friend"
                                     data-tippy-content="{{ $friend->user->username ?? 'Unknown' }}">
-                                    <img class="mt-6 transition duration-200 ease-in-out hover:scale-110"
+                                    <img class="mt-6 transition duration-200 ease-in-out hover:scale-110 min-w-[64px] h-[110px] -ml-1"
                                         src="{{ setting('avatar_imager') }}{{ $friend->user?->look }}"
                                         alt="">
                                 </a>
