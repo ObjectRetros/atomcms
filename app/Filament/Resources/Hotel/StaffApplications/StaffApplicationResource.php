@@ -2,12 +2,10 @@
 
 namespace App\Filament\Resources\Hotel\StaffApplications;
 
-use App\Filament\Resources\Hotel\StaffApplications\Pages\EditStaffApplication;
 use App\Filament\Resources\Hotel\StaffApplications\Pages\ListStaffApplications;
 use App\Models\Community\Staff\WebsiteStaffApplications;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
@@ -36,10 +34,19 @@ class StaffApplicationResource extends Resource
                     ->relationship('user', 'username')
                     ->required()
                     ->searchable(),
+
                 Select::make('rank_id')
+                    ->label('Rank')
                     ->relationship('rank', 'rank_name')
-                    ->required()
-                    ->searchable(),
+                    ->searchable()
+                    ->nullable(),
+
+                Select::make('team_id')
+                    ->label('Team')
+                    ->relationship('team', 'rank_name')
+                    ->searchable()
+                    ->nullable(),
+
                 Textarea::make('content')
                     ->required()
                     ->columnSpanFull(),
@@ -54,25 +61,42 @@ class StaffApplicationResource extends Resource
                     ->label('User')
                     ->sortable()
                     ->searchable(),
+
+                TextColumn::make('applied_for')
+                    ->label('Applied For')
+                    ->state(fn (WebsiteStaffApplications $record) => $record->team_id
+                        ? ($record->team->rank_name ?? '-')
+                        : ($record->rank->rank_name ?? '-'),
+                    )
+                    ->searchable(query: function ($query, string $search) {
+                        $query
+                            ->orWhereHas('rank', fn ($q) => $q->where('rank_name', 'like', "%{$search}%"))
+                            ->orWhereHas('team', fn ($q) => $q->where('rank_name', 'like', "%{$search}%"));
+                    })
+                    ->sortable(),
+
                 TextColumn::make('rank.rank_name')
                     ->label('Rank')
-                    ->sortable()
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('team.rank_name')
+                    ->label('Team')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('content')
                     ->limit(50)
+                    ->wrap()
                     ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
+
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable(),
             ])
-            ->filters([
-                // Add filters if needed
-            ])
             ->recordActions([
-                EditAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
@@ -84,7 +108,6 @@ class StaffApplicationResource extends Resource
     {
         return [
             'index' => ListStaffApplications::route('/'),
-            'edit' => EditStaffApplication::route('/{record}/edit'),
         ];
     }
 }

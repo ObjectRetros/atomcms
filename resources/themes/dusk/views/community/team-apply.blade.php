@@ -11,7 +11,7 @@
                 {{ __('Please fill out the fields below to apply for :position', ['position' => $position->team->rank_name]) }}
             </x-slot:under-title>
 
-            <form class="flex flex-col gap-y-3" action="{{ route('staff-applications.store', $position) }}" method="POST">
+            <form class="flex flex-col gap-y-3" action="{{ route('team-applications.store', $position) }}" method="POST">
                 @csrf
 
                 <div>
