@@ -39,7 +39,7 @@
                 </x-navigation.dropdown-child>
 
                 <x-navigation.dropdown-child :route="route('teams.index')">
-                    {{ __('Teams') }}
+                    {{ __('Teams applications') }}
                 </x-navigation.dropdown-child>
 
                 <x-navigation.dropdown-child :route="route('staff-applications.index')">
