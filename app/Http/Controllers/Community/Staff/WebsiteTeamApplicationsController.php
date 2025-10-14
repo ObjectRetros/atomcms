@@ -12,7 +12,7 @@ class WebsiteTeamApplicationsController extends Controller
 {
     public function index(): View
     {
-        $positions = WebsiteOpenPosition::query()
+        $positions = \App\Models\Community\Staff\WebsiteOpenPosition::query()
             ->where('position_kind', 'team')
             ->whereNotNull('team_id')
             ->with('team')
@@ -20,8 +20,20 @@ class WebsiteTeamApplicationsController extends Controller
             ->latest()
             ->get();
 
+        $userAppStatuses = [];
+        if (auth()->check()) {
+            $teamIds = $positions->pluck('team_id')->filter()->unique()->all();
+
+            $userAppStatuses = \App\Models\Community\Staff\WebsiteStaffApplications::query()
+                ->where('user_id', auth()->id())
+                ->whereIn('team_id', $teamIds)
+                ->pluck('status', 'team_id')
+                ->toArray();
+        }
+
         return view('community.team-applications', [
             'positions' => $positions,
+            'userAppStatuses' => $userAppStatuses,
         ]);
     }
 

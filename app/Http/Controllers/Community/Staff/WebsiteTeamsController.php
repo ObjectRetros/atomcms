@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Community\Staff;
 
 use App\Http\Controllers\Controller;
-use App\Models\Community\Staff\WebsiteOpenPosition;
+use App\Services\Community\TeamService;
 use Illuminate\View\View;
 
 class WebsiteTeamsController extends Controller
 {
+    public function __construct(private readonly TeamService $teamService) {}
+
     public function __invoke(): View
     {
-        $positions = WebsiteOpenPosition::query()
-            ->where('position_kind', 'team')
-            ->whereNotNull('team_id')
-            ->with('team')
-            ->whereHas('team')
-            ->latest()
-            ->get();
+        $employees = $this->teamService->fetchTeams();
 
-        return view('community.team-applications', [
-            'positions' => $positions,
+        return view('community.teams', [
+            'employees' => $employees,
         ]);
     }
 }

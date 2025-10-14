@@ -5,10 +5,31 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @forelse($positions as $position)
                 @continue(!$position->team)
+                @php
+                    $status = auth()->check()
+                        ? ($userAppStatuses[$position->team->id] ?? null) // 'pending'|'approved'|'rejected'|null
+                        : null;
+
+                    $statusLabel = $status ? ucfirst($status) : null;
+                    $statusColorClasses = match ($status) {
+                        'approved' => 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-200 dark:border-green-800',
+                        'pending'  => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                        'rejected' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border-red-200 dark:border-red-800',
+                        default    => '',
+                    };
+                @endphp
 
                 <x-content.staff-content-section :badge="$position->team->badge" :color="$position->team->staff_color">
                     <x-slot:title>
-                        {{ $position->team->rank_name }}
+                        <span class="inline-flex items-center gap-2">
+                            {{ $position->team->rank_name }}
+
+                            @if ($statusLabel)
+                                <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium {{ $statusColorClasses }}">
+                                    {{ $statusLabel }}
+                                </span>
+                            @endif
+                        </span>
                     </x-slot:title>
 
                     <x-slot:under-title>
@@ -26,15 +47,29 @@
 
                     <div class="flex justify-between">
                         @auth
-                            @if (auth()->user()->hasAppliedForTeam($position->team->id))
-                                <x-form.danger-button class="w-full justify-center">
-                                    {{ __('You have already applied for :position', ['position' => $position->team->rank_name]) }}
-                                </x-form.danger-button>
+                            @if ($status) 
+                                {{-- Already applied: show a disabled button indicating status --}}
+                                <x-form.secondary-button class="w-full justify-center" disabled>
+                                    @switch($status)
+                                        @case('pending')
+                                            {{ __('Your application is pending') }}
+                                            @break
+                                        @case('approved')
+                                            {{ __('You have been approved') }}
+                                            @break
+                                        @case('rejected')
+                                            {{ __('Your application was rejected') }}
+                                            @break
+                                        @default
+                                            {{ __('Application submitted') }}
+                                    @endswitch
+                                </x-form.secondary-button>
                             @else
+                                {{-- No application yet: show Apply --}}
                                 <a href="{{ route('team-applications.show', $position) }}" class="w-full">
-                                    <x-form.secondary-button class="w-full justify-center">
+                                    <x-form.primary-button class="w-full justify-center">
                                         {{ __('Apply for :position', ['position' => $position->team->rank_name]) }}
-                                    </x-form.secondary-button>
+                                    </x-form.primary-button>
                                 </a>
                             @endif
                         @else
