@@ -3,45 +3,59 @@
 namespace App\Http\Controllers\Community\Staff;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
-use App\Services\Community\StaffApplicationService;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Community\Staff\WebsiteStaffApplications;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class StaffApplicationsController extends Controller
 {
-    public function __construct(private readonly StaffApplicationService $staffApplicationService) {}
-
-    public function index()
+    public function index(): View
     {
-        return view('community.staff-applications', [
-            'positions' => $this->staffApplicationService->fetchOpenPositions(),
-        ]);
+        $positions = WebsiteOpenPosition::query()
+            ->where('position_kind', 'rank')
+            ->whereNotNull('permission_id')
+            ->with('permission')
+            ->whereHas('permission')
+            ->latest()
+            ->get();
+
+        return view('community.staff-applications', compact('positions'));
     }
 
-    public function show(WebsiteOpenPosition $position)
+    public function show(WebsiteOpenPosition $position): View
     {
-        return view('community.staff-applications-apply', [
-            'position' => $position->load('permission'),
-        ]);
+        abort_unless($position->position_kind === 'rank', 404);
+        $position->loadMissing('permission');
+        abort_unless($position->permission, 404);
+
+        return view('community.staff-apply', compact('position'));
     }
 
-    public function store(WebsiteOpenPosition $position, StaffApplicationFormRequest $request): RedirectResponse
+    public function store(Request $request, WebsiteOpenPosition $position)
     {
-        if ($this->staffApplicationService->hasUserAppliedForPosition($request->user(), $position->permission->id)) {
-            return redirect()->back()->withErrors([
-                'message' => __('You have already applied for this position.'),
-            ]);
+        abort_unless($position->position_kind === 'rank', 404);
+
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'min:10'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->hasAppliedForPosition($position->permission_id)) {
+            return back()->withErrors([
+                'content' => __('You have already applied for this position.'),
+            ])->withInput();
         }
 
-        if (! $this->staffApplicationService->isPositionOpenForApplication($position)) {
-            return redirect()->back()->withErrors([
-                'message' => __('You cannot apply for this position.'),
-            ]);
-        }
+        WebsiteStaffApplications::create([
+            'user_id' => $user->id,
+            'rank_id' => $position->permission_id,
+            'content' => $validated['content'],
+        ]);
 
-        $this->staffApplicationService->storeApplication($request->user(), $position->permission->id, $request->input('content'));
-
-        return to_route('staff-applications.index')->with('success', __('Your application has been submitted!'));
+        return redirect()
+            ->route('staff-applications.index')
+            ->with('status', __('Your application has been submitted!'));
     }
 }

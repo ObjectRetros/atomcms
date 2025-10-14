@@ -2,20 +2,23 @@
 
 namespace App\Models\Community\Staff;
 
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class WebsiteOpenPosition extends Model
 {
-    protected $guarded = ['id'];
+    use HasFactory;
 
     protected $table = 'website_open_positions';
 
-    use HasFactory;
+    protected $guarded = ['id'];
 
     protected $fillable = [
+        'position_kind',
         'permission_id',
+        'team_id',
         'description',
         'apply_from',
         'apply_to',
@@ -29,14 +32,22 @@ class WebsiteOpenPosition extends Model
     protected static function boot()
     {
         parent::boot();
+
         static::deleting(function ($openPosition) {
-            WebsiteStaffApplications::where('rank_id', $openPosition->permission_id)->delete();
+            if ($openPosition->position_kind === 'rank' && $openPosition->permission_id) {
+                WebsiteStaffApplications::where('rank_id', $openPosition->permission_id)->delete();
+            }
         });
     }
 
     public function permission()
     {
         return $this->belongsTo(Permission::class, 'permission_id', 'id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(WebsiteTeam::class, 'team_id', 'id');
     }
 
     public function applications()
