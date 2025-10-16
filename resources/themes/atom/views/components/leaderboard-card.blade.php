@@ -8,7 +8,7 @@
     'formatValue' => null,
 ])
 
-<div class="rounded bg-white p-2 shadow dark:bg-gray-900">
+<div class="rounded bg-white p-2 shadow-sm dark:bg-gray-900">
     <div class="flex justify-center gap-x-1 text-center font-semibold text-gray-700 dark:text-gray-300">
         <div class="flex items-center">
             <img src="{{ asset('/assets/images/icons/' . $icon) }}" alt="{{ $title }}" class="w-4" style="image-rendering: pixelated;">

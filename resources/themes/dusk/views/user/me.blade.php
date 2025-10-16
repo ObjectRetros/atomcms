@@ -96,16 +96,16 @@
 
    <div class="col-span-12 md:col-span-8">
        <div
-           class="flex flex-col justify-between gap-3 rounded bg-[#2b303c] p-1 shadow-md lg:flex-row">
+           class="flex flex-col gap-3 rounded bg-[#2b303c] p-1 shadow-md lg:flex-row lg:items-center lg:justify-between">
            <div
-               class="py-2 px-2 relative flex justify-center items-center rounded text-sm font-semibold bg-[#e9b124]">
-               <div class="absolute bg-[#e9b124] w-6 h-6 -right-1 rotate-45 invisible lg:visible"></div>
+               class="relative flex items-center justify-center rounded bg-[#e9b124] py-2 px-2 text-sm font-semibold">
+               <div class="invisible h-6 w-6 -right-1 rotate-45 bg-[#e9b124] lg:visible lg:absolute"></div>
                <img src="{{ asset('/assets/images/icons/online-friends.png') }}" alt="{{ __('Online Friends') }}"
                     class="mr-2 mb-1 inline-flex" style="max-width: 24px; max-height: 24px">
-               <span class="relative text-white h-100">{{ __('Online Friends') }}</span>
+               <span class="relative text-white">{{ __('Online Friends') }}</span>
            </div>
 
-           <div class="relative flex flex-1 items-center justify-center gap-2 pl-2 h-100 sm:justify-start">
+           <div class="relative flex flex-wrap items-center justify-center gap-2 pl-2 sm:justify-start">
                @foreach ($onlineFriends as $friend)
                    <div data-popover-target="friend-{{ $friend->username }}"
                         style="image-rendering: pixelated; background-image: url({{ setting('avatar_imager') }}{{ $friend->look }}&direction=2&head_direction=3&gesture=sml&action=wav&headonly=1&size=s)"
@@ -113,7 +113,7 @@
                    </div>
 
                    <div data-popover id="friend-{{ $friend->username }}" role="tooltip"
-                        class="invisible absolute z-10 inline-block w-64 rounded-lg border border-gray-200 bg-white text-sm font-light text-gray-500 opacity-0 shadow-sm transition-opacity duration-300">
+                        class="invisible absolute z-10 inline-block w-64 rounded-lg border border-gray-200 bg-white text-sm font-light text-gray-500 opacity-0 shadow-xs transition-opacity duration-300">
                        <div
                            class="rounded-t-lg border-b border-gray-200 bg-gray-100 px-3 py-2">
                            <div

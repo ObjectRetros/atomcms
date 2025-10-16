@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import path from "path";
-import tailwindcss from "tailwindcss";
+import tailwindcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
 
 export default defineConfig({
     plugins: [
@@ -32,9 +33,8 @@ export default defineConfig({
     css: {
         postcss: {
             plugins: [
-                tailwindcss({
-                    config: path.resolve(__dirname, "tailwind.config.js"),
-                }),
+                tailwindcss(),
+                autoprefixer(),
             ],
         },
     },
