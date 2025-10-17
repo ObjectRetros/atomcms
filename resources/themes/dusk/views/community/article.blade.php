@@ -31,10 +31,10 @@
 
     <div class="col-span-12 space-y-4 md:col-span-9">
         <div
-            class="relative flex flex-col gap-y-8 overflow-hidden rounded p-3 shadow bg-gray-800 text-gray-100">
+            class="relative flex flex-col gap-y-8 overflow-hidden rounded p-3 shadow-sm bg-gray-800 text-gray-100">
             <div class="relative flex h-24 flex-col items-center justify-center gap-y-1 overflow-hidden rounded px-2 text-white"
                 style="background: url({{ asset('storage/' .  $article->image ) }}) center; background-size: cover;">
-                <div class="absolute h-full w-full bg-black bg-opacity-50"></div>
+                <div class="absolute h-full w-full bg-black/50"></div>
 
                 <p class="relative w-full truncate text-center text-xl font-semibold lg:text-2xl xl:text-3xl">
                     {{ $article->title }}</p>
@@ -87,7 +87,7 @@
                     <div class="px-1 dark:text-gray-200 space-y-[13px]">
                         @foreach ($article->comments->sortByDesc('created_at') as $comment)
                             <div
-                                class="relative w-full rounded bg-[#21242e] p-4 h-[90px] overflow-hidden flex items-center shadow">
+                                class="relative w-full rounded bg-[#21242e] p-4 h-[90px] overflow-hidden flex items-center shadow-sm">
                                 <a href="{{ route('profile.show', $comment->user) }}"
                                    class="absolute top-2 left-1 drop-shadow">
                                     <img style="image-rendering: pixelated;"

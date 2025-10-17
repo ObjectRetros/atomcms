@@ -68,7 +68,7 @@
         x-on:click.outside="close($refs.button)"
         :id="$id('dropdown-button')"
         style="display: none;"
-        @class(['absolute left-0 rounded bg-[#ac93da] shadow whitespace-nowrap overflow-hidden z-[100] flex flex-col py-2 items-center gap-2 dropdown-children mt-1', $childClasses])
+        @class(['absolute left-0 rounded bg-[#ac93da] shadow-sm whitespace-nowrap overflow-hidden z-[100] flex flex-col py-2 items-center gap-2 dropdown-children mt-1', $childClasses])
     >
         {{ $children }}
     </div>

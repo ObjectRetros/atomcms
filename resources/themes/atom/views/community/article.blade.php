@@ -3,7 +3,7 @@
 
     <div class="col-span-12 rounded space-y-3 md:col-span-3">
         <div
-            class="relative mt-6 h-24 w-full overflow-hidden rounded border bg-white shadow dark:border-gray-900 dark:bg-gray-800 md:mt-0">
+            class="relative mt-6 h-24 w-full overflow-hidden rounded border bg-white shadow-sm dark:border-gray-900 dark:bg-gray-800 md:mt-0">
             <div
                 class="absolute top-1 right-1 rounded bg-white px-2 text-sm font-semibold dark:bg-gray-700 dark:text-gray-100">
                 {{ $article->user && !$article->user->hidden_staff ? $article->user->permission->rank_name ?? 'Member' : 'Member' }}
@@ -62,10 +62,10 @@
 
     <div class="col-span-12 space-y-4 md:col-span-9">
         <div
-            class="relative flex flex-col gap-y-8 overflow-hidden rounded bg-white p-3 shadow dark:bg-gray-800 dark:text-gray-300">
+            class="relative flex flex-col gap-y-8 overflow-hidden rounded bg-white p-3 shadow-sm dark:bg-gray-800 dark:text-gray-300">
             <div class="relative flex h-24 flex-col items-center justify-center gap-y-1 overflow-hidden rounded px-2 text-white"
                 style="background: url(/storage/{{ $article->image }}) center; background-size: cover;">
-                <div class="absolute h-full w-full bg-black bg-opacity-50"></div>
+                <div class="absolute h-full w-full bg-black/50"></div>
 
                 <p class="relative w-full truncate text-center text-xl font-semibold lg:text-2xl xl:text-3xl">
                     {{ $article->title }}</p>
@@ -134,7 +134,7 @@
                 <div class="px-1 dark:text-gray-200 space-y-[13px]">
                     @foreach ($article->comments->sortByDesc('created_at') as $comment)
                         <div
-                            class="relative w-full rounded bg-[#f5f5f5] dark:bg-gray-700 p-4 h-[90px] overflow-hidden flex items-center shadow">
+                            class="relative w-full rounded bg-[#f5f5f5] dark:bg-gray-700 p-4 h-[90px] overflow-hidden flex items-center shadow-sm">
                             <a href="{{ route('profile.show', $comment->user) }}"
                                 class="absolute top-2 left-1 drop-shadow">
                                 <img style="image-rendering: pixelated;"

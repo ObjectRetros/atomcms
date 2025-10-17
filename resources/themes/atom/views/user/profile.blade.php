@@ -2,10 +2,10 @@
     @push('title', $user->username)
 
     <div class="col-span-12">
-        <div class="grid grid-cols-1 gap-y-14">
-            <div class="grid grid-cols-3 gap-x-8">
+        <div class="grid grid-cols-1! gap-y-14">
+            <div class="grid grid-cols-3! gap-x-8">
                 <div
-                    class="col-span-3 md:col-span-1 h-[150px] lg:h-[220px] profile-bg rounded-lg relative flex gap-x-2 items-center text-white overflow-hidden">
+                    class="col-span-3 md:col-span-1! h-[150px] lg:h-[220px] profile-bg rounded-lg relative flex gap-x-2 items-center text-white overflow-hidden">
                     <img class="mt-14 drop-shadow lg:mt-0" style="image-rendering: pixelated;"
                         src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l"
                         alt="">
@@ -21,7 +21,7 @@
                 </div>
 
                 <div
-                    class="col-span-3 mt-4 grid w-full grid-cols-1 space-y-3 md:space-y-0 md:col-span-2 md:mt-0 md:grid-cols-3">
+                    class="col-span-3! mt-4 grid w-full grid-cols-1 space-y-3 md:space-y-0 md:col-span-2! md:mt-0 md:grid-cols-3">
                     <div
                         class="rounded-lg md:rounded-none md:rounded-l-lg bg-[#f8ef2b] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
                         <img src="{{ asset('/assets/images/profile/credits.png') }}" alt="">
@@ -41,7 +41,7 @@
                     </div>
 
                     <div
-                        class="rounded-lg md:rounded-none md:rounded-r-lg bg-[#82d6db] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
+                        class="rounded-lg md:rounded-none md:rounded-r-lg! bg-[#82d6db] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
                         <img src="{{ asset('/assets/images/profile/diamonds.png') }}" alt="">
 
                         <h4 class="text-[#146867] font-semibold text-2xl">

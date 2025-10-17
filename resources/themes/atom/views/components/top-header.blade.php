@@ -68,7 +68,8 @@
                     {{ __('User settings') }}
                 </x-navigation.dropdown-child>
 
-                <button class="dropdown-item dark:text-gray-200 dark:hover:bg-gray-700 w-full text-left" @click.prevent="document.getElementById('logout-form').submit();">
+
+                <button class="py-2! px-4! dark:text-gray-200! dark:hover:bg-gray-700! hover:bg-gray-100! w-full text-left" @click.prevent="document.getElementById('logout-form').submit();">
                     {{ __('Logout') }}
                 </button>
 

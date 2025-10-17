@@ -3919,7 +3919,7 @@ reference element's position.
     var modal_Default = {
         placement: "center",
         backdropClasses:
-            "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40",
+            "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40",
         onHide: function onHide() {},
         onShow: function onShow() {},
         onToggle: function onToggle() {},
@@ -4277,7 +4277,7 @@ reference element's position.
         edge: false,
         edgeOffset: "bottom-[60px]",
         backdropClasses:
-            "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-30",
+            "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-30",
         onShow: function onShow() {},
         onHide: function onHide() {},
         onToggle: function onToggle() {},

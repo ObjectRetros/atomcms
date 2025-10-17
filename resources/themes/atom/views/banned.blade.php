@@ -6,7 +6,7 @@
                 {{ __('It seems like you are banned off :hotel', ['hotel' => setting('hotel_name')]) }}
             </div>
 
-            <div class="rounded-md p-2 shadow bg-white dark:bg-gray-800">
+            <div class="rounded-md p-2 shadow-sm bg-white dark:bg-gray-800">
                 <div class="flex justify-between">
                     <div class="flex flex-col px-1">
                         <div class="max-w-[380px]">

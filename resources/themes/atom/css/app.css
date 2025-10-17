@@ -1,12 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import "tailwindcss";
 @import "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --breakpoint-sm: 40rem;
+    --breakpoint-md: 48rem;
+    --breakpoint-lg: 64rem;
+    --breakpoint-xl: 80rem;
+    --breakpoint-2xl: 96rem;
+}
 
 @layer components {
     .nav-item {
-        @apply flex h-auto md:h-[60px] items-center text-[14px] font-semibold uppercase text-gray-700 transition duration-200 ease-in-out md:border-b-4 md:border-transparent md:hover:border-b-[#eeb425];
+        @apply flex h-auto md:h-[60px] items-center text-[14px] font-semibold uppercase text-gray-700 transition duration-200 ease-in-out md:border-b-4! md:border-transparent! md:hover:border-b-[#eeb425]!;
     }
 
     .dropdown-item {
@@ -270,4 +279,66 @@ html.dark .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
 
 #article-content a {
     color: #53b2f8;
+}
+
+.badge-drawer-button {
+    background-image: linear-gradient(to bottom, #f2f2f3 51%, #d9d8d8 49%);
+    box-shadow: inset 0 0 0px 2px #d9d9d9;
+    padding: 10px;
+
+    &:hover {
+        background: linear-gradient(to bottom, #ffffff 50%, #EBEBEB 50%);
+        box-shadow: inset 0 0 0px 2px #ffffff;
+    }
+
+    .toggled {
+        background: #f2f2f3;
+    }
+}
+
+
+html.dark .badge-drawer-button {
+    background-image: linear-gradient(to bottom, #141414 51%, #101010 49%);
+    box-shadow: inset 0 0 0px 2px #242424;
+    padding: 10px;
+
+    &:hover {
+        background: linear-gradient(to bottom, #171717 50%, #111111 50%);
+        box-shadow: inset 0 0 0px 2px #363636;
+    }
+
+    .toggled {
+        background: #f2f2f3;
+    }
+}
+
+.badge-drawer-palette {
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #000;
+    height: 40px;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    display: flex;
+    border-width: 3px;
+    border-color: #b6bec5;
+    position: relative;
+    overflow: hidden;
+    max-width: 38px;
+    width: 100%;
+
+    &::after {
+        content: "";
+        z-index: 2;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background-color: #fff;
+        opacity: .1;
+    }
 }

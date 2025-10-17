@@ -24,9 +24,9 @@
         x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
         x-id="['dropdown-button']"
         @class([
-            'relative h-auto md:h-[60px] text-[14px] font-semibold text-gray-700 md:border-b-4 md:border-transparent md:hover:border-b-[#eeb425] transition duration-200 ease-in-out dark:text-gray-200 z-5',
+            'relative md:h-[60px] text-[14px] font-semibold text-black md:border-b-4! md:border-transparent! md:hover:border-b-[#eeb425]! transition duration-200 ease-in-out dark:text-gray-200 z-5',
             $classes,
-            'md:border-b-4 md:border-b-[#eeb425]' => request()->is($routeGroup),
+            'md:border-b-4! md:border-b-[#eeb425]!' => request()->is($routeGroup),
         ])"
 >
     <!-- Button -->
@@ -63,7 +63,7 @@
         x-on:click.outside="close($refs.button)"
         :id="$id('dropdown-button')"
         style="display: none;"
-         @class(['absolute left-0 mt-2 rounded bg-white dark:bg-gray-800 shadow whitespace-nowrap overflow-hidden z-10', $childClasses])
+         @class(['absolute left-0 mt-2 rounded bg-white dark:bg-gray-800 shadow-sm whitespace-nowrap overflow-hidden z-10', $childClasses])
     >
         {{ $children }}
     </div>

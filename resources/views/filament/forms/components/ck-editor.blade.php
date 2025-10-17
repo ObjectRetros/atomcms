@@ -212,7 +212,7 @@
                 x-html="state"
                 style="font-size: 13px"
                 @class([
-                    'prose ck-content block w-full max-w-none rounded-lg border border-gray-300 bg-white p-3 opacity-70 shadow-sm transition duration-75',
+                    'prose ck-content block w-full max-w-none rounded-lg border border-gray-300 bg-white p-3 opacity-70 shadow-xs transition duration-75',
                     'dark:prose-invert dark:bg-gray-700 dark:border-gray-600 dark:text-white' => true,
                 ])
             ></div>
