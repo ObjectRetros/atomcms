@@ -296,4 +296,15 @@ class User extends Authenticatable implements FilamentUser, HasName
 
         return parent::save($options);
     }
+
+    public function hasAppliedForTeam(int $teamId): bool
+    {
+        if (! $teamId) {
+            return false;
+        }
+
+        return $this->applications()
+            ->where('team_id', $teamId)
+            ->exists();
+    }
 }

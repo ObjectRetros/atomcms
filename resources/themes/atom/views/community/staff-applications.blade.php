@@ -3,6 +3,8 @@
     <div class="col-span-12 lg:col-span-9 lg:w-[96%]">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
             @forelse($positions as $position)
+                @continue(!$position->permission) {{-- skip if the rank relation is missing --}}
+
                 <x-content.staff-content-section :badge="$position->permission->badge" :color="$position->permission->staff_color">
                     <x-slot:title>
                         {{ $position->permission->rank_name }}
@@ -10,16 +12,20 @@
                     <x-slot:under-title>
                         {{ $position->permission->job_description }}
                     </x-slot:under-title>
+
                     <div class="text-center dark:text-gray-400">
                         <div class="mb-4 text-sm">
                             {!! $position->description !!}
                         </div>
                         <div class="mb-4 text-sm font-semibold">
-                            {{ __('Application Deadline :date', ['date' => $position->apply_to ? $position->apply_to->format('F j, Y, g:i A') : __('No deadline set')]) }}
+                            {{ __('Application Deadline :date', [
+                                'date' => $position->apply_to ? $position->apply_to->format('F j, Y, g:i A') : __('No deadline set')
+                            ]) }}
                         </div>
                     </div>
+
                     <div class="flex justify-between">
-                        @if (auth()->user()->hasAppliedForPosition($position->permission->id))
+                        @if (auth()->check() && auth()->user()->hasAppliedForPosition($position->permission->id))
                             <x-form.danger-button>
                                 {{ __('You have already applied for :position', ['position' => $position->permission->rank_name]) }}
                             </x-form.danger-button>
