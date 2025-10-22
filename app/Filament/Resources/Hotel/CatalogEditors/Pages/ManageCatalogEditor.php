@@ -25,6 +25,10 @@ class ManageCatalogEditor extends Page implements HasTable
 
     protected string $view = 'filament.resources.hotel.catalog-editors.pages.manage-catalog-editor';
 
+    public string $search = '';
+
+    public string $pageSearch = '';
+
     public ?CatalogPage $selectedPage = null;
 
     public array $expandedPages = [];
@@ -35,7 +39,46 @@ class ManageCatalogEditor extends Page implements HasTable
     {
         $this->selectedPage = CatalogPage::find($pageId);
         $this->selectedItemIds = [];
+
+        if ($this->pageSearch !== '') {
+            $this->pageSearch = '';
+        }
+
+        $this->expandedPages = $this->collectParentIds($pageId);
+
         $this->resetTable();
+    }
+
+    protected function collectParentIds(int $pageId): array
+    {
+        $ids = [$pageId];
+        $parentId = CatalogPage::where('id', $pageId)->value('parent_id');
+        while ($parentId && $parentId > 0) {
+            $ids[] = $parentId;
+            $parentId = CatalogPage::where('id', $parentId)->value('parent_id');
+        }
+
+        return array_unique($ids);
+    }
+
+    public function getMaxContentWidth(): ?string
+    {
+        return 'full';
+    }
+
+    public function resetView(): void
+    {
+        $this->pageSearch = '';
+        $this->selectedPage = null;
+        $this->expandedPages = [];
+        $this->selectedItemIds = [];
+        $this->resetTable();
+
+        Notification::make()
+            ->title('View reset')
+            ->body('Catalog view restored to default.')
+            ->success()
+            ->send();
     }
 
     public function toggleExpand(int $pageId): void
@@ -67,15 +110,77 @@ class ManageCatalogEditor extends Page implements HasTable
         $this->resetTable();
     }
 
+    public function updatedPageSearch(): void
+    {
+        $this->resetTable();
+
+        $search = trim($this->pageSearch);
+
+        if ($search === '') {
+            return;
+        }
+
+        $matchingPage = CatalogPage::query()
+            ->where('caption', 'like', "%{$search}%")
+            ->first();
+
+        if ($matchingPage) {
+            $this->selectedPage = $matchingPage;
+            $this->expandedPages[] = $matchingPage->id;
+            $this->resetTable();
+            $this->dispatch('scroll-to-page', id: $matchingPage->id);
+
+            return;
+        }
+
+        $matchingItem = CatalogItem::query()
+            ->where('catalog_name', 'like', "%{$search}%")
+            ->orWhere('id', (int) $search)
+            ->first();
+
+        if ($matchingItem) {
+            $page = CatalogPage::find($matchingItem->page_id);
+            if ($page) {
+                $this->selectedPage = $page;
+                $this->expandedPages[] = $page->id;
+                $this->selectedItemIds = [$matchingItem->id];
+                $this->resetTable();
+                $this->dispatch('scroll-to-page', id: $page->id);
+
+                Notification::make()
+                    ->title('Item found')
+                    ->body("Opened page: {$page->caption}")
+                    ->success()
+                    ->send();
+            }
+        }
+    }
+
     public function getTableQuery()
     {
-        return $this->selectedPage
-            ? CatalogItem::query()
-                ->where('page_id', $this->selectedPage->id)
-                ->orderBy('order_number')
-                ->orderBy('catalog_name')
-                ->orderBy('id') // stable
-            : CatalogItem::query()->whereRaw('1=0');
+        if (! $this->selectedPage) {
+            return CatalogItem::query()->whereRaw('1=0');
+        }
+
+        $query = CatalogItem::query()
+            ->where('page_id', $this->selectedPage->id);
+
+        if (filled($this->pageSearch)) {
+            $search = '%' . trim($this->pageSearch) . '%';
+
+            $query->where(function ($q) use ($search) {
+                $q->where('catalog_name', 'like', $search)
+                    ->orWhere('id', 'like', $search)
+                    ->orWhere('cost_credits', 'like', $search)
+                    ->orWhere('cost_points', 'like', $search)
+                    ->orWhere('points_type', 'like', $search);
+            });
+        }
+
+        return $query
+            ->orderBy('order_number')
+            ->orderBy('catalog_name')
+            ->orderBy('id');
     }
 
     protected function findPrevNeighbor(CatalogItem $record): ?CatalogItem
@@ -317,8 +422,8 @@ class ManageCatalogEditor extends Page implements HasTable
                 ->icon('heroicon-m-chevron-up')
                 ->color('gray')
                 ->tooltip('Move up')
-                ->action(fn (\App\Models\Game\Furniture\CatalogItem $record) => $this->nudgeRecord($record, 'up'))
-                ->visible(fn (\App\Models\Game\Furniture\CatalogItem $record) => $this->canMoveUp($record))
+                ->action(fn (CatalogItem $record) => $this->nudgeRecord($record, 'up'))
+                ->visible(fn (CatalogItem $record) => $this->pageSearch === '' && $this->canMoveUp($record))
                 ->size('sm'),
 
             FilamentAction::make('move_down')
@@ -326,8 +431,8 @@ class ManageCatalogEditor extends Page implements HasTable
                 ->icon('heroicon-m-chevron-down')
                 ->color('gray')
                 ->tooltip('Move down')
-                ->action(fn (\App\Models\Game\Furniture\CatalogItem $record) => $this->nudgeRecord($record, 'down'))
-                ->visible(fn (\App\Models\Game\Furniture\CatalogItem $record) => $this->canMoveDown($record))
+                ->action(fn (CatalogItem $record) => $this->nudgeRecord($record, 'down'))
+                ->visible(fn (CatalogItem $record) => $this->pageSearch === '' && $this->canMoveDown($record))
                 ->size('sm'),
 
             EditAction::make('edit')
@@ -350,7 +455,7 @@ class ManageCatalogEditor extends Page implements HasTable
                         ->required(),
                     Forms\Components\Toggle::make('club_only')->label('Club only'),
                 ])
-                ->fillForm(fn (\App\Models\Game\Furniture\CatalogItem $record) => [
+                ->fillForm(fn (CatalogItem $record) => [
                     'cost_credits' => $record->cost_credits,
                     'cost_points' => $record->cost_points,
                     'points_type' => $record->points_type,
@@ -358,7 +463,7 @@ class ManageCatalogEditor extends Page implements HasTable
                     'order_number' => $record->order_number,
                     'club_only' => $record->club_only === '1',
                 ])
-                ->action(function (\App\Models\Game\Furniture\CatalogItem $record, array $data): void {
+                ->action(function (CatalogItem $record, array $data): void {
                     $record->update([
                         'cost_credits' => (int) $data['cost_credits'],
                         'cost_points' => (int) $data['cost_points'],
@@ -496,7 +601,6 @@ class ManageCatalogEditor extends Page implements HasTable
             return;
         }
 
-        // nothing to do
         if ($page->id === $target->id) {
             return;
         }
@@ -640,6 +744,16 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public function reorderItems(array $orderedIds): void
     {
+        if (filled($this->pageSearch)) {
+            Notification::make()
+                ->title('Ordering disabled in search mode')
+                ->body('You cannot reorder items while viewing search results.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
         if (! $this->selectedPage?->id) {
             return;
         }

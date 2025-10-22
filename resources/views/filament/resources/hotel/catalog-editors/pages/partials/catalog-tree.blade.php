@@ -1,18 +1,30 @@
 <ul class="pl-{{ $depth * 4 }} text-sm">
     @foreach($pages as $page)
         @php
-            $children   = \App\Models\Game\Furniture\CatalogPage::where('parent_id', $page->id)
-                            ->orderBy('order_num')
-                            ->orderBy('id')
-                            ->get();
+            $filterIds = $visibleIds ?? null;
+            $children = \App\Models\Game\Furniture\CatalogPage::query()
+                ->where('parent_id', $page->id)
+                ->when($filterIds !== null, fn ($q) => $q->whereIn('id', $filterIds))
+                ->orderBy('order_num')
+                ->orderBy('id')
+                ->get();
+
+            $shouldShow = $filterIds === null
+                ? true
+                : in_array($page->id, $filterIds, true) || $children->isNotEmpty();
+
+            if (! $shouldShow) {
+                continue;
+            }
+
             $hasChildren = $children->isNotEmpty();
             $iconUrl     = $this->buildCatalogIconUrl((int) $page->icon_image);
             $fallbackUrl = $this->buildCatalogIconUrl(1);
         @endphp
 
         <li
-            class="group flex items-center gap-1 min-w-0 rounded"
-            {{-- PAGE⇄PAGE reorder drop zone (same level only). Stop bubbling to ancestors. --}}
+            data-page-id="{{ $page->id }}"
+            class="group flex items-center gap-1 min-w-0 rounded transition-all duration-150"
             @dragover.prevent.stop="
                 if (!event.dataTransfer.types.includes('text/x-page-id')) return;
                 const rect = $el.getBoundingClientRect();
@@ -102,6 +114,7 @@
                 @dblclick.stop.prevent="doubleClick()"
                 class="flex-1 min-w-0 inline-flex items-center gap-0.5 px-2 py-1 rounded
                        hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap
+                       transition-all duration-150
                        {{ $selectedPage && $selectedPage->id === $page->id ? 'bg-gray-200 dark:bg-gray-700 font-semibold' : '' }}"
                 :class="over ? 'ring-2 ring-primary-500/50 bg-primary-50 dark:bg-primary-900/10' : ''"
                 title="Click to select. Double-click to edit. Drop items here to move."
@@ -128,9 +141,10 @@
 
             @if($hasChildren && $this->isExpanded($page->id))
                 @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
-                    'pages' => $children,
-                    'depth' => $depth + 1,
+                    'pages'        => $children,
+                    'depth'        => $depth + 1,
                     'selectedPage' => $selectedPage,
+                    'visibleIds'   => $filterIds,   // 👈 pass down
                 ])
             @endif
         </li>
