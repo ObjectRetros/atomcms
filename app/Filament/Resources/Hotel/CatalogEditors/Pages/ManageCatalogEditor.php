@@ -638,6 +638,30 @@ class ManageCatalogEditor extends Page implements HasTable
         return asset($path);
     }
 
+    public function reorderItems(array $orderedIds): void
+    {
+        if (! $this->selectedPage?->id) {
+            return;
+        }
+
+        DB::transaction(function () use ($orderedIds) {
+            foreach ($orderedIds as $index => $id) {
+                CatalogItem::whereKey($id)->update([
+                    'order_number' => ($index + 1) * 10,
+                ]);
+            }
+        });
+
+        $this->normalizeOrderForSelectedPage();
+
+        Notification::make()
+            ->title('Items reordered')
+            ->success()
+            ->send();
+
+        $this->resetTable();
+    }
+
     protected function getTableHeaderActions(): array
     {
         return [

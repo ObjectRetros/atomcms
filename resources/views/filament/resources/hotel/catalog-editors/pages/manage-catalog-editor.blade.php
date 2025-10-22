@@ -96,7 +96,7 @@
 
                 <div style="flex:1 1 auto; min-height:0; overflow:auto; padding:0.75rem;">
                     <div style="min-width:0;">
-                        {{ $this->table }}
+                        <div data-catalog-list data-livewire-id="{{ $this->getId() }}" class="space-y-0"> {{ $this->table }} </div>
                         <script>
                             window.catalogSelIds = @json($selectedItemIds ?? []);
                             window.dispatchEvent(new CustomEvent('catalog-sel-refresh'));
