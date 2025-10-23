@@ -177,7 +177,10 @@ class ManageCatalogEditor extends Page implements HasTable
             });
         }
 
-        return $query;
+        return $query
+            ->orderBy('order_number')
+            ->orderBy('catalog_name')
+            ->orderBy('id');
     }
 
     protected function findPrevNeighbor(CatalogItem $record): ?CatalogItem
@@ -368,12 +371,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public function table(Table $table): Table
     {
-        return $table
-            ->paginated(false)
-            ->defaultSort('order_number', 'asc')
-            ->columns($this->getTableColumns())
-            ->actions($this->getTableActions())
-            ->headerActions($this->getTableHeaderActions());
+        return $table->paginated(false);
     }
 
     protected function getTableColumns(): array
@@ -402,40 +400,17 @@ class ManageCatalogEditor extends Page implements HasTable
                 ->sortable(false)
                 ->searchable(false),
 
-            Tables\Columns\TextColumn::make('catalog_name')
-                ->label('Name')
-                ->sortable()
-                ->toggleable(),
-
-            Tables\Columns\TextColumn::make('cost_credits')
-                ->label('Credits')
-                ->sortable()
-                ->toggleable(),
-
-            Tables\Columns\TextColumn::make('cost_points')
-                ->label('Points')
-                ->sortable()
-                ->toggleable(),
-
-            Tables\Columns\TextColumn::make('points_type')
-                ->label('Type')
-                ->sortable()
-                ->toggleable(),
-
-            Tables\Columns\TextColumn::make('amount')
-                ->label('Amount')
-                ->sortable()
-                ->toggleable(),
+            Tables\Columns\TextColumn::make('cost_credits')->label('Credits'),
+            Tables\Columns\TextColumn::make('cost_points')->label('Points'),
+            Tables\Columns\TextColumn::make('points_type')->label('Type'),
+            Tables\Columns\TextColumn::make('amount')->label('Amount'),
 
             Tables\Columns\TextColumn::make('order_number')
                 ->label('Order')
                 ->sortable()
                 ->toggleable(),
 
-            Tables\Columns\IconColumn::make('club_only')
-                ->boolean()
-                ->label('Club Only')
-                ->sortable(),
+            Tables\Columns\IconColumn::make('club_only')->boolean()->label('Club Only'),
         ];
     }
 
@@ -804,43 +779,6 @@ class ManageCatalogEditor extends Page implements HasTable
     protected function getTableHeaderActions(): array
     {
         return [
-            FilamentAction::make('updateOrderNumbers')
-                ->label('Update Order Numbers')
-                ->icon('heroicon-m-list-bullet')
-                ->color('gray')
-                ->visible(fn () => $this->selectedPage && $this->pageSearch === '')
-                ->requiresConfirmation()
-                ->action(function () {
-                    $sortColumn = $this->getTable()->getSortColumn() ?? 'order_number';
-                    $sortDirection = $this->getTable()->getSortDirection() ?? 'asc';
-
-                    $query = CatalogItem::query()
-                        ->where('page_id', $this->selectedPage->id)
-                        ->orderBy($sortColumn, $sortDirection)
-                        ->orderBy('id');
-
-                    $items = $query->get(['id']);
-
-                    DB::transaction(function () use ($items) {
-                        foreach ($items->values() as $index => $item) {
-                            CatalogItem::whereKey($item->id)
-                                ->update(['order_number' => ($index + 1) * 10]);
-                        }
-                    });
-
-                    $this->resetTable();
-                    $this->tableSortColumn = $sortColumn;
-                    $this->tableSortDirection = $sortDirection;
-
-                    Notification::make()
-                        ->title('Order numbers updated')
-                        ->body("Items renumbered by current sort ({$sortColumn} {$sortDirection}) → 10, 20, 30, …")
-                        ->success()
-                        ->send();
-
-                    $this->dispatch('scroll-to-top');
-                }),
-
             FilamentAction::make('massEdit')
                 ->label('Mass edit selected')
                 ->icon('heroicon-m-pencil-square')
@@ -912,41 +850,5 @@ class ManageCatalogEditor extends Page implements HasTable
                     Notification::make()->title('Updated items')->body("Applied changes to {$count} item(s).")->success()->send();
                 }),
         ];
-    }
-
-    protected function updateOrderNumbersForPage(): void
-    {
-        if (! $this->selectedPage?->id) {
-            Notification::make()->title('No page selected')->warning()->send();
-
-            return;
-        }
-
-        $items = CatalogItem::query()
-            ->where('page_id', $this->selectedPage->id)
-            ->orderBy('order_number')
-            ->orderBy('id')
-            ->get(['id']);
-
-        if ($items->isEmpty()) {
-            Notification::make()->title('No items found')->warning()->send();
-
-            return;
-        }
-
-        DB::transaction(function () use ($items) {
-            foreach ($items->values() as $index => $item) {
-                CatalogItem::whereKey($item->id)
-                    ->update(['order_number' => ($index + 1) * 10]);
-            }
-        });
-
-        $this->resetTable();
-
-        Notification::make()
-            ->title('Order numbers updated')
-            ->body('Items renumbered sequentially (10, 20, 30, …)')
-            ->success()
-            ->send();
     }
 }
