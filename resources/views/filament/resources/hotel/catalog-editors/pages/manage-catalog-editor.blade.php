@@ -1,8 +1,19 @@
 <x-filament-panels::page class="!max-w-full !px-0">
     <script>
-        window.catalogSelIds = [];
-        window.addEventListener('catalog-sel-update', (e) => {
-            window.catalogSelIds = Array.isArray(e.detail?.ids) ? e.detail.ids : [];
+        document.addEventListener('DOMContentLoaded', () => {
+            window.addEventListener('scroll-to-top', () => {
+                const container = document.querySelector('[data-catalog-list]')?.closest('div[style*="overflow:auto"]');
+                if (container) {
+                    container.scrollTo({ top: 0, behavior: 'smooth' });
+                    const firstRow = container.querySelector('table tbody tr');
+                    if (firstRow) {
+                        firstRow.classList.add('ring-2', 'ring-primary-400', 'rounded-md');
+                        setTimeout(() => firstRow.classList.remove('ring-2', 'ring-primary-400', 'rounded-md'), 1200);
+                    }
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
         });
     </script>
 
@@ -66,6 +77,8 @@
         `"
         class="relative select-none"
     >
+
+        {{-- LEFT PANEL --}}
         <div
             class="dark:bg-gray-900 dark:border-gray-700"
             style="
@@ -77,100 +90,98 @@
                 background:var(--filament-color-white,#fff);
             "
         >
-        
-		<div class="mb-3">
-    <x-filament::input.wrapper
-        class="w-full border border-gray-300 dark:border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 transition"
-    >
-        <x-filament::input
-            wire:model.live.debounce.400ms="pageSearch"
-            placeholder="Search catalog pages or items..."
-            class="!border-0 !shadow-none !ring-0 !outline-none bg-transparent text-sm"
-        />
+            <div class="mb-3">
+                <x-filament::input.wrapper
+                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 transition"
+                >
+                    <x-filament::input
+                        wire:model.live.debounce.400ms="pageSearch"
+                        placeholder="Search catalog pages or items..."
+                        class="!border-0 !shadow-none !ring-0 !outline-none bg-transparent text-sm"
+                    />
 
-        <x-slot name="suffix">
-            <button
-                type="button"
-                wire:click="resetView"
-                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs font-bold leading-none transition"
-                title="Reset to default view"
-            >
-                X
-            </button>
-        </x-slot>
-    </x-filament::input.wrapper>
-</div>
+                    <x-slot name="suffix">
+                        <button
+                            type="button"
+                            wire:click="resetView"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs font-bold leading-none transition"
+                            title="Reset to default view"
+                        >
+                            X
+                        </button>
+                    </x-slot>
+                </x-filament::input.wrapper>
+            </div>
 
-@php
-if ($pageSearch !== '') {
-    $search = trim($pageSearch);
+            @php
+                if ($pageSearch !== '') {
+                    $search = trim($pageSearch);
 
-     $matchedPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('caption', 'like', "%{$search}%")
-        ->get();
+                    $matchedPages = \App\Models\Game\Furniture\CatalogPage::query()
+                        ->where('caption', 'like', "%{$search}%")
+                        ->get();
 
-    $matchedItems = \App\Models\Game\Furniture\CatalogItem::query()
-        ->where('catalog_name', 'like', "%{$search}%")
-        ->orWhere('id', (int) $search)
-        ->get(['page_id']);
+                    $matchedItems = \App\Models\Game\Furniture\CatalogItem::query()
+                        ->where('catalog_name', 'like', "%{$search}%")
+                        ->orWhere('id', (int) $search)
+                        ->get(['page_id']);
 
-    $visiblePageIds = collect()
-        ->merge($matchedPages->pluck('id'))
-        ->merge($matchedItems->pluck('page_id'))
-        ->filter()
-        ->unique();
+                    $visiblePageIds = collect()
+                        ->merge($matchedPages->pluck('id'))
+                        ->merge($matchedItems->pluck('page_id'))
+                        ->filter()
+                        ->unique();
 
-    foreach ($visiblePageIds as $pid) {
-        $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $pid)->value('parent_id');
-        while ($parentId && $parentId > 0) {
-            $visiblePageIds->push($parentId);
-            $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $parentId)->value('parent_id');
-        }
-    }
-    $visiblePageIds = $visiblePageIds->unique();
+                    foreach ($visiblePageIds as $pid) {
+                        $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $pid)->value('parent_id');
+                        while ($parentId && $parentId > 0) {
+                            $visiblePageIds->push($parentId);
+                            $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $parentId)->value('parent_id');
+                        }
+                    }
+                    $visiblePageIds = $visiblePageIds->unique();
 
-    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('parent_id', -1)
-        ->where(function ($q) use ($visiblePageIds) {
-            $q->whereIn('id', $visiblePageIds)
-              ->orWhereIn('id', function ($sub) use ($visiblePageIds) {
-                  $sub->select('parent_id')
-                      ->from('catalog_pages')
-                      ->whereIn('id', $visiblePageIds);
-              });
-        })
-        ->orderBy('order_num')
-        ->get();
+                    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
+                        ->where('parent_id', -1)
+                        ->where(function ($q) use ($visiblePageIds) {
+                            $q->whereIn('id', $visiblePageIds)
+                              ->orWhereIn('id', function ($sub) use ($visiblePageIds) {
+                                  $sub->select('parent_id')
+                                      ->from('catalog_pages')
+                                      ->whereIn('id', $visiblePageIds);
+                              });
+                        })
+                        ->orderBy('order_num')
+                        ->get();
 
-    $expanded = $visiblePageIds->values()->all();
-    $this->expandedPages = array_unique(array_merge($this->expandedPages, $expanded));
+                    $expanded = $visiblePageIds->values()->all();
+                    $this->expandedPages = array_unique(array_merge($this->expandedPages, $expanded));
 
-    if (! $this->selectedPage && $visiblePageIds->isNotEmpty()) {
-        $this->selectedPage = \App\Models\Game\Furniture\CatalogPage::find($visiblePageIds->first());
-        $this->resetTable();
-    }
+                    if (! $this->selectedPage && $visiblePageIds->isNotEmpty()) {
+                        $this->selectedPage = \App\Models\Game\Furniture\CatalogPage::find($visiblePageIds->first());
+                        $this->resetTable();
+                    }
 
-    $visibleIdsForTree = $visiblePageIds->all();
-} else {
-    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('parent_id', -1)
-        ->orderBy('order_num')
-        ->get();
+                    $visibleIdsForTree = $visiblePageIds->all();
+                } else {
+                    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
+                        ->where('parent_id', -1)
+                        ->orderBy('order_num')
+                        ->get();
 
-    $visibleIdsForTree = null;
-}
-@endphp
+                    $visibleIdsForTree = null;
+                }
+            @endphp
 
-@include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
-    'pages'        => $rootPages,
-    'depth'        => 0,
-    'selectedPage' => $selectedPage,
-    'visibleIds'   => $visibleIdsForTree,
-])
-
-
+            @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
+                'pages'        => $rootPages,
+                'depth'        => 0,
+                'selectedPage' => $selectedPage,
+                'visibleIds'   => $visibleIdsForTree,
+            ])
         </div>
 
+        {{-- DIVIDER --}}
         <div
             x-ref="divider"
             x-on:mousedown="startResize"
@@ -185,6 +196,7 @@ if ($pageSearch !== '') {
             <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-gray-500/40"></div>
         </div>
 
+        {{-- RIGHT PANEL --}}
         <div
             class="dark:bg-gray-900 dark:border-gray-700"
             style="
@@ -210,72 +222,24 @@ if ($pageSearch !== '') {
 
                     @if($selectedPage && $pageSearch === '' && $selectedPage->parent_id !== -1 && ! $this->pageHasLockedItems())
                         <div class="flex items-center gap-2">
-                            <x-filament::button
-                                wire:click="autoOrderItems"
-                                icon="heroicon-m-arrow-path"
-                            >
+                            <x-filament::button wire:click="autoOrderItems" icon="heroicon-m-arrow-path">
                                 Auto Order Items
                             </x-filament::button>
 
-                            <x-filament::button
-                                wire:click="manualOrderItems"
-                                icon="heroicon-m-arrow-up-on-square-stack"
-                                color="secondary"
-                            >
+                            <x-filament::button wire:click="manualOrderItems" icon="heroicon-m-arrow-up-on-square-stack" color="secondary">
                                 Manual Order
                             </x-filament::button>
                         </div>
                     @endif
                 </div>
-
-                @if($selectedPage && $selectedPage->parent_id === -1)
-                    <p class="mt-2 text-xs text-gray-500">
-                        This is a root menu entry. Select a subpage to order its items.
-                    </p>
-                @elseif($selectedPage && $this->pageHasLockedItems())
-                    <p class="mt-2 text-xs text-gray-500">
-                        This page contains item(s) with
-                        <code class="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800">order_number = -1</code>.
-                        Change or remove them to enable ordering.
-                    </p>
-                @endif
             </div>
 
-            {{-- Table --}}
-
-<div style="flex:1 1 auto; min-height:0; overflow:auto; padding:0.75rem;">
-    <div style="min-width:0;">
-
-        @if($pageSearch !== '')
-            <div
-                class="mb-2 flex items-center justify-center"
-                x-data
-                x-transition.opacity.duration.300ms
-            >
-                <span class="text-[11px] px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-700 shadow-sm">
-                    🔍 Search mode active — ordering disabled
-                </span>
+            {{-- TABLE --}}
+            <div style="flex:1 1 auto; min-height:0; overflow:auto; padding:0.75rem;">
+                <div style="min-width:0;">
+                    {{ $this->table }}
+                </div>
             </div>
-        @endif
-
-        <div
-            data-catalog-list
-            data-livewire-id="{{ $this->getId() }}"
-            class="space-y-0"
-            @class([
-                'opacity-70 cursor-not-allowed pointer-events-none' => $pageSearch !== '' && ! $selectedPage
-            ])
-        >
-            {{ $this->table }}
-        </div>
-
-        <script>
-            window.catalogSelIds = @json($selectedItemIds ?? []);
-            window.dispatchEvent(new CustomEvent('catalog-sel-refresh'));
-        </script>
-    </div>
-</div>
-
         </div>
     </div>
 </x-filament-panels::page>
