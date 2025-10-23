@@ -177,10 +177,11 @@ class ManageCatalogEditor extends Page implements HasTable
             });
         }
 
-        return $query
-            ->orderBy('order_number')
-            ->orderBy('catalog_name')
-            ->orderBy('id');
+        if (! $this->getTableSortColumn()) {
+            $query->orderBy('order_number')->orderBy('catalog_name')->orderBy('id');
+        }
+
+        return $query;
     }
 
     protected function findPrevNeighbor(CatalogItem $record): ?CatalogItem
@@ -400,17 +401,31 @@ class ManageCatalogEditor extends Page implements HasTable
                 ->sortable(false)
                 ->searchable(false),
 
-            Tables\Columns\TextColumn::make('cost_credits')->label('Credits'),
-            Tables\Columns\TextColumn::make('cost_points')->label('Points'),
-            Tables\Columns\TextColumn::make('points_type')->label('Type'),
-            Tables\Columns\TextColumn::make('amount')->label('Amount'),
+            Tables\Columns\TextColumn::make('cost_credits')
+                ->label('Credits')
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('cost_points')
+                ->label('Points')
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('points_type')
+                ->label('Type')
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('amount')
+                ->label('Amount')
+                ->sortable(),
 
             Tables\Columns\TextColumn::make('order_number')
                 ->label('Order')
                 ->sortable()
                 ->toggleable(),
 
-            Tables\Columns\IconColumn::make('club_only')->boolean()->label('Club Only'),
+            Tables\Columns\IconColumn::make('club_only')
+                ->boolean()
+                ->label('Club Only')
+                ->sortable(),
         ];
     }
 
@@ -848,6 +863,63 @@ class ManageCatalogEditor extends Page implements HasTable
                     $this->selectedItemIds = [];
 
                     Notification::make()->title('Updated items')->body("Applied changes to {$count} item(s).")->success()->send();
+                }),
+            FilamentAction::make('updateOrder')
+                ->label('Update Order')
+                ->icon('heroicon-o-arrow-path')
+                ->color('secondary')
+                ->visible(fn () => $this->selectedPage && $this->pageSearch === '')
+                ->requiresConfirmation()
+                ->modalHeading('Confirm Update Order')
+                ->modalDescription('This will save the current item order (as currently sorted) into the database. Continue?')
+                ->modalSubmitActionLabel('Update Order')
+                ->action(function (): void {
+                    if (! $this->selectedPage?->id) {
+                        Notification::make()->title('No page selected')->warning()->send();
+
+                        return;
+                    }
+
+                    if ($this->pageSearch !== '') {
+                        Notification::make()
+                            ->title('Disabled in search mode')
+                            ->body('Cannot update order while search results are active.')
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+
+                    $sortColumn = $this->getTableSortColumn();
+                    $sortDirection = $this->getTableSortDirection() ?? 'asc';
+
+                    $query = $this->getTableQuery();
+
+                    if ($sortColumn) {
+                        $query->orderBy($sortColumn, $sortDirection);
+                    } else {
+                        $query->orderBy('order_number')->orderBy('id');
+                    }
+
+                    $items = $query->get(['id']);
+
+                    if ($items->isEmpty()) {
+                        Notification::make()->title('No items')->warning()->send();
+
+                        return;
+                    }
+
+                    DB::transaction(function () use ($items) {
+                        foreach ($items->values() as $index => $item) {
+                            CatalogItem::whereKey($item->id)->update([
+                                'order_number' => ($index + 1) * 10,
+                            ]);
+                        }
+                    });
+
+                    $this->resetTable();
+
+                    Notification::make()->title('Order updated')->success()->send();
                 }),
         ];
     }
