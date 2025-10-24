@@ -1,5 +1,22 @@
 <ul class="pl-{{ $depth * 4 }} text-sm">
-    @foreach($pages as $page)
+    @foreach ($pages as $index => $page)
+        @if ($depth === 0 && $index > 0)
+            {{-- visible dotted horizontal separator between main menu groups --}}
+            <li class="list-none my-2">
+                <div
+                    style="
+                        width: 100%;
+                        height: 1px;
+                        background-image: radial-gradient(currentColor 1px, transparent 1.5px);
+                        background-size: 6px 1px;
+                        color: rgba(156,163,175,0.6); /* gray-400 with opacity */
+                        display: block;
+                    "
+                    class="dark:color-[rgba(107,114,128,0.7)]"
+                ></div>
+            </li>
+        @endif
+
         @php
             $filterIds = $visibleIds ?? null;
             $children = \App\Models\Game\Furniture\CatalogPage::query()
@@ -46,7 +63,7 @@
                 delete $el.dataset.dropPos;
             "
         >
-            @if($hasChildren)
+            @if ($hasChildren)
                 <x-filament::icon-button
                     :icon="$this->isExpanded($page->id) ? 'heroicon-s-chevron-down' : 'heroicon-s-chevron-right'"
                     wire:click="toggleExpand({{ $page->id }})"
@@ -139,12 +156,12 @@
                 </span>
             </button>
 
-            @if($hasChildren && $this->isExpanded($page->id))
+            @if ($hasChildren && $this->isExpanded($page->id))
                 @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
                     'pages'        => $children,
                     'depth'        => $depth + 1,
                     'selectedPage' => $selectedPage,
-                    'visibleIds'   => $filterIds,   // 👈 pass down
+                    'visibleIds'   => $filterIds,
                 ])
             @endif
         </li>
