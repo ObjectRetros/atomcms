@@ -271,3 +271,10 @@ html.dark .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
 #article-content a {
     color: #53b2f8;
 }
+
+.cursor-grab {
+    cursor: grab !important;
+}
+.cursor-grab:active {
+    cursor: grabbing !important;
+}
