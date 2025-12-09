@@ -36,21 +36,8 @@ class OpenPositionResource extends Resource
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->placeholder('Select a rank')
-                    ->rules([
-                        'required',
-                        function () {
-                            return function ($attribute, $value, $fail) {
-                                $existingPosition = WebsiteOpenPosition::where('permission_id', $value)
-                                    ->where('id', '!=', request()->route('record') ?? 0)
-                                    ->exists();
-
-                                if ($existingPosition) {
-                                    $fail('This rank is already used in an open position.');
-                                }
-                            };
-                        },
-                    ]),
+                    ->unique(ignoreRecord: true)
+                    ->placeholder('Select a rank'),
                 Textarea::make('description')
                     ->label('Position Description')
                     ->required()
