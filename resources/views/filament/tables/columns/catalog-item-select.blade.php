@@ -26,7 +26,7 @@
                 $wire.toggleSelectItem(this.id, true);
             } else {
                 window.catalogSelIds = window.catalogSelIds.filter(x => x !== this.id);
-                $wire.toggleSelectItem(this.id, true);
+                $wire.toggleSelectItem(this.id, false);
             }
             window.dispatchEvent(new CustomEvent('catalog-sel-refresh'));
         }
