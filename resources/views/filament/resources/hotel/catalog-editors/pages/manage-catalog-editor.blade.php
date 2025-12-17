@@ -120,11 +120,13 @@ if ($pageSearch !== '') {
         ->filter()
         ->unique();
 
+    $allPages = \App\Models\Game\Furniture\CatalogPage::all(['id', 'parent_id']);
+    $idToParent = $allPages->pluck('parent_id', 'id');
     foreach ($visiblePageIds as $pid) {
-        $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $pid)->value('parent_id');
+        $parentId = $idToParent[$pid] ?? null;
         while ($parentId && $parentId > 0) {
             $visiblePageIds->push($parentId);
-            $parentId = \App\Models\Game\Furniture\CatalogPage::where('id', $parentId)->value('parent_id');
+            $parentId = $idToParent[$parentId] ?? null;
         }
     }
     $visiblePageIds = $visiblePageIds->unique();

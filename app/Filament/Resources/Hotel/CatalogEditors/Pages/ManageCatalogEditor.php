@@ -51,11 +51,12 @@ class ManageCatalogEditor extends Page implements HasTable
 
     protected function collectParentIds(int $pageId): array
     {
+        $pages = CatalogPage::pluck('parent_id', 'id');
         $ids = [$pageId];
-        $parentId = CatalogPage::where('id', $pageId)->value('parent_id');
+        $parentId = $pages[$pageId] ?? null;
         while ($parentId && $parentId > 0) {
             $ids[] = $parentId;
-            $parentId = CatalogPage::where('id', $parentId)->value('parent_id');
+            $parentId = $pages[$parentId] ?? null;
         }
 
         return array_unique($ids);
