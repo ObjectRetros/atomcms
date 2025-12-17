@@ -106,7 +106,7 @@
                 x-data="{
                     over: false,
                     clickTimer: null,
-                    clickDelay: 250,
+                    clickDelay: 350,
                     singleClick() {
                         clearTimeout(this.clickTimer);
                         this.clickTimer = setTimeout(() => { $wire.selectPage({{ $page->id }}); }, this.clickDelay);
