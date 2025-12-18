@@ -681,21 +681,28 @@ class ManageCatalogEditor extends Page implements HasTable
     }
 
     public function moveItemsToPage(string $itemIdsCsv, int $targetPageId): void
-    {
-        $ids = collect(explode(',', $itemIdsCsv))
-            ->map(fn ($v) => (int) trim($v))
-            ->filter(fn ($v) => $v > 0)
-            ->unique()
-            ->values()
-            ->all();
+	{
+    $raw = $itemIdsCsv;
 
-        $target = CatalogPage::find($targetPageId);
+    $target = CatalogPage::find($targetPageId);
 
-        if (empty($ids) || ! $target) {
-            Notification::make()->title('Move failed')->body('No items selected or target page not found.')->danger()->send();
+    Notification::make()
+        ->title('DEBUG moveItemsToPage')
+        ->body("raw='{$raw}' targetPageId={$targetPageId} target=" . ($target ? 'OK' : 'NULL'))
+        ->warning()
+        ->send();
 
-            return;
-        }
+    $ids = collect(explode(',', $itemIdsCsv))
+        ->map(fn ($v) => (int) trim($v))
+        ->filter(fn ($v) => $v > 0)
+        ->unique()
+        ->values()
+        ->all();
+
+    if (empty($ids) || ! $target) {
+        Notification::make()->title('Move failed')->body('No items selected or target page not found.')->danger()->send();
+        return;
+    }
 
         DB::transaction(function () use ($ids, $targetPageId) {
             $maxOrder = (int) (CatalogItem::where('page_id', $targetPageId)->max('order_number') ?? 0);
@@ -710,6 +717,8 @@ class ManageCatalogEditor extends Page implements HasTable
 
         $this->resetTable();
         $this->selectedItemIds = [];
+		
+		$this->dispatch('$refresh');
 
         Notification::make()
             ->title('Items moved')

@@ -23,12 +23,26 @@
             this.highlight = arr.includes(this.id);
         },
         dragStart(e) {
-            if ({{ $reordering ? 'true' : 'false' }}) return;
-            this.dragging = true;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/x-item-id', this.id);
-            e.dataTransfer.setDragImage($el, 10, 10);
-        },
+			if ({{ $reordering ? 'true' : 'false' }}) return;
+
+			this.dragging = true;
+			e.dataTransfer.effectAllowed = 'move';
+
+			e.dataTransfer.setData('text/x-item-id', String(this.id));
+
+			const sel = Array.isArray(window.catalogSelIds) ? window.catalogSelIds : [];
+			const ids = (sel.length > 0) ? sel : [this.id];
+			const csv = ids
+				.map(v => parseInt(v, 10))
+				.filter(v => Number.isFinite(v) && v > 0)
+				.join(',');
+
+			e.dataTransfer.setData('text/x-catalog-item-ids', csv);
+
+			e.dataTransfer.setData('text/plain', csv);
+
+			e.dataTransfer.setDragImage($el, 10, 10);
+		},
         dragOver(e) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -98,7 +112,9 @@
         alt=""
         class="h-6 w-6 shrink-0"
         loading="lazy"
+		draggable="false"
+		@dragstart.prevent
         style="image-rendering: pixelated; image-rendering: crisp-edges;"
     />
-    <span class="truncate">{{ $resolvedName }}</span>
+    <span class="truncate" draggable="false" @dragstart.prevent>{{ $resolvedName }}</span>
 </div>

@@ -42,7 +42,10 @@
         <li
             data-page-id="{{ $page->id }}"
             class="group flex items-center gap-1 min-w-0 rounded transition-all duration-150"
-            @dragover.prevent.stop="
+
+            {{-- Only highlight + compute drop position when dragging PAGES.
+                 IMPORTANT: no .stop here, otherwise item drags can get blocked. --}}
+            @dragover.prevent="
                 if (!event.dataTransfer.types.includes('text/x-page-id')) return;
                 const rect = $el.getBoundingClientRect();
                 const mid  = rect.top + rect.height / 2;
@@ -53,6 +56,8 @@
                 $el.classList.remove('ring-2','ring-primary-400/60');
                 delete $el.dataset.dropPos;
             "
+
+            {{-- Page reorder drop target (keep .stop) --}}
             @drop.prevent.stop="
                 const src = event.dataTransfer.getData('text/x-page-id');
                 if (src && src !== '{{ $page->id }}') {
@@ -79,6 +84,7 @@
                 <span class="inline-flex h-5 w-5 shrink-0"></span>
             @endif
 
+            {{-- Page drag handle --}}
             <span
                 x-data
                 draggable="true"
@@ -116,17 +122,18 @@
                         $wire.openEditPage({{ $page->id }});
                     },
                 }"
-                @dragover.prevent.stop="
-                    if (event.dataTransfer.types.includes('text/x-page-id')) return;
-                    over = true
-                "
-                @dragleave.prevent.stop="over = false"
-                @drop.prevent.stop="
-                    if (event.dataTransfer.types.includes('text/x-page-id')) return;
-                    over = false;
-                    const payload = event.dataTransfer.getData('text/plain');
-                    if (payload) { $wire.moveItemsToPage(payload, {{ $page->id }}) }
-                "
+                @dragover.prevent="
+					if (event.dataTransfer.getData('text/x-page-id')) return;
+					const payload = event.dataTransfer.getData('text/x-catalog-item-ids');
+					if (!payload) return;
+					over = true;"
+				@dragleave.prevent="over = false"
+				@drop.prevent.stop="
+					if (event.dataTransfer.getData('text/x-page-id')) return;
+					over = false;
+					const payload = event.dataTransfer.getData('text/x-catalog-item-ids');
+					if (!payload) return;
+					$wire.moveItemsToPage(payload, {{ $page->id }});"
                 @click.stop.prevent="singleClick()"
                 @dblclick.stop.prevent="doubleClick()"
                 class="flex-1 min-w-0 inline-flex items-center gap-0.5 px-2 py-1 rounded
