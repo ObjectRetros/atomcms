@@ -1,0 +1,120 @@
+@props([
+    'icon' => '',
+    'name' => '',
+    'itemId' => null,
+    'isSelected' => false,
+    'reordering' => false,
+])
+
+@php
+    $record = isset($getRecord) ? $getRecord() : null;
+    $resolvedIcon   = is_callable($icon)   ? $icon($record)   : $icon;
+    $resolvedName   = is_callable($name)   ? $name($record)   : $name;
+    $resolvedItemId = (int) (is_callable($itemId) ? $itemId($record) : $itemId);
+@endphp
+
+<div
+    x-data="{
+        id: {{ $resolvedItemId }},
+        highlight: false,
+        dragging: false,
+        compute() {
+            const arr = Array.isArray(window.catalogSelIds) ? window.catalogSelIds : [];
+            this.highlight = arr.includes(this.id);
+        },
+        dragStart(e) {
+			if ({{ $reordering ? 'true' : 'false' }}) return;
+
+			this.dragging = true;
+			e.dataTransfer.effectAllowed = 'move';
+
+			e.dataTransfer.setData('text/x-item-id', String(this.id));
+
+			const sel = Array.isArray(window.catalogSelIds) ? window.catalogSelIds : [];
+			const ids = (sel.length > 0) ? sel : [this.id];
+			const csv = ids
+				.map(v => parseInt(v, 10))
+				.filter(v => Number.isFinite(v) && v > 0)
+				.join(',');
+
+			e.dataTransfer.setData('text/x-catalog-item-ids', csv);
+
+			e.dataTransfer.setData('text/plain', csv);
+
+			e.dataTransfer.setDragImage($el, 10, 10);
+		},
+        dragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            $el.classList.add('ring-2', 'ring-primary-400/60');
+        },
+        dragLeave(e) {
+            $el.classList.remove('ring-2', 'ring-primary-400/60');
+        },
+        drop(e) {
+            e.preventDefault();
+            $el.classList.remove('ring-2', 'ring-primary-400/60');
+            const srcId = parseInt(e.dataTransfer.getData('text/x-item-id'), 10);
+            if (!srcId || srcId === this.id) return;
+
+            const parent = $el.closest('[data-catalog-list]');
+            if (!parent) return;
+
+            const children = Array.from(parent.querySelectorAll('[data-item-id]'));
+            const ids = children.map(c => parseInt(c.dataset.itemId, 10));
+            const srcIndex = ids.indexOf(srcId);
+            const destIndex = ids.indexOf(this.id);
+            if (srcIndex === -1 || destIndex === -1) return;
+
+            ids.splice(destIndex, 0, ids.splice(srcIndex, 1)[0]);
+            window.Livewire.find(parent.dataset.livewireId).call('reorderItems', ids);
+        },
+        clickRow(e) {
+            const multi = !!(e.ctrlKey || e.metaKey);
+            $wire.toggleSelectItem(this.id, multi);
+        },
+        openEditor() {
+            $wire.mountTableAction('quickEdit', this.id);
+        },
+    }"
+    x-init="compute(); window.addEventListener('catalog-sel-refresh', compute)"
+    @dragover="dragOver"
+    @dragleave="dragLeave"
+    @drop="drop"
+    @click.stop="clickRow"
+    @dblclick.stop="openEditor"
+    class="!flex !flex-row !items-center !gap-2 px-2 py-1 rounded select-none group cursor-default w-full"
+    :class="highlight ? 'bg-blue-50 dark:bg-primary-900/20 ring-1 ring-blue-400/40' : ''"
+    :data-item-id="id"
+    style="display:flex; align-items:center; gap:0.5rem;"
+>
+
+    <span
+        x-data
+        draggable="true"
+        @dragstart="dragStart"
+        class="inline-flex h-5 w-5 shrink-0 items-center justify-center cursor-grab text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Drag to reorder"
+        style="flex:0 0 auto;"
+    >
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <circle cx="3" cy="3" r="1.2" fill="currentColor"></circle>
+            <circle cx="9" cy="3" r="1.2" fill="currentColor"></circle>
+            <circle cx="3" cy="6" r="1.2" fill="currentColor"></circle>
+            <circle cx="9" cy="6" r="1.2" fill="currentColor"></circle>
+            <circle cx="3" cy="9" r="1.2" fill="currentColor"></circle>
+            <circle cx="9" cy="9" r="1.2" fill="currentColor"></circle>
+        </svg>
+    </span>
+
+    <img
+        src="{{ $resolvedIcon }}"
+        alt=""
+        class="h-6 w-6 shrink-0"
+        loading="lazy"
+		draggable="false"
+		@dragstart.prevent
+        style="image-rendering: pixelated; image-rendering: crisp-edges;"
+    />
+    <span class="truncate" draggable="false" @dragstart.prevent>{{ $resolvedName }}</span>
+</div>
