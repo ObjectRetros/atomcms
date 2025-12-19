@@ -35,6 +35,19 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public array $selectedItemIds = [];
 
+    /**
+     * Escape LIKE wildcards for literal searches.
+     * MariaDB/MySQL: use with "... LIKE ? ESCAPE '\'"
+     */
+    protected function escapeLike(string $value, string $escapeChar = '\\'): string
+    {
+        return str_replace(
+            [$escapeChar, '%', '_'],
+            [$escapeChar . $escapeChar, $escapeChar . '%', $escapeChar . '_'],
+            $value
+        );
+    }
+
     public function selectPage(int $pageId): void
     {
         $this->selectedPage = CatalogPage::find($pageId);
@@ -115,14 +128,16 @@ class ManageCatalogEditor extends Page implements HasTable
     {
         $this->resetTable();
 
-        $search = trim($this->pageSearch);
+        $needle = trim($this->pageSearch);
 
-        if ($search === '') {
+        if ($needle === '') {
             return;
         }
 
+        $like = '%' . $this->escapeLike($needle) . '%';
+
         $matchingPage = CatalogPage::query()
-            ->where('caption', 'like', "%{$search}%")
+            ->whereRaw("caption LIKE ? ESCAPE '\\\\'", [$like])
             ->first();
 
         if ($matchingPage) {
@@ -135,8 +150,8 @@ class ManageCatalogEditor extends Page implements HasTable
         }
 
         $matchingItem = CatalogItem::query()
-            ->where('catalog_name', 'like', "%{$search}%")
-            ->orWhere('id', (int) $search)
+            ->whereRaw("catalog_name LIKE ? ESCAPE '\\\\'", [$like])
+            ->orWhere('id', ctype_digit($needle) ? (int) $needle : -1)
             ->first();
 
         if ($matchingItem) {
@@ -167,14 +182,23 @@ class ManageCatalogEditor extends Page implements HasTable
             ->where('page_id', $this->selectedPage->id);
 
         if (filled($this->pageSearch)) {
-            $search = '%' . trim($this->pageSearch) . '%';
+            $needle = trim($this->pageSearch);
+            $like = '%' . $this->escapeLike($needle) . '%';
+            $isNumeric = ctype_digit($needle);
 
-            $query->where(function ($q) use ($search) {
-                $q->where('catalog_name', 'like', $search)
-                    ->orWhere('id', 'like', $search)
-                    ->orWhere('cost_credits', 'like', $search)
-                    ->orWhere('cost_points', 'like', $search)
-                    ->orWhere('points_type', 'like', $search);
+            $query->where(function ($q) use ($like, $needle, $isNumeric) {
+                // Text search (escaped)
+                $q->whereRaw("catalog_name LIKE ? ESCAPE '\\\\'", [$like]);
+
+                // Numeric search: exact matches only (faster and avoids weird casts)
+                if ($isNumeric) {
+                    $n = (int) $needle;
+
+                    $q->orWhere('id', $n)
+                        ->orWhere('cost_credits', $n)
+                        ->orWhere('cost_points', $n)
+                        ->orWhere('points_type', $n);
+                }
             });
         }
 
@@ -686,12 +710,6 @@ class ManageCatalogEditor extends Page implements HasTable
 
         $target = CatalogPage::find($targetPageId);
 
-        Notification::make()
-            ->title('DEBUG moveItemsToPage')
-            ->body("raw='{$raw}' targetPageId={$targetPageId} target=" . ($target ? 'OK' : 'NULL'))
-            ->warning()
-            ->send();
-
         $ids = collect(explode(',', $itemIdsCsv))
             ->map(fn ($v) => (int) trim($v))
             ->filter(fn ($v) => $v > 0)
@@ -701,7 +719,6 @@ class ManageCatalogEditor extends Page implements HasTable
 
         if (empty($ids) || ! $target) {
             Notification::make()->title('Move failed')->body('No items selected or target page not found.')->danger()->send();
-
             return;
         }
 
