@@ -44,7 +44,7 @@ class ManageCatalogEditor extends Page implements HasTable
         return str_replace(
             [$escapeChar, '%', '_'],
             [$escapeChar . $escapeChar, $escapeChar . '%', $escapeChar . '_'],
-            $value
+            $value,
         );
     }
 
@@ -719,6 +719,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
         if (empty($ids) || ! $target) {
             Notification::make()->title('Move failed')->body('No items selected or target page not found.')->danger()->send();
+
             return;
         }
 
