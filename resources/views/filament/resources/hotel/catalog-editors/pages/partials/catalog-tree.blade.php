@@ -1,7 +1,6 @@
 <ul class="pl-{{ $depth * 4 }} text-sm">
     @foreach ($pages as $index => $page)
         @if ($depth === 0 && $index > 0)
-            {{-- visible dotted horizontal separator between main menu groups --}}
             <li class="list-none my-2">
                 <div
                     style="
@@ -9,10 +8,10 @@
                         height: 1px;
                         background-image: radial-gradient(currentColor 1px, transparent 1.5px);
                         background-size: 6px 1px;
-                        color: rgba(156,163,175,0.6); /* gray-400 with opacity */
+                        color: rgba(156,163,175,0.6);
                         display: block;
                     "
-                    class="dark:color-[rgba(107,114,128,0.7)]"
+                    class="dark:text-[rgba(107,114,128,0.7)]"
                 ></div>
             </li>
         @endif
