@@ -554,7 +554,7 @@ class ManageCatalogEditor extends Page implements HasTable
                             }
                             $set('caption_save', strtolower(preg_replace('/[^a-z]/', '', $state)));
                         })
-                        ->rules(['nullable', 'regex:/^[a-z]+$/'])
+                        ->rules(['nullable', 'regex:/^[a-z]*$/'])
                         ->validationMessages([
                             'regex' => 'Use lowercase letters only (a–z), no spaces or special characters.',
                         ]),
