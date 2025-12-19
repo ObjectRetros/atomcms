@@ -547,8 +547,8 @@ class ManageCatalogEditor extends Page implements HasTable
                         ])
                         ->live(onBlur: true)
                         ->afterStateUpdated(function ($state, callable $set) {
-							$set('caption_save', $this->sanitizeCaptionSave($state));
-						})
+                            $set('caption_save', $this->sanitizeCaptionSave($state));
+                        })
                         ->rules(['nullable', 'regex:/^[a-z]*$/'])
                         ->validationMessages([
                             'regex' => 'Use lowercase letters only (a–z), no spaces or special characters.',
@@ -599,6 +599,7 @@ class ManageCatalogEditor extends Page implements HasTable
                     $page = CatalogPage::find($arguments['pageId'] ?? null);
                     if (! $page) {
                         Notification::make()->title('Page not found')->danger()->send();
+
                         return;
                     }
 
@@ -618,16 +619,16 @@ class ManageCatalogEditor extends Page implements HasTable
                 }),
         ];
     }
-	
-	protected function sanitizeCaptionSave(?string $value): string
-	{
-		$value = (string) ($value ?? '');
-		if ($value === '') {
-			return '';
-		}
 
-		return strtolower(preg_replace('/[^a-z]/', '', $value));
-	}
+    protected function sanitizeCaptionSave(?string $value): string
+    {
+        $value = (string) ($value ?? '');
+        if ($value === '') {
+            return '';
+        }
+
+        return strtolower(preg_replace('/[^a-z]/', '', $value));
+    }
 
     public function reorderPage(int $pageId, int $targetPageId, string $position = 'after'): void
     {
