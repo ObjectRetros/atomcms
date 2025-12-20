@@ -14,9 +14,9 @@ if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 }
 
 if (! function_exists('setting')) {
-    function setting(string $setting): string
+    function setting(string $key, mixed $default = null): mixed
     {
-        return app(SettingsService::class)->getOrDefault($setting);
+        return app(SettingsService::class)->getOrDefault($key, $default);
     }
 }
 

@@ -3,34 +3,41 @@
 namespace App\Services;
 
 use App\Models\Miscellaneous\WebsiteSetting;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Throwable;
 
 class SettingsService
 {
-    public ?Collection $settings;
+    private const NULL_SENTINEL = '__CACHE_NULL__';
 
-    public function __construct()
+    protected function settings()
     {
-        try {
-            Cache::remember('website_settings', now()->addMinutes(5), function () {
-                return Schema::hasTable('website_settings') ? WebsiteSetting::all()->pluck('value', 'key') : collect();
-            });
+        return Cache::rememberForever('website_settings', function () {
+            if (! Schema::hasTable('website_settings')) {
+                return collect();
+            }
 
-            $this->settings = Cache::get('website_settings');
-        } catch (Throwable $e) {
-            $this->settings = collect();
-        }
+            return WebsiteSetting::query()
+                ->pluck('value', 'key')
+                ->map(fn ($value) => $value === null ? self::NULL_SENTINEL : $value);
+        });
     }
 
-    public function getOrDefault(string $settingName, ?string $default = null): string
+    public function getOrDefault(string $key, mixed $default = null): mixed
     {
-        if (! $this->settings) {
-            return (string) $default;
+        $settings = $this->settings();
+
+        if (! $settings->has($key)) {
+            return $default;
         }
 
-        return (string) $this->settings->get($settingName, $default);
+        $value = $settings->get($key);
+
+        return $value === self::NULL_SENTINEL ? $default : $value;
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('website_settings');
     }
 }
