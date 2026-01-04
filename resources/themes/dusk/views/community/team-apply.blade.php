@@ -16,7 +16,7 @@
 
                 <div>
                     <x-form.label for="username" disabled>{{ __('Username') }}</x-form.label>
-                    <x-form.input classes="bg-red-200" name="username" value="{{ auth()->user()->username }}" :readonly="true" />
+                    <x-form.input classes="bg-gray-100" name="username" value="{{ auth()->user()->username }}" :readonly="true" />
                 </div>
 
                 <div>
