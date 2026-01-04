@@ -23,11 +23,11 @@
                     </div>
 
                     <div data-popover :id="articleReaction.id" role="tooltip"
-                        class="invisible absolute z-10 inline-block w-64 rounded-lg border border-gray-200 bg-white text-sm font-light text-gray-500 opacity-0 shadow-xs transition-opacity duration-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                        class="invisible absolute z-10 inline-block w-64 rounded-lg border text-sm font-light opacity-0 shadow-xs transition-opacity duration-300 border-gray-600 bg-gray-800 text-gray-400">
                         <div
-                            class="rounded-t-lg border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
+                            class="rounded-t-lg border-b px-3 py-2 border-gray-600 bg-gray-700">
                             <div
-                                class="flex w-full items-center justify-center font-semibold text-gray-900 dark:text-white">
+                                class="flex w-full items-center justify-center font-semibold text-white">
                                 {{ __('Reactions with') }} <img
                                     :src="'/assets/images/icons/reactions/' + articleReaction.name + '.png'"
                                     class="ml-1" :alt="articleReaction.name">

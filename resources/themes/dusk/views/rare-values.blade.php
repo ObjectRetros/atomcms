@@ -55,8 +55,8 @@
         </div>
     </div>
 
-    <div class="col-span-12 lg:col-span-3 lg:w-[110%] space-y-4 lg:-ml-[32px]">
-        <x-content.content-card icon="catalog-icon" classes="border dark:border-gray-900">
+    <div class="col-span-12 lg:col-span-3 lg:w-[110%] space-y-4 lg:-ml-8">
+        <x-content.content-card icon="catalog-icon" classes="border border-gray-900">
             <x-slot:title>
                 {{ __('Search') }}
             </x-slot:title>
@@ -84,7 +84,7 @@
             </form>
         </x-content.content-card>
 
-        <x-content.content-card icon="inventory-icon" classes="border dark:border-gray-900">
+        <x-content.content-card icon="inventory-icon" classes="border border-gray-900">
             <x-slot:title>
                 {{ __('Rare categories') }}
             </x-slot:title>
@@ -93,15 +93,15 @@
                 {{ __('Select a category below') }}
             </x-slot:under-title>
 
-            <div class="px-2 text-sm dark:text-gray-200 space-y-2">
-                <div class="rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 transition duration-200 ease-in-out hover:scale-[102%]">
+            <div class="px-2 text-sm text-gray-200 space-y-2">
+                <div class="rounded bg-gray-700 py-2 px-4 transition duration-200 ease-in-out hover:scale-[102%]">
                     <a href="{{ route('values.index') }}" class="block text">
                         {{ __('All values') }}
                     </a>
                 </div>
 
                 @foreach($categoriesNav as $category)
-                    <div class="rounded bg-gray-200 dark:bg-gray-700 py-2 px-4 transition duration-200 ease-in-out hover:scale-[102%]">
+                    <div class="rounded bg-gray-700 py-2 px-4 transition duration-200 ease-in-out hover:scale-[102%]">
                         <a href="{{ route('values.category', $category->id) }}" class="block text">
                             {{ $category->name }}
                         </a>
