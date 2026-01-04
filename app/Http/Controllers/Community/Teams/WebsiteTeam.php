@@ -1,3 +1,5 @@
+<?php
+
 use App\Models\Community\Teams\WebsiteTeam;
 
 public function __invoke(): View
