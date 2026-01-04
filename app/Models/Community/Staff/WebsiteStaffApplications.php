@@ -36,7 +36,7 @@ class WebsiteStaffApplications extends Model
         return $this->belongsTo(\App\Models\User::class, 'approved_by');
     }
 
-    public function rejector()
+    public function rejector(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'rejected_by');
     }
