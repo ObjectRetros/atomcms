@@ -21,7 +21,10 @@
 
                 <div>
                     <x-form.label for="content" disabled>{{ __('About you') }}</x-form.label>
-                    <textarea name="content" class="focus:ring-0 border-4 border-gray-200 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-[#eeb425] w-full min-h-[180px]"></textarea>
+                    <textarea name="content" class="focus:ring-0 border-4 border-gray-200 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-[#eeb425] w-full min-h-[180px]">{{ old('content') }}</textarea>
+                    @error('content')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 @if (setting('google_recaptcha_enabled'))
