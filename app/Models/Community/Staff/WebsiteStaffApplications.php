@@ -31,7 +31,7 @@ class WebsiteStaffApplications extends Model
         'rejected_at' => 'datetime',
     ];
 
-    public function approver()
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'approved_by');
     }
