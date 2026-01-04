@@ -1,7 +1,7 @@
 <x-app-layout>
     @push('title', 'Create a ticket')
 
-    <x-content.content-card icon="chat-icon" classes="border dark:border-gray-900 col-span-12 lg:col-span-9">
+    <x-content.content-card icon="chat-icon" classes="border border-gray-900 col-span-12 lg:col-span-9">
         <x-slot:title>
             {{ __('Create a ticket') }}
         </x-slot:title>
@@ -14,7 +14,7 @@
             @csrf
 
             <select name="category_id" id="category_id"
-                    class="focus:ring-0 border-4 border-gray-200 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 focus:border-[#eeb425] w-full @error('category_id') border-red-600 ring-red-500 @enderror">
+                    class="focus:ring-0 border-4 rounded bg-gray-800 border-gray-700 text-gray-200 focus:border-[#eeb425] w-full @error('category_id') border-red-600 ring-red-500 @enderror">
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}">
                         {{ $category->name  }}
@@ -41,7 +41,7 @@
 
     <div class="col-span-12 lg:col-span-3">
         <x-content.content-card icon="duo-chat-icon"
-                                classes="border dark:border-gray-900 dark:text-gray-100">
+                                classes="border border-gray-900 text-gray-100">
             <x-slot:title>
                 {{ __('Open tickets') }}
             </x-slot:title>
@@ -53,7 +53,7 @@
 
             <div class="flex flex-col gap-2">
                 @forelse($openTickets as $ticket)
-                    <div class="w-full rounded bg-gray-200 p-2 dark:bg-gray-700">
+                    <div class="w-full rounded p-2 bg-gray-700">
                         <div class="flex items-center gap-x-1">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                  stroke="currentColor" class="w-4 h-4">

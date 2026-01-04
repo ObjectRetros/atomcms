@@ -1,4 +1,4 @@
-<div class="h-[210px] dark:bg-gray-900 rounded w-full bg-white shadow relative overflow-hidden transition ease-in-out duration-200">
+<div class="h-[210px] dark:bg-gray-900 rounded w-full bg-white shadow-sm relative overflow-hidden transition ease-in-out duration-200">
     <div style="background: url('https://i.imgur.com/uGLDOUu.png');" class="article-image">
     </div>
 

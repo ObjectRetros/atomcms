@@ -1,7 +1,7 @@
 @props(['article', 'forSlider' => false])
 
 <div @class([
-    'h-[210px] dark:bg-gray-900 rounded w-full bg-white shadow relative overflow-hidden transition ease-in-out duration-200',
+    'h-[210px] dark:bg-gray-900 rounded w-full bg-white shadow-sm relative overflow-hidden transition ease-in-out duration-200',
     'hover:scale-[101%]' => !$forSlider,
     'swiper-slide group' => $forSlider,
 ]) @if (!$forSlider)

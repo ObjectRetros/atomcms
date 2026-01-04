@@ -4,12 +4,12 @@
     <div class="col-span-12 flex flex-col lg:flex-row gap-4">
         <div class="flex flex-col gap-4 w-full lg:w-3/5">
             @foreach($categories->where('small_box', false) as $category)
-                <x-content.content-card icon="duo-chat-icon" classes="border dark:border-gray-900">
+                <x-content.content-card icon="duo-chat-icon" classes="border border-gray-900">
                     <x-slot:title>
                         {{ $category->name }}
                     </x-slot:title>
 
-                    <div class="px-2 text-sm dark:text-gray-200">
+                    <div class="px-2 text-sm text-gray-200">
                         <img class="px-2" style="float: right !important;"
                              src="{{ asset('/assets/images/help-center/' . $category->image_url) }}" alt="">
                         {!! $category->content !!}
@@ -28,12 +28,12 @@
 
         <div class="flex flex-col gap-4 w-full lg:w-2/5">
             @foreach($categories->where('small_box', true) as $category)
-                <x-content.content-card icon="duo-chat-icon" classes="border dark:border-gray-900">
+                <x-content.content-card icon="duo-chat-icon" classes="border border-gray-900">
                     <x-slot:title>
                         {{ $category->name }}
                     </x-slot:title>
 
-                    <div class="px-2 text-sm dark:text-gray-200">
+                    <div class="px-2 text-sm text-gray-200">
                         {!! $category->content !!}
                     </div>
 
