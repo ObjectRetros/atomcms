@@ -17,9 +17,9 @@
                         {{ __('Teams') }}
                     </x-navigation.dropdown-child>
 					
-					<x-navigation.dropdown-child :route="route('team-applications.index')">
-						{{ __('Team applications') }}
-					</x-navigation.dropdown-child>
+        <x-navigation.dropdown-child :route="route('team-applications.index')">
+            {{ __('Team applications') }}
+        </x-navigation.dropdown-child>
 
                     <x-navigation.dropdown-child :route="route('staff-applications.index')">
                         {{ __('Staff applications') }}
