@@ -10,6 +10,7 @@ use App\Http\Controllers\Community\LeaderboardController;
 use App\Http\Controllers\Community\PhotosController;
 use App\Http\Controllers\Community\Staff\StaffApplicationsController;
 use App\Http\Controllers\Community\Staff\StaffController;
+use App\Http\Controllers\Community\Staff\WebsiteTeamApplicationsController;
 use App\Http\Controllers\Community\Staff\WebsiteTeamsController;
 use App\Http\Controllers\Community\WebsiteRareValuesController;
 use App\Http\Controllers\Help\HelpCenterController;
@@ -128,6 +129,10 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/staff-applications', [StaffApplicationsController::class, 'index'])->name('staff-applications.index');
             Route::get('/staff-applications/{position}', [StaffApplicationsController::class, 'show'])->name('staff-applications.show');
             Route::post('/staff-applications/{position}', [StaffApplicationsController::class, 'store'])->name('staff-applications.store');
+
+            Route::get('/team-applications', [WebsiteTeamApplicationsController::class, 'index'])->name('team-applications.index');
+            Route::get('/team-applications/{position}', [WebsiteTeamApplicationsController::class, 'show'])->name('team-applications.show');
+            Route::post('/team-applications/{position}', [WebsiteTeamApplicationsController::class, 'store'])->name('team-applications.store');
 
             Route::post('/article/{article:slug}/comment', [WebsiteArticleCommentsController::class, 'store'])->name('article.comment.store');
             Route::delete('/article/{comment}/comment', [WebsiteArticleCommentsController::class, 'destroy'])->name('article.comment.destroy');
