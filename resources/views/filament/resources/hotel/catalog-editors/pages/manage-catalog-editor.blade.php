@@ -66,17 +66,7 @@
         `"
         class="relative select-none"
     >
-        <div
-            class="dark:bg-gray-900 dark:border-gray-700"
-            style="
-                height:100%;
-                overflow:auto;
-                border:1px solid var(--gray-200);
-                border-radius:1rem;
-                padding:0.75rem;
-                background:var(--filament-color-white,#fff);
-            "
-        >
+        <div class="h-full overflow-auto border border-gray-200 dark:border-gray-700 rounded-2xl p-3 bg-white dark:bg-gray-900">
         
 		<div class="mb-3">
     <x-filament::input.wrapper
@@ -187,20 +177,8 @@ if ($pageSearch !== '') {
             <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-gray-500/40"></div>
         </div>
 
-        <div
-            class="dark:bg-gray-900 dark:border-gray-700"
-            style="
-                min-width:0;
-                height:100%;
-                overflow:hidden;
-                border:1px solid var(--gray-200);
-                border-radius:1rem;
-                background:var(--filament-color-white,#fff);
-                display:flex;
-                flex-direction:column;
-            "
-        >
-            <div style="padding:0.75rem; border-bottom:1px solid var(--gray-200);" class="dark:border-gray-700">
+        <div class="min-w-0 h-full overflow-hidden border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-900 flex flex-col">
+            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between gap-2">
                     <h2 class="font-semibold text-lg m-0">
                         @if($selectedPage)
