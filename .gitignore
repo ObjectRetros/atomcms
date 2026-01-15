@@ -23,3 +23,4 @@ yarn.lock
 /public/assets/images/generated-logos
 CLAUDE.md
 .phpunit.cache
+.yarn

@@ -1,0 +1,104 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atomcms-app
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-80}:80'
+      - '${VITE_PORT:-5173}:5173'
+    environment:
+      APP_ENV: '${APP_ENV:-local}'
+      APP_DEBUG: '${APP_DEBUG:-true}'
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_DATABASE: '${DB_DATABASE}'
+      DB_USERNAME: '${DB_USERNAME}'
+      DB_PASSWORD: '${DB_PASSWORD}'
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - '.:/app'
+      - './docker/caddy/Caddyfile:/etc/caddy/Caddyfile'
+    networks:
+      - atomcms
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  mariadb:
+    image: 'mariadb:11'
+    container_name: atomcms-mariadb
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+      - 'atomcms-mariadb:/var/lib/mysql'
+      - './docker/mariadb/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+    networks:
+      - atomcms
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - '--connect'
+        - '--innodb_initialized'
+      retries: 3
+      timeout: 5s
+      interval: 10s
+
+  redis:
+    image: 'redis:alpine'
+    container_name: atomcms-redis
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - 'atomcms-redis:/data'
+    networks:
+      - atomcms
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      retries: 3
+      timeout: 5s
+      interval: 10s
+
+  mailpit:
+    image: 'axllent/mailpit:latest'
+    container_name: atomcms-mailpit
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+      - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+    networks:
+      - atomcms
+
+networks:
+  atomcms:
+    driver: bridge
+
+volumes:
+  atomcms-mariadb:
+    driver: local
+  atomcms-redis:
+    driver: local
