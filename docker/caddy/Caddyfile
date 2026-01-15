@@ -1,0 +1,77 @@
+{
+    # Global options
+    auto_https off
+    admin off
+    frankenphp {
+        num_threads {env.FRANKENPHP_NUM_THREADS}
+    }
+}
+
+# HTTP server - explicitly use http:// to prevent HTTPS
+http://:80 {
+    # Set root directory
+    root * /app/public
+
+    # Enable PHP handler with FrankenPHP
+    php_server
+
+    # Enable compression
+    encode zstd gzip
+
+    # Security headers
+    header {
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        # Remove server header
+        -Server
+    }
+
+    # Logging
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+
+    # Handle Laravel routes
+    try_files {path} {path}/ /index.php?{query}
+
+    # Disable directory listing
+    file_server {
+        hide .git
+        hide .env
+        hide .env.*
+    }
+}
+
+# HTTPS server (optional, uncomment if using SSL)
+# :443 {
+#     root * /app/public
+#     php_server
+#     encode zstd gzip
+#
+#     tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+#
+#     header {
+#         X-Frame-Options "SAMEORIGIN"
+#         X-Content-Type-Options "nosniff"
+#         -Server
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#     }
+#
+#     log {
+#         output stdout
+#         format console
+#         level INFO
+#     }
+#
+#     try_files {path} {path}/ /index.php?{query}
+#
+#     file_server {
+#         hide .git
+#         hide .env
+#         hide .env.*
+#     }
+# }
