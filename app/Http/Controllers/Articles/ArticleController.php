@@ -29,11 +29,15 @@ class ArticleController extends Controller
 
     public function show(WebsiteArticle $article): View
     {
+        $reactions = $article->reactions()
+            ->with('user:id,username')
+            ->get();
+
         return view('community.article', [
             'article' => $article,
             'otherArticles' => WebsiteArticle::whereNot('slug', $article->slug)->latest('id')->take(15)->get(),
-            'myReactions' => Auth::check() ? $article->reactions->where('user_id', Auth::id())->pluck('reaction') : [],
-            'articleReactions' => collect($article->reactions)->groupBy('reaction', true),
+            'myReactions' => Auth::check() ? $reactions->where('user_id', Auth::id())->pluck('reaction') : [],
+            'articleReactions' => $reactions->groupBy('reaction', true),
         ]);
     }
 

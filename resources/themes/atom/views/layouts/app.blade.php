@@ -19,7 +19,7 @@
     <script src="{{ asset('assets/js/tippy-bundle.umd.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('assets/css/scale.min.css') }}"/>
 
-    @vite(['resources/themes/' .  setting('theme') . '/css/app.scss', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
+    @vite(['resources/themes/' .  setting('theme', 'atom') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
     @stack('scripts')
     @turnstileScripts()
 </head>
@@ -44,7 +44,7 @@
         <x-site-header />
 
         {{-- Navigation --}}
-        <nav class="relative bg-white shadow dark:bg-gray-900">
+        <nav class="relative bg-white shadow-sm dark:bg-gray-900">
             <div class="max-w-7xl min-h-[60px] px-4 md:flex md:items-center md:justify-between md:mx-auto">
 
 

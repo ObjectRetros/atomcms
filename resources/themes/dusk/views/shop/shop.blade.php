@@ -54,7 +54,7 @@
 
                 <div class="mt-3 space-y-2">
                     <a href="{{ route('shop.index') }}"
-                       class="w-full flex items-center gap-4 rounded-lg overflow-hidden bg-[#2b303c] p-4 shadow text-gray-100 transition-all hover:scale-[101%]">
+                       class="w-full flex items-center gap-4 rounded-lg overflow-hidden bg-[#2b303c] p-4 shadow-sm text-gray-100 transition-all hover:scale-[101%]">
                         <img class="max-h-[50px] max-w-[50px]" src="{{ asset('/assets/images/icons/navigation/shop.png') }}" alt="">
 
                         {{ __('All') }}
@@ -62,7 +62,7 @@
 
                     @foreach($categories as $category)
                         <a href="{{ route('shop.index', $category->slug) }}"
-                           class="w-full flex items-center gap-4 rounded-lg overflow-hidden bg-[#2b303c] p-4 shadow text-gray-100 transition-all hover:scale-[101%]">
+                           class="w-full flex items-center gap-4 rounded-lg overflow-hidden bg-[#2b303c] p-4 shadow-sm text-gray-100 transition-all hover:scale-[101%]">
                             <img class="max-h-[50px] max-w-[50px]" src="{{ $category->icon }}" alt="">
 
                             {{ $category->name }}

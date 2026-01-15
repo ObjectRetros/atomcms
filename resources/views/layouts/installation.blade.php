@@ -14,7 +14,7 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
-    @vite(['resources/css/global.scss', 'resources/js/global.js'], 'build')
+    @vite(['resources/css/global.css', 'resources/js/global.js'], 'build')
     @stack('scripts')
 </head>
 

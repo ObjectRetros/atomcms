@@ -28,8 +28,8 @@
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "filament/upgrade": "^4.0",
+        "laravel/boost": "^1.5",
         "laravel/pint": "^v1.14",
-        "laravel/sail": "^1.46",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
         "pestphp/pest": "^3.0",

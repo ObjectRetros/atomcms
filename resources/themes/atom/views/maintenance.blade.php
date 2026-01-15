@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.1/dist/flowbite.min.css"/>
     <script src="https://unpkg.com/flowbite@1.5.1/dist/flowbite.js"></script>
 
-    @vite(['resources/themes/' .  setting('theme') . '/css/app.scss', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
+    @vite(['resources/themes/' .  setting('theme') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
 </head>
 
 <body class="h-screen overflow-hidden relative bg-[#233143]">
@@ -97,7 +97,7 @@
     <div class="absolute top-6 right-6 z-50">
         <x-modals.modal-wrapper>
             <button @click="open = !open"
-                    class="rounded-full bg-white bg-opacity-70 px-4 py-2 font-semibold text-black transition duration-200 ease-in-out hover:bg-opacity-100">
+                    class="rounded-full bg-white/70 px-4 py-2 font-semibold text-black transition duration-200 ease-in-out hover:bg-white">
                 {{ __('Staff login') }}
             </button>
 
