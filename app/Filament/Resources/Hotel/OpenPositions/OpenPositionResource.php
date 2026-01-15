@@ -72,8 +72,9 @@ class OpenPositionResource extends Resource
                         table: WebsiteOpenPosition::class,
                         column: 'team_id',
                         ignoreRecord: true,
-                    ),
-
+                    )
+                    ->placeholder('Select a rank'),
+              
                 Textarea::make('description')
                     ->label('Position Description')
                     ->required()
