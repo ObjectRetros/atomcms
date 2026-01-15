@@ -3,34 +3,57 @@
 namespace App\Services;
 
 use App\Models\Miscellaneous\WebsiteSetting;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class SettingsService
 {
-    public ?Collection $settings;
+    protected function settings()
+    {
+        // Don't cache if installation is not complete
+        if ($this->isInstallationIncomplete()) {
+            return $this->fetchSettings();
+        }
 
-    public function __construct()
+        return Cache::rememberForever('website_settings', function () {
+            return $this->fetchSettings();
+        });
+    }
+
+    public function getOrDefault(string $key, mixed $default = null): mixed
+    {
+        return $this->settings()->get($key, $default);
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('website_settings');
+    }
+
+    private function isInstallationIncomplete(): bool
     {
         try {
-            Cache::remember('website_settings', now()->addMinutes(5), function () {
-                return Schema::hasTable('website_settings') ? WebsiteSetting::all()->pluck('value', 'key') : collect();
-            });
+            // Check if installation table exists and if installation is completed
+            if (! Schema::hasTable('website_installation')) {
+                return true;
+            }
 
-            $this->settings = Cache::get('website_settings');
-        } catch (Throwable $e) {
-            $this->settings = collect();
+            $installation = DB::table('website_installation')->first();
+
+            return ! $installation || ! $installation->completed;
+        } catch (Throwable) {
+            return true;
         }
     }
 
-    public function getOrDefault(string $settingName, ?string $default = null): string
+    private function fetchSettings()
     {
-        if (! $this->settings) {
-            return (string) $default;
+        if (! Schema::hasTable('website_settings')) {
+            return collect();
         }
 
-        return (string) $this->settings->get($settingName, $default);
+        return WebsiteSetting::query()->pluck('value', 'key');
     }
 }

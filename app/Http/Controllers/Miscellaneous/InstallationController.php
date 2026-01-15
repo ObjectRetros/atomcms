@@ -74,28 +74,27 @@ class InstallationController extends Controller
 
     public function completeInstallation()
     {
+        // Clear all caches before marking as complete
+        Cache::forget('website_permissions');
+        Cache::forget('website_settings');
+
+        // Mark installation as complete
         WebsiteInstallation::latest()->first()->update([
             'completed' => true,
         ]);
 
-        if (Cache::has('website_permissions')) {
-            Cache::forget('website_permissions');
-        }
-
-        if (Cache::has('website_settings')) {
-            Cache::forget('website_settings');
-        }
-
         return to_route('welcome');
     }
 
-    private function updateSettings(Request $request)
+    private function updateSettings(Request $request): void
     {
         foreach ($request->except('_token') as $key => $value) {
             WebsiteSetting::where('key', '=', $key)->update([
                 'value' => $value ?? '',
             ]);
         }
+
+        // Cache will be automatically cleared by WebsiteSetting model events
     }
 
     private function getSettingsForStep(int $step)
