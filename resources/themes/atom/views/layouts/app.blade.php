@@ -21,7 +21,7 @@
 
     @vite(['resources/themes/' .  setting('theme', 'atom') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
     @stack('scripts')
-    @turnstileScripts()
+    <x-turnstile.scripts />
 </head>
 
 <body class="flex min-h-screen flex-col site-bg dark:bg-gray-800">

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
+use App\Services\InstallationService;
 use App\Services\PermissionsService;
 use App\Services\RconService;
 use App\Services\SettingsService;
@@ -24,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             Vite::class,
             ViteService::class,
+        );
+
+        $this->app->singleton(
+            InstallationService::class,
+            fn () => new InstallationService,
         );
 
         $this->app->singleton(

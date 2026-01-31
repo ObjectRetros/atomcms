@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Exceptions\MigrationFailedException;
 use App\Models\Miscellaneous\WebsiteInstallation;
+use App\Services\InstallationService;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,20 +18,17 @@ class InstallationMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Cache::get('app_installed')) {
+        if (app(InstallationService::class)->isComplete()) {
+            if ($request->is('installation*')) {
+                return to_route('welcome');
+            }
+
             return $next($request);
         }
+
         $this->ensureInstallationTableExists();
 
         $installation = $this->getInstallation();
-
-        if ($installation && $installation->completed && $request->is('installation*')) {
-            Cache::rememberForever('app_installed', function () {
-                return true;
-            });
-
-            return to_route('welcome');
-        }
 
         $isInstallationStepHandled = $this->handleInstallationSteps($request, $installation);
 
@@ -59,10 +57,21 @@ class InstallationMiddleware
     private function getInstallation()
     {
         try {
+            $cacheKey = 'installation_record';
+
+            $cachedInstallation = Cache::get($cacheKey);
+
+            if ($cachedInstallation) {
+                $installation = new WebsiteInstallation;
+                $installation->fill((array) $cachedInstallation);
+
+                return $installation;
+            }
+
             $installation = WebsiteInstallation::query()->first();
 
             if (! $installation) {
-                return WebsiteInstallation::create([
+                $installation = WebsiteInstallation::create([
                     'step' => 0,
                     'completed' => false,
                     'installation_key' => Str::uuid(),
@@ -70,10 +79,16 @@ class InstallationMiddleware
                 ]);
             }
 
+            if ($installation->completed) {
+                Cache::rememberForever($cacheKey, function () use ($installation) {
+                    return $installation->toArray();
+                });
+            }
+
             return $installation;
         } catch (Exception $e) {
             Log::error('Error fetching or creating WebsiteInstallation: ' . $e->getMessage());
-            abort(500, 'An error occurred while setting up the installation.');
+            abort(500, 'An error occurred while setting up installation.');
         }
     }
 
