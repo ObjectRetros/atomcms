@@ -4,22 +4,30 @@ namespace App\Services;
 
 use App\Models\Miscellaneous\WebsiteSetting;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class SettingsService
 {
+    private ?\Illuminate\Support\Collection $cachedSettings = null;
+
     protected function settings()
     {
-        // Don't cache if installation is not complete
-        if ($this->isInstallationIncomplete()) {
-            return $this->fetchSettings();
+        if ($this->cachedSettings !== null) {
+            return $this->cachedSettings;
         }
 
-        return Cache::rememberForever('website_settings', function () {
+        if ($this->isInstallationIncomplete()) {
+            $this->cachedSettings = $this->fetchSettings();
+
+            return $this->cachedSettings;
+        }
+
+        $this->cachedSettings = Cache::rememberForever('website_settings', function () {
             return $this->fetchSettings();
         });
+
+        return $this->cachedSettings;
     }
 
     public function getOrDefault(string $key, mixed $default = null): mixed
@@ -35,14 +43,7 @@ class SettingsService
     private function isInstallationIncomplete(): bool
     {
         try {
-            // Check if installation table exists and if installation is completed
-            if (! Schema::hasTable('website_installation')) {
-                return true;
-            }
-
-            $installation = DB::table('website_installation')->first();
-
-            return ! $installation || ! $installation->completed;
+            return ! app(InstallationService::class)->isComplete();
         } catch (Throwable) {
             return true;
         }
@@ -50,10 +51,14 @@ class SettingsService
 
     private function fetchSettings()
     {
-        if (! Schema::hasTable('website_settings')) {
+        try {
+            if (! Schema::hasTable('website_settings')) {
+                return collect();
+            }
+
+            return WebsiteSetting::query()->pluck('value', 'key');
+        } catch (Throwable) {
             return collect();
         }
-
-        return WebsiteSetting::query()->pluck('value', 'key');
     }
 }

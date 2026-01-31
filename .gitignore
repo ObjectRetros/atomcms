@@ -24,3 +24,16 @@ yarn.lock
 CLAUDE.md
 .phpunit.cache
 .yarn
+public/js
+public/css
+public/fonts
+public/vendor
+.junie
+.claude
+.github
+.ai
+.codex
+.cursor
+opencode.json
+.mcp.json
+boost.json

@@ -60,7 +60,11 @@ if (! function_exists('findMigration')) {
 if (! function_exists('columnExists')) {
     function columnExists(string $table, string $column): bool
     {
-        return Schema::hasColumn($table, $column);
+        try {
+            return Schema::hasColumn($table, $column);
+        } catch (Throwable) {
+            return false;
+        }
     }
 }
 
