@@ -27,6 +27,7 @@ CLAUDE.md
 public/js
 public/css
 public/fonts
+public/vendor
 .junie
 .claude
 .github
