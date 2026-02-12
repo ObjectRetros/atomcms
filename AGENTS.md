@@ -1,260 +1,177 @@
-# Repository Guidelines
+# Atom CMS Repository Guidelines
 
-## Project Structure & Module Organization
-Atom CMS runs on Laravel 12. Keep application logic in `app/` (controllers, events, jobs) and shareable domain services under `app/Services`. Blade templates, JS/TS, and theme assets live in `resources/`, with theme-specific Vite setup inside `resources/themes/atom` and `resources/themes/dusk`. API and web routes belong in `routes/` (`web.php`, `api.php`, `console.php`). Database migrations, factories, and seeders remain in `database/`. Static assets served publicly should be placed in `public/`. Feature and unit tests live in `tests/Feature` and `tests/Unit`.
+## Project Overview
 
-## Build, Test, and Development Commands
-Install dependencies with `composer install` and `npm install`. Spin up the Laravel dev server with `php artisan serve` or, when using Sail, `./vendor/bin/sail up`. Use `npm run dev:atom` or `npm run dev:dusk` for hot module reloads; the matching `npm run build:atom` or `npm run build:dusk` commands generate production assets in `public/build`. Prepare the database via `php artisan migrate --seed`. Run the test suite with `./vendor/bin/pest` (or `./vendor/bin/sail pest` inside Sail). To inspect queues, caches, or config, prefer standard Artisan tools (`php artisan queue:work`, `php artisan config:clear`).
+Atom CMS is a Laravel 12 application with Filament v4, Livewire v3, Fortify authentication, and multi-theme Vite builds. PHP 8.4+, Pest v3, Tailwind CSS v4.
 
-## Coding Style & Naming Conventions
-Follow the Laravel Pint preset configured in `pint.json`; run `./vendor/bin/pint` before committing to enforce PSR-12-compatible formatting and ordered imports. Keep PHP indentation at four spaces, and favor descriptive class names (`HotelRoomController`, `SyncUserRanksJob`). Frontend code is formatted with Prettier (`npm run format`), which also handles Blade components; avoid manual alignment tweaks that Prettier will rewrite. Use snake_case for config keys, kebab-case for asset filenames, and PascalCase for Vue components.
+## Build Commands
+
+```bash
+composer install && npm install      # Install dependencies
+php artisan serve                    # Laravel dev server
+./vendor/bin/sail up                 # Or use Sail
+npm run dev:atom                     # Hot reload atom theme
+npm run dev:dusk                     # Hot reload dusk theme
+npm run build:atom                   # Production build atom
+npm run build:dusk                   # Production build dusk
+php artisan migrate --seed           # Database setup
+```
+
+## Lint & Format Commands
+
+```bash
+./vendor/bin/pint                    # Format all PHP files
+./vendor/bin/pint --dirty            # Format changed files only
+npm run format                       # Prettier (JS/TS/Vue/Blade)
+```
+
+## Test Commands
+
+```bash
+./vendor/bin/pest                    # Run all tests
+php artisan test --compact           # Alternative: all tests
+
+# Run single test (IMPORTANT)
+./vendor/bin/pest --filter=test_name
+php artisan test --compact --filter=test_name
+
+# Run specific file
+./vendor/bin/pest tests/Feature/AuthenticationTest.php
+
+# Run with coverage
+./vendor/bin/pest --coverage
+```
+
+## Code Style Guidelines
+
+### PHP Formatting (Pint/Laravel Preset)
+- Control structure braces: same line (`if () {`)
+- Function/class braces: next line
+- Concatenation: single space (`'a' . 'b'`)
+- Imports: alphabetically ordered, no unused imports
+- Trailing commas in multiline arrays, arguments, parameters
+- Visibility required on all properties, methods, constants
+- Return type declarations required on all methods
+
+### Type Declarations
+```php
+protected function isAccessible(User $user, ?string $path = null): bool
+public function __construct(public GitHub $github) {}
+```
+
+### Models
+- Use `casts()` method instead of `$casts` property
+- Guarded mode (`$guarded`) preferred over `$fillable`
+- Relationship methods with return type hints: `public function posts(): HasMany`
+- Avoid `DB::` facade - use `Model::query()` instead
+
+### Controllers & Validation
+- Create Form Request classes for validation (never inline in controllers)
+- Use array-based validation rules:
+```php
+public function rules(): array
+{
+    return [
+        'username' => ['required', 'string', 'max:25'],
+    ];
+}
+```
+
+### Naming Conventions
+- Controllers/Jobs: `HotelRoomController`, `SyncUserRanksJob` (PascalCase)
+- Config keys: `snake_case`
+- Asset filenames: `kebab-case`
+- Vue components: `PascalCase`
+- Enum keys: `TitleCase` (e.g., `FavoritePerson`)
+
+### Comments & PHPDoc
+- Prefer PHPDoc blocks over inline comments
+- Only comment exceptionally complex logic
+
+## Laravel Boost Tools
+
+Laravel Boost is an MCP server with specialized tools. Use them when available.
+
+- `search-docs` - Search version-specific Laravel docs **before** making changes. Use broad queries: `['rate limiting', 'routing']`
+- `tinker` - Execute PHP for debugging Eloquent models
+- `database-query` - Read-only SQL queries
+- `browser-logs` - Read browser console errors (recent only)
+- `list-artisan-commands` - Check available command parameters
+- `get-absolute-url` - Generate correct project URLs
+
+### Documentation Search Syntax
+- Simple: `authentication` (auto-stemming)
+- AND logic: `rate limit` (both terms)
+- Exact phrase: `"infinite scroll"` (adjacent words)
+- Multiple: `["authentication", "middleware"]` (any term)
+
+## Architecture & Patterns
+
+### Directory Structure (Laravel 10 style - do not migrate)
+- `app/Http/Middleware/` - Middleware
+- `app/Providers/` - Service providers
+- `app/Http/Kernel.php` - Middleware registration
+- `app/Console/Kernel.php` - Console commands & schedule
+- `app/Exceptions/Handler.php` - Exception handling
+- No `bootstrap/app.php` configuration file
+
+### Creating Files
+- Always use `php artisan make:` commands
+- Pass `--no-interaction` to all Artisan commands
+- Create factories and seeders alongside new models
+
+### Database
+- Migrations modifying columns must include all previously defined attributes
+- Eager load relationships to prevent N+1 queries
+- Laravel 12 supports `$query->latest()->limit(10)` on eager loads
+
+### Configuration
+- Use `config('app.name')` - never `env()` outside config files
+
+### Frontend
+- If UI changes don't appear, run `npm run build` or `npm run dev`
+- Vite manifest error = needs build
 
 ## Testing Guidelines
-We rely on Pest v4 (`tests/Pest.php`) as the primary test runner. Execute `./vendor/bin/pest` locally, or `./vendor/bin/sail pest` when using Sail; append flags like `--coverage` as needed. Organize feature tests under `tests/Feature` and focused units under `tests/Unit`, maintaining the `*Test.php` suffix so Pest discovers them. When introducing new behavior, cover the happy path and dominant failure modes, and refresh seed data if fixtures change. Keep suites idempotent—prefer migrations and factories over manual SQL setup.
 
-## Commit & Pull Request Guidelines
-Commits in this repo use imperative, lowercase subjects with optional scopes, e.g. `refactor(profile): improve dashboard grid` or `style: run laravel pint`. Group related changes together and avoid WIP commits. Pull requests should describe the intent, link to tracked issues, and include screenshots or terminal output when UI or console behavior changes. Confirm tests (`./vendor/bin/pest`) and Pint/Prettier checks pass before requesting review.
+### Test Creation
+```bash
+php artisan make:test --pest FeatureName    # Feature test (default)
+php artisan make:test --pest --unit Name    # Unit test
+```
 
-===
+### Conventions
+- Feature tests in `tests/Feature/`, unit tests in `tests/Unit/`
+- Use `*Test.php` suffix for discovery
+- Use factories for model creation in tests
+- Faker: use `$this->faker->word()` or `fake()->randomDigit()`
+- Cover happy path and dominant failure modes
+- Keep tests idempotent - prefer factories over manual SQL
 
-<laravel-boost-guidelines>
-=== foundation rules ===
+### Pest Example
+```php
+test('users can authenticate', function () {
+    $user = User::factory()->create();
 
-# Laravel Boost Guidelines
+    $response = $this->post('/login', [
+        'username' => $user->username,
+        'password' => 'password',
+    ]);
 
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
-
-## Foundational Context
-
-This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
-
-- php - 8.4.8
-- filament/filament (FILAMENT) - v4
-- laravel/fortify (FORTIFY) - v1
-- laravel/framework (LARAVEL) - v12
-- laravel/prompts (PROMPTS) - v0
-- laravel/sanctum (SANCTUM) - v4
-- livewire/livewire (LIVEWIRE) - v3
-- laravel/mcp (MCP) - v0
-- laravel/pint (PINT) - v1
-- pestphp/pest (PEST) - v3
-- phpunit/phpunit (PHPUNIT) - v11
-- rector/rector (RECTOR) - v2
-- alpinejs (ALPINEJS) - v3
-- tailwindcss (TAILWINDCSS) - v4
+    expect($response->status())->toBe(302)
+        ->and(auth()->check())->toBeTrue();
+});
+```
 
 ## Skills Activation
 
-This project has domain-specific skills available. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
-
-- `pest-testing` — Tests applications using the Pest 3 PHP framework. Activates when writing tests, creating unit or feature tests, adding assertions, testing Livewire components, architecture testing, debugging test failures, working with datasets or mocking; or when the user mentions test, spec, TDD, expects, assertion, coverage, or needs to verify functionality works.
-- `tailwindcss-development` — Styles applications using Tailwind CSS v4 utilities. Activates when adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders; or when the user mentions CSS, styling, classes, Tailwind, restyle, hero section, cards, buttons, or any visual/UI changes.
-
-## Conventions
-
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
-
-## Verification Scripts
-
-- Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.
-
-## Application Structure & Architecture
-
-- Stick to existing directory structure; don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
-
-## Frontend Bundling
-
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.
-
-## Documentation Files
-
-- You must only create documentation files if explicitly requested by the user.
-
-## Replies
-
-- Be concise in your explanations - focus on what's important rather than explaining obvious details.
-
-=== boost rules ===
-
-# Laravel Boost
-
-- Laravel Boost is an MCP server that comes with powerful tools designed specifically for this application. Use them.
-
-## Artisan
-
-- Use the `list-artisan-commands` tool when you need to call an Artisan command to double-check the available parameters.
-
-## URLs
-
-- Whenever you share a project URL with the user, you should use the `get-absolute-url` tool to ensure you're using the correct scheme, domain/IP, and port.
-
-## Tinker / Debugging
-
-- You should use the `tinker` tool when you need to execute PHP to debug code or query Eloquent models directly.
-- Use the `database-query` tool when you only need to read from the database.
-
-## Reading Browser Logs With the `browser-logs` Tool
-
-- You can read browser logs, errors, and exceptions using the `browser-logs` tool from Boost.
-- Only recent browser logs will be useful - ignore old logs.
-
-## Searching Documentation (Critically Important)
-
-- Boost comes with a powerful `search-docs` tool you should use before trying other approaches when working with Laravel or Laravel ecosystem packages. This tool automatically passes a list of installed packages and their versions to the remote Boost API, so it returns only version-specific documentation for the user's circumstance. You should pass an array of packages to filter on if you know you need docs for particular packages.
-- Search the documentation before making code changes to ensure we are taking the correct approach.
-- Use multiple, broad, simple, topic-based queries at once. For example: `['rate limiting', 'routing rate limiting', 'routing']`. The most relevant results will be returned first.
-- Do not add package names to queries; package information is already shared. For example, use `test resource table`, not `filament 4 test resource table`.
-
-### Available Search Syntax
-
-1. Simple Word Searches with auto-stemming - query=authentication - finds 'authenticate' and 'auth'.
-2. Multiple Words (AND Logic) - query=rate limit - finds knowledge containing both "rate" AND "limit".
-3. Quoted Phrases (Exact Position) - query="infinite scroll" - words must be adjacent and in that order.
-4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit".
-5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms.
-
-=== php rules ===
-
-# PHP
-
-- Always use curly braces for control structures, even for single-line bodies.
-
-## Constructors
-
-- Use PHP 8 constructor property promotion in `__construct()`.
-    - <code-snippet>public function __construct(public GitHub $github) { }</code-snippet>
-- Do not allow empty `__construct()` methods with zero parameters unless the constructor is private.
-
-## Type Declarations
-
-- Always use explicit return type declarations for methods and functions.
-- Use appropriate PHP type hints for method parameters.
-
-<code-snippet name="Explicit Return Types and Method Params" lang="php">
-protected function isAccessible(User $user, ?string $path = null): bool
-{
-    ...
-}
-</code-snippet>
-
-## Enums
-
-- Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
-
-## Comments
-
-- Prefer PHPDoc blocks over inline comments. Never use comments within the code itself unless the logic is exceptionally complex.
-
-## PHPDoc Blocks
-
-- Add useful array shape type definitions when appropriate.
-
-=== laravel/core rules ===
-
-# Do Things the Laravel Way
-
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
-- If you're creating a generic PHP class, use `php artisan make:class`.
-- Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
-
-## Database
-
-- Always use proper Eloquent relationship methods with return type hints. Prefer relationship methods over raw queries or manual joins.
-- Use Eloquent models and relationships before suggesting raw database queries.
-- Avoid `DB::`; prefer `Model::query()`. Generate code that leverages Laravel's ORM capabilities rather than bypassing them.
-- Generate code that prevents N+1 query problems by using eager loading.
-- Use Laravel's query builder for very complex database operations.
-
-### Model Creation
-
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `list-artisan-commands` to check the available options to `php artisan make:model`.
-
-### APIs & Eloquent Resources
-
-- For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
-
-## Controllers & Validation
-
-- Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
-- Check sibling Form Requests to see if the application uses array or string based validation rules.
-
-## Authentication & Authorization
-
-- Use Laravel's built-in authentication and authorization features (gates, policies, Sanctum, etc.).
-
-## URL Generation
-
-- When generating links to other pages, prefer named routes and the `route()` function.
-
-## Queues
-
-- Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
-
-## Configuration
-
-- Use environment variables only in configuration files - never use the `env()` function directly outside of config files. Always use `config('app.name')`, not `env('APP_NAME')`.
-
-## Testing
-
-- When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
-- Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-
-## Vite Error
-
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
-
-=== laravel/v12 rules ===
-
-# Laravel 12
-
-- CRITICAL: ALWAYS use `search-docs` tool for version-specific Laravel documentation and updated code examples.
-- This project upgraded from Laravel 10 without migrating to the new streamlined Laravel file structure.
-- This is perfectly fine and recommended by Laravel. Follow the existing structure from Laravel 10. We do not need to migrate to the new Laravel structure unless the user explicitly requests it.
-
-## Laravel 10 Structure
-
-- Middleware typically lives in `app/Http/Middleware/` and service providers in `app/Providers/`.
-- There is no `bootstrap/app.php` application configuration in a Laravel 10 structure:
-    - Middleware registration happens in `app/Http/Kernel.php`
-    - Exception handling is in `app/Exceptions/Handler.php`
-    - Console commands and schedule register in `app/Console/Kernel.php`
-    - Rate limits likely exist in `RouteServiceProvider` or `app/Http/Kernel.php`
-
-## Database
-
-- When modifying a column, the migration must include all of the attributes that were previously defined on the column. Otherwise, they will be dropped and lost.
-- Laravel 12 allows limiting eagerly loaded records natively, without external packages: `$query->latest()->limit(10);`.
-
-### Models
-
-- Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
-
-=== pint/core rules ===
-
-# Laravel Pint Code Formatter
-
-- You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
-
-=== pest/core rules ===
-
-## Pest
-
-- This project uses Pest for testing. Create tests: `php artisan make:test --pest {name}`.
-- Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
-- Do NOT delete tests without approval.
-- CRITICAL: ALWAYS use `search-docs` tool for version-specific Pest documentation and updated code examples.
-- IMPORTANT: Activate `pest-testing` every time you're working with a Pest or testing-related task.
-
-=== tailwindcss/core rules ===
-
-# Tailwind CSS
-
-- Always use existing Tailwind conventions; check project patterns before adding new ones.
-- IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
-- IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
-</laravel-boost-guidelines>
+When available, activate domain-specific skills:
+- `pest-testing` - When writing/running tests or debugging test failures
+- `tailwindcss-development` - When styling components or UI changes
+
+## Commit Guidelines
+
+- Imperative, lowercase subjects with optional scope
+- Examples: `refactor(profile): improve dashboard grid`, `style: run laravel pint`
+- Group related changes, avoid WIP commits
+- Run `./vendor/bin/pest` and `./vendor/bin/pint` before committing
