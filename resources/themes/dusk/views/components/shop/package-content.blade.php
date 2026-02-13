@@ -51,7 +51,7 @@
                         <div
                             class="h-[50px] w-[50px] overflow-hidden p-2 bg-[#444d5c] rounded-md flex items-center justify-center">
                             <img data-tippy-content="1x {{ $badge }}"
-                                 src="/client/flash/c_images/album1584/{{$badge}}.gif" alt="{{ $badge }}"
+                                 src="{{ setting('badges_path') }}/{{$badge}}.gif" alt="{{ $badge }}"
                                  style="image-rendering: auto;">
                         </div>
                     @endforeach

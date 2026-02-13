@@ -18,8 +18,8 @@
     </div>
 
     @push('javascript')
-        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+        <script src="{{ asset('assets/vendor/js/fancybox.umd.js') }}"></script>
     @endpush
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/fancybox.css') }}" />
 </x-app-layout>

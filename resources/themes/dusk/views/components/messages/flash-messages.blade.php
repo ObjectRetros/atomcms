@@ -1,4 +1,4 @@
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('assets/vendor/js/sweetalert2.min.js') }}"></script>
 
 <script>
     var Toast = Swal.mixin({

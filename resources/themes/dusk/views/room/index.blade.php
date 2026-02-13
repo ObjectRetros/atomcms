@@ -83,7 +83,7 @@
                         </x-content.content-card>
                         <style>
                             .{{ $room->guild->badge }}-icon {
-                                background: #f68b08 url("/client/flash/c_images/Badgeparts/generated/{{ $room->guild->badge }}.png") no-repeat center;
+                                background: #f68b08 url("{{ setting('group_badge_path') }}/{{ $room->guild->badge }}.png") no-repeat center;
                             }
                         </style>
                     @endif

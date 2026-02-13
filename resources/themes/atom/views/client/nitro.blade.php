@@ -7,7 +7,7 @@
 
     <title>{{ setting('hotel_name') }} - Nitro</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Condensed&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fonts.css') }}">
 
     @vite(['resources/themes/' .  setting('theme') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
 </head>

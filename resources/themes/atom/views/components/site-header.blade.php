@@ -28,14 +28,6 @@
                     </button>
                 </a>
 
-                @if (config('habbo.client.flash_enabled'))
-                    <a data-turbolinks="false" href="{{ route('flash-client') }}">
-                        <button
-                            class="relative hidden rounded-full bg-white/90 px-6 py-2 text-lg font-semibold text-black transition duration-300 ease-in-out hover:bg-white dark:bg-gray-900 dark:text-white md:block">
-                            {{ __('Flash client') }}
-                        </button>
-                    </a>
-                @endif
             </flex>
         </div>
     @endauth

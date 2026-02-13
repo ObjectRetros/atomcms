@@ -107,7 +107,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'badges_path',
-                'value' => '/client/flash/c_images/album1584',
+                'value' => '/gamedata/c_images/album1584',
                 'comment' => 'The path to the badges folder, for the frontend',
             ],
             [
@@ -117,7 +117,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'group_badge_path',
-                'value' => '/client/flash/c_images/Badgeparts/generated',
+                'value' => '/gamedata/c_images/Badgeparts/generated',
                 'comment' => 'The path that contains all the generated group badges',
             ],
             [
@@ -207,7 +207,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'room_thumbnail_path',
-                'value' => '/client/flash/c_images/rooms',
+                'value' => '/gamedata/c_images/rooms',
                 'comment' => 'Path to room thumbnails',
             ],
             [
@@ -257,7 +257,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'furniture_icons_path',
-                'value' => '/client/flash/dcr/hof_furni/icons',
+                'value' => '/gamedata/dcr/hof_furni/icons',
                 'comment' => 'The path used to display furniture icons - eg. on rare values',
             ],
             [

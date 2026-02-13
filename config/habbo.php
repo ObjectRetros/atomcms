@@ -32,24 +32,7 @@ return [
     ],
 
     'client' => [
-        'nitro_path' => env('NITRO_CLIENT_PATH', '/client/html5/nitro-client'), // Path where the index.html is
-        'flash_enabled' => env('FLASH_CLIENT_ENABLED', false),
-    ],
-
-    'flash' => [
-        'host' => env('EMULATOR_IP', '127.0.0.1'),
-        'port' => env('EMULATOR_PORT', 3000),
-        'swf_base_path' => env('SWF_BASE_PATH'),
-        'production_folder' => env('PRODUCTION_FOLDER'),
-        'habbo_swf' => env('HABBO_SWF', 'Habbo.swf'),
-        'external_texts' => env('EXTERNAL_TEXTS'),
-        'external_variables' => env('EXTERNAL_VARIABLES'),
-        'external_furnidata' => env('EXTERNAL_FURNIDATA'),
-        'external_productdata' => env('EXTERNAL_PRODUCTDATA'),
-        'external_figuremap' => env('EXTERNAL_FIGUREMAP'),
-        'external_figuredata' => env('EXTERNAL_FIGUREDATA'),
-        'external_override_variables' => env('EXTERNAL_OVERRIDE_VARIABLES'),
-        'external_override_texts' => env('EXTERNAL_OVERRIDE_TEXTS'),
+        'nitro_path' => env('NITRO_CLIENT_PATH', '/client/html5/nitro-client'),
     ],
 
     'findretros' => [

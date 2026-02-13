@@ -8,7 +8,7 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
+        <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fonts.css') }}">
 
         @vite(['resources/themes/' .  setting('theme', 'dusk') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
         <x-turnstile.scripts />
@@ -96,8 +96,8 @@
 
         <x-footer />
 
-        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
+        <script src="{{ asset('assets/vendor/js/fancybox.umd.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('assets/vendor/css/fancybox.css') }}" />
 
         @stack('javascript')
 

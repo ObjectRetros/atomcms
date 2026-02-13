@@ -13,22 +13,22 @@ class WebsiteShopCategoriesSeeder extends Seeder
             [
                 'name' => 'VIP',
                 'slug' => 'vip',
-                'icon' => 'https://i.imgur.com/YiI0I1i.png',
+                'icon' => asset('assets/images/shop/category-icon.png'),
             ],
             [
                 'name' => 'Currency',
                 'slug' => 'currency',
-                'icon' => 'https://i.imgur.com/YiI0I1i.png',
+                'icon' => asset('assets/images/shop/category-icon.png'),
             ],
             [
                 'name' => 'Badges',
                 'slug' => 'badges',
-                'icon' => 'https://i.imgur.com/YiI0I1i.png',
+                'icon' => asset('assets/images/shop/category-icon.png'),
             ],
             [
                 'name' => 'Rares',
                 'slug' => 'rares',
-                'icon' => 'https://i.imgur.com/YiI0I1i.png',
+                'icon' => asset('assets/images/shop/category-icon.png'),
             ],
         ];
 

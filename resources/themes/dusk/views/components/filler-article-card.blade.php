@@ -1,5 +1,5 @@
 <div class="h-[210px] dark:bg-gray-900 rounded w-full bg-white shadow-sm relative overflow-hidden transition ease-in-out duration-200">
-    <div style="background: url('https://i.imgur.com/uGLDOUu.png');" class="article-image">
+    <div style="background: url('{{ asset('assets/images/placeholders/article-placeholder.png') }}');" class="article-image">
     </div>
 
     <div class="mt-4 px-4">
