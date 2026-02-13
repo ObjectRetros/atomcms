@@ -7,14 +7,11 @@ import "swiper/css/pagination";
 import Alpine from "alpinejs";
 import Focus from "@alpinejs/focus";
 
-import ArticleReactions from "./components/ArticleReactions.js";
-
 import Swiper, { Navigation, Pagination } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-ArticleReactions.init();
 Alpine.plugin(Focus);
 Alpine.start();
 

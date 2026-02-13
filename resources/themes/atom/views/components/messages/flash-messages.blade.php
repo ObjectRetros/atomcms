@@ -12,6 +12,15 @@
             toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
     })
+
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('toast', (payload) => {
+            Toast.fire({
+                icon: (payload && payload.icon) ? payload.icon : 'success',
+                title: (payload && payload.title) ? payload.title : ''
+            })
+        })
+    })
 </script>
 
 @if (session()->has('message'))

@@ -19,7 +19,11 @@
 
             focusAfter && focusAfter.focus()
         },
-        isTouchDevice: isTouchDevice()
+        isTouchDevice: (
+            'ontouchstart' in window ||
+            navigator.maxTouchPoints > 0 ||
+            navigator.msMaxTouchPoints > 0
+        )
     }"
     x-on:keydown.escape.prevent.stop="close($refs.button)"
     x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
