@@ -10,8 +10,8 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username' => 'NewRetro',
-            'mail' => 'NewRetro@example.com',
+            'username' => fake()->unique()->userName(),
+            'mail' => fake()->unique()->email(),
             'password' => Hash::make('password'),
             'account_created' => time(),
             'last_login' => time(),

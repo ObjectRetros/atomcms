@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleReaction;
+use App\Services\Articles\ReactionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -34,9 +35,11 @@ class ArticleReactions extends Component
         $this->showModal = false;
     }
 
-    public function toggleReaction(string $reaction): void
+    public function toggleReaction(string $reaction, ReactionService $reactionService): void
     {
-        if (! Auth::check()) {
+        $user = Auth::user();
+
+        if (! $user) {
             return;
         }
 
@@ -44,24 +47,15 @@ class ArticleReactions extends Component
             return;
         }
 
-        $user = Auth::user();
-
-        if (! $user) {
-            return;
-        }
-
         $existingReaction = WebsiteArticleReaction::getReaction($this->article->id, $user->id, $reaction);
 
         if ($existingReaction) {
             $existingReaction->update(['active' => ! $existingReaction->active]);
-            $this->dispatch('reactions:loaded');
-
-            return;
+        } else {
+            $this->article->reactions()->create([
+                'reaction' => $reaction,
+            ]);
         }
-
-        $this->article->reactions()->create([
-            'reaction' => $reaction,
-        ]);
 
         $this->dispatch('reactions:loaded');
     }

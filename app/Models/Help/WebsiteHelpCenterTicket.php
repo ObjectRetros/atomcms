@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Stevebauman\Purify\Facades\Purify;
 
 class WebsiteHelpCenterTicket extends Model
@@ -14,6 +14,13 @@ class WebsiteHelpCenterTicket extends Model
     protected $guarded = ['id'];
 
     public $timestamps = false;
+
+    protected function casts(): array
+    {
+        return [
+            'open' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -30,24 +37,19 @@ class WebsiteHelpCenterTicket extends Model
         return $this->hasMany(WebsiteHelpCenterTicketReply::class, 'ticket_id');
     }
 
-    public function canDeleteTicket()
+    public function canManageTicket(): bool
     {
-        return $this->user_id === Auth::id() || hasPermission('delete_website_tickets');
+        return Gate::allows('update', $this);
     }
 
-    public function canManageTicket()
+    public function canDeleteTicket(): bool
     {
-        return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
+        return Gate::allows('delete', $this);
     }
 
-    public function canCloseTicket()
+    public function isOpen(): bool
     {
-        return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
-    }
-
-    public function isOpen()
-    {
-        return $this->open || hasPermission('manage_website_tickets');
+        return (bool) $this->open;
     }
 
     public function getContentAttribute($value)

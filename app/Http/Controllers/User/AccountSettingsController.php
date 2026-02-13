@@ -14,7 +14,11 @@ use Illuminate\View\View;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly UserService $userService, private readonly RconService $rconService) {}
+    public function __construct(
+        private readonly SessionService $sessionService,
+        private readonly UserService $userService,
+        private readonly RconService $rconService,
+    ) {}
 
     public function edit(): View
     {
@@ -23,33 +27,30 @@ class AccountSettingsController extends Controller
         ]);
     }
 
-    public function sessionLogs(Request $request): View
-    {
-        $sessions = $this->sessionService->fetchSessionLogs($request);
-
-        return view('user.settings.session-logs', [
-            'logs' => $sessions,
-        ]);
-    }
-
     public function update(AccountSettingsFormRequest $request): RedirectResponse
     {
         $user = Auth::user();
 
-        if ($user === null) {
-            return redirect()->back()->withErrors('User not found');
-        }
-
-        // $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
-
-        if (! $this->rconService->isConnected() && Auth::user()->online === '1') {
+        if (! $this->rconService->isConnected() && $user->online === '1') {
             return back()->withErrors('You must be offline to change your account settings');
         }
 
-        /** if ($allowedNameChange) {
-            $this->rconService->disconnectUser($user);
-            $this->userService->updateField($user, 'username', $request->input('username'));
-        } **/
+        $this->updateUserFields($user, $request);
+
+        return redirect()
+            ->route('settings.account.show')
+            ->with('success', __('Your account settings has been updated'));
+    }
+
+    public function sessionLogs(Request $request): View
+    {
+        return view('user.settings.session-logs', [
+            'logs' => $this->sessionService->fetchSessionLogs($request),
+        ]);
+    }
+
+    private function updateUserFields($user, AccountSettingsFormRequest $request): void
+    {
         if ($user->mail !== $request->input('mail')) {
             $this->userService->updateField($user, 'mail', $request->input('mail'));
         }
@@ -58,12 +59,5 @@ class AccountSettingsController extends Controller
             $this->rconService->setMotto($user, $request->input('motto'));
             $this->userService->updateField($user, 'motto', $request->input('motto'));
         }
-
-        return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
-    }
-
-    public function twoFactor(): View
-    {
-        return view('user.settings.two-factor');
     }
 }

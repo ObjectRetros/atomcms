@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Services\Client\ClientService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class FlashController extends Controller
 {
+    public function __construct(
+        private readonly ClientService $clientService,
+    ) {}
+
     public function __invoke(): View
     {
-        Auth::user()->update([
-            'ip_current' => request()->ip(),
-        ]);
+        $sso = $this->clientService->prepareClientSession(Auth::user(), request());
 
-        return view('client.flash', [
-            'sso' => Auth::user()->ssoTicket(),
-        ]);
+        return view('client.flash', compact('sso'));
     }
 }

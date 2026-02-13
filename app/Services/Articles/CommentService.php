@@ -4,43 +4,41 @@ namespace App\Services\Articles;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class CommentService
 {
-    public function store(string $comment, WebsiteArticle $article): mixed
+    public function create(WebsiteArticle $article, User $user, string $comment): WebsiteArticleComment
     {
-        if ($article->userHasReachedArticleCommentLimit()) {
-            return redirect()->back()->withErrors([
-                'message' => __('You can only comment :amount times per article', ['amount' => setting('max_comment_per_article')]),
-            ]);
-        }
-
-        if (! $article->can_comment) {
-            return redirect()->back()->withErrors([
-                'message' => __('This article has been locked from receiving comments'),
-            ]);
-        }
-
         return $article->comments()->create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'comment' => $comment,
         ]);
     }
 
-    public function destroy(WebsiteArticleComment $comment): bool|RedirectResponse|null
+    public function canCreate(WebsiteArticle $article, User $user): array
     {
-        if (! $comment->canBeDeleted()) {
-            return redirect()->back()->withErrors([
-                'message' => __('You can only delete your own comments'),
-            ]);
+        if ($article->userHasReachedArticleCommentLimit()) {
+            return [
+                'allowed' => false,
+                'message' => __('You can only comment :amount times per article', ['amount' => setting('max_comment_per_article')]),
+            ];
         }
 
-        if (! $comment->delete()) {
-            return redirect()->back()->withErrors([
-                'message' => __('An error occurred while deleting the comment'),
-            ]);
+        if (! $article->can_comment) {
+            return [
+                'allowed' => false,
+                'message' => __('This article has been locked from receiving comments'),
+            ];
+        }
+
+        return ['allowed' => true];
+    }
+
+    public function delete(WebsiteArticleComment $comment, User $user): bool
+    {
+        if (! $comment->canBeDeleted()) {
+            return false;
         }
 
         return $comment->delete();

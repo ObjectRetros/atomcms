@@ -8,21 +8,19 @@ use App\Models\Community\Staff\WebsiteStaffApplications;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Furniture\Item;
 use App\Models\Game\Permission;
-use App\Models\Game\Player\MessengerFriendship;
-use App\Models\Game\Player\UserBadge;
-use App\Models\Game\Player\UserCurrency;
 use App\Models\Game\Player\UserSetting;
 use App\Models\Game\Player\UserSubscription;
 use App\Models\Game\Room;
-use App\Models\Help\WebsiteHelpCenterTicket;
 use App\Models\Miscellaneous\CameraWeb;
 use App\Models\Miscellaneous\WebsiteBetaCode;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Models\Shop\WebsiteUsedShopVoucher;
+use App\Models\Traits\HasBadges;
+use App\Models\Traits\HasCurrency;
+use App\Models\Traits\HasFriends;
+use App\Models\Traits\HasReferrals;
+use App\Models\Traits\HasTickets;
 use App\Models\User\Ban;
-use App\Models\User\ClaimedReferralLog;
-use App\Models\User\Referral;
-use App\Models\User\UserReferral;
 use App\Models\User\WebsiteUserGuestbook;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
@@ -34,7 +32,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
@@ -43,7 +40,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, LogsActivity, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasBadges, HasCurrency, HasFactory, HasFriends, HasReferrals, HasTickets, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     public $timestamps = false;
 
@@ -61,29 +58,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
-    public function currencies(): HasMany
-    {
-        return $this->hasMany(UserCurrency::class, 'user_id');
-    }
-
-    public function sessions()
+    public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
-    }
-
-    public function currency(string $currency)
-    {
-        if (! $this->relationLoaded('currencies')) {
-            $this->load('currencies');
-        }
-
-        $type = match ($currency) {
-            'duckets' => 0,
-            'diamonds' => 5,
-            'points' => 101,
-        };
-
-        return $this->currencies->where('type', $type)->first()->amount ?? 0;
     }
 
     public function permission(): HasOne
@@ -96,70 +73,21 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsiteArticle::class);
     }
 
-    public function referrals(): HasOne
-    {
-        return $this->hasOne(UserReferral::class);
-    }
-
-    public function userReferrals(): HasMany
-    {
-        return $this->hasMany(Referral::class);
-    }
-
-    public function claimedReferralLog(): HasMany
-    {
-        return $this->hasMany(ClaimedReferralLog::class);
-    }
-
-    public function badges(): HasMany
-    {
-        return $this->hasMany(UserBadge::class);
-    }
-
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class, 'owner_id');
     }
 
-    public function friends(): HasMany
-    {
-        return $this->hasMany(MessengerFriendship::class, 'user_one_id');
-    }
-
-    public function referralsNeeded()
-    {
-        $referrals = 0;
-
-        if (! is_null($this->referrals)) {
-            $referrals = $this->referrals->referrals_total;
-        }
-
-        return setting('referrals_needed') - $referrals;
-    }
-
     public function ban(): HasOne
     {
-        return $this->hasOne(Ban::class, 'user_id')->where('ban_expire', '>', time())->whereIn('type', ['account', 'super']);
+        return $this->hasOne(Ban::class, 'user_id')
+            ->where('ban_expire', '>', time())
+            ->whereIn('type', ['account', 'super']);
     }
 
     public function settings(): HasOne
     {
         return $this->hasOne(UserSetting::class);
-    }
-
-    public function ssoTicket(): string
-    {
-        $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name')), Str::uuid());
-
-        if (User::where('auth_ticket', $sso)->exists()) {
-            return $this->ssoTicket();
-        }
-
-        $this->update([
-            'auth_ticket' => $sso,
-        ]);
-
-        return $sso;
     }
 
     public function betaCode(): HasOne
@@ -202,11 +130,6 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(Item::class, 'user_id');
     }
 
-    public function tickets(): HasMany
-    {
-        return $this->hasMany(WebsiteHelpCenterTicket::class);
-    }
-
     public function photos(): HasMany
     {
         return $this->hasMany(CameraWeb::class);
@@ -222,28 +145,17 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsiteUserGuestbook::class, 'user_id');
     }
 
-    public function chatLogs()
+    public function chatLogs(): HasMany
     {
         return $this->hasMany(ChatlogRoom::class, 'user_from_id');
     }
 
-    public function chatLogsPrivate()
+    public function chatLogsPrivate(): HasMany
     {
         return $this->hasMany(ChatlogPrivate::class, 'user_from_id');
     }
 
-    public function getOnlineFriends(int $total = 10)
-    {
-        return $this->friends()
-            ->select(['user_two_id', 'users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online'])
-            ->join('users', 'users.id', '=', 'user_two_id')
-            ->where('users.online', '1')
-            ->inRandomOrder()
-            ->limit($total)
-            ->get();
-    }
-
-    public function confirmTwoFactorAuthentication($code)
+    public function confirmTwoFactorAuthentication($code): bool
     {
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);
@@ -252,19 +164,28 @@ class User extends Authenticatable implements FilamentUser, HasName
             return false;
         }
 
-        $this->update([
-            'two_factor_confirmed' => true,
-        ]);
+        $this->update(['two_factor_confirmed' => true]);
 
         return true;
     }
 
-    public function hasAppliedForPosition(int $rankId)
+    public function hasAppliedForPosition(int $rankId): bool
     {
         return $this->applications()->where('rank_id', '=', $rankId)->exists();
     }
 
-    public function changePassword(string $newPassword)
+    public function hasAppliedForTeam(int $teamId): bool
+    {
+        if (! $teamId) {
+            return false;
+        }
+
+        return $this->applications()
+            ->where('team_id', $teamId)
+            ->exists();
+    }
+
+    public function changePassword(string $newPassword): void
     {
         $this->password = Hash::make($newPassword);
         $this->save();
@@ -295,16 +216,5 @@ class User extends Authenticatable implements FilamentUser, HasName
         }
 
         return parent::save($options);
-    }
-
-    public function hasAppliedForTeam(int $teamId): bool
-    {
-        if (! $teamId) {
-            return false;
-        }
-
-        return $this->applications()
-            ->where('team_id', $teamId)
-            ->exists();
     }
 }

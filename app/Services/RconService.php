@@ -195,7 +195,7 @@ class RconService
      */
     public function giveDuckets($user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DUCKETS, $amount);
+        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     /**
