@@ -136,6 +136,11 @@ class WebsiteSettingsSeeder extends Seeder
                 'comment' => 'The path for loading ExternalTexts',
             ],
             [
+                'key' => 'nitro_ui_texts_path',
+                'value' => '/var/www/gamedata/',
+                'comment' => 'The path for loading UITexts.json',
+            ],
+            [
                 'key' => 'maintenance_enabled',
                 'value' => '0',
                 'comment' => 'Determines whether maintenance is enabled or not',
