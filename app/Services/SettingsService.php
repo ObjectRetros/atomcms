@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Models\Miscellaneous\WebsiteSetting;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class SettingsService
 {
-    private ?\Illuminate\Support\Collection $cachedSettings = null;
+    private ?Collection $cachedSettings = null;
 
     protected function settings()
     {
@@ -23,9 +24,9 @@ class SettingsService
             return $this->cachedSettings;
         }
 
-        $this->cachedSettings = Cache::rememberForever('website_settings', function () {
-            return $this->fetchSettings();
-        });
+        $this->cachedSettings = collect(Cache::rememberForever('website_settings', function () {
+            return $this->fetchSettings()->toArray();
+        }));
 
         return $this->cachedSettings;
     }
