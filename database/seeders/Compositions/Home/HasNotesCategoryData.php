@@ -11,7 +11,7 @@ trait HasNotesCategoryData
         $this->currentOrder = 1;
 
         DB::table('home_items')->insert([
-            $this->buildItemStructure(null, 'https://imgur.com/SYdXCiz.png', 'Default Note', 15, 'n'),
+            $this->buildItemStructure(null, '/assets/images/home/items/SYdXCiz.png', 'Default Note', 15, 'n'),
         ]);
     }
 }

@@ -27,79 +27,79 @@ class HomeCategorySeeder extends Seeder
         return [
             [
                 'Cine',
-                'https://i.imgur.com/DH45rww.png',
+                '/assets/images/home/items/DH45rww.png',
             ],
             [
                 'Bling Alphabet',
-                'https://i.imgur.com/miq0Aiv.png',
+                '/assets/images/home/items/miq0Aiv.png',
             ],
             [
                 'Keep it Real',
-                'https://i.imgur.com/pmSUjjP.png',
+                '/assets/images/home/items/pmSUjjP.png',
             ],
             [
                 'Summer Vacation',
-                'https://i.imgur.com/abzSMEH.gif',
+                '/assets/images/home/items/abzSMEH.gif',
             ],
             [
                 'Pirates',
-                'https://i.imgur.com/XTRzzsI.png',
+                '/assets/images/home/items/XTRzzsI.png',
             ],
             [
                 'Plastic Alphabet',
-                'https://i.imgur.com/A3VBOq9.png',
+                '/assets/images/home/items/A3VBOq9.png',
             ],
             [
                 'Valentine',
-                'https://i.imgur.com/K0HqFx4.png',
+                '/assets/images/home/items/K0HqFx4.png',
             ],
             [
                 'Wooden Alphabet',
-                'https://i.imgur.com/ziDIYgy.png',
+                '/assets/images/home/items/ziDIYgy.png',
             ],
             [
                 'Buttons',
-                'https://i.imgur.com/lzfYaYp.png',
+                '/assets/images/home/items/lzfYaYp.png',
             ],
             [
                 'Alhambra',
-                'https://i.imgur.com/Jry4aC6.png',
+                '/assets/images/home/items/Jry4aC6.png',
             ],
             [
                 'Sports',
-                'https://i.imgur.com/BDCtism.png',
+                '/assets/images/home/items/BDCtism.png',
             ],
             [
                 'WWE',
-                'https://i.imgur.com/ML7YRub.png',
+                '/assets/images/home/items/ML7YRub.png',
             ],
             [
                 'Paintings',
-                'https://i.imgur.com/UCvX3St.png',
+                '/assets/images/home/items/UCvX3St.png',
             ],
             [
                 'Dividers',
-                'https://i.imgur.com/vgjnpff.png',
+                '/assets/images/home/items/vgjnpff.png',
             ],
             [
                 'SnowStorm',
-                'https://i.imgur.com/oevdfAb.png',
+                '/assets/images/home/items/oevdfAb.png',
             ],
             [
                 'Habboween',
-                'https://i.imgur.com/NibQAwu.png',
+                '/assets/images/home/items/NibQAwu.png',
             ],
             [
                 'Coins and Related',
-                'https://imgur.com/2dv241o.png',
+                '/assets/images/home/items/2dv241o.png',
             ],
             [
                 'Forest and Related',
-                'https://imgur.com/93S5hn6.png',
+                '/assets/images/home/items/93S5hn6.png',
             ],
             [
                 'Clamps and Related',
-                'https://imgur.com/9cAAtv0.png',
+                '/assets/images/home/items/9cAAtv0.png',
             ],
         ];
     }

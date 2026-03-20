@@ -9,8 +9,8 @@ trait HasAlhambraCategoryData
     public function getAlhambraItemsData(HomeCategory $category): array
     {
         return [
-            $this->buildItemStructure($category, 'https://imgur.com/ggbQ2QG.png'),
-            $this->buildItemStructure($category, 'https://imgur.com/BtN2Ten.gif'),
+            $this->buildItemStructure($category, '/assets/images/home/items/ggbQ2QG.png'),
+            $this->buildItemStructure($category, '/assets/images/home/items/BtN2Ten.gif'),
         ];
     }
 }
