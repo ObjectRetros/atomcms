@@ -14,12 +14,12 @@
         "itsgoingd/clockwork": "*",
         "jenssegers/agent": "^2.6",
         "laravel/fortify": "^1.16",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.8",
+        "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.0",
         "opcodesio/log-viewer": "*",
-        "qirolab/laravel-themer": "^2.0",
+        "qirolab/laravel-themer": "dev-master",
         "ryangjchandler/laravel-cloudflare-turnstile": "^3.0",
         "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-sluggable": "^3.7",
@@ -35,8 +35,8 @@
         "laravel/sail": "*",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
-        "pestphp/pest": "^3.0",
-        "phpunit/phpunit": "^11.0",
+        "pestphp/pest": "^4.0",
+        "phpunit/phpunit": "^12.0",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-ray": "^1.32"
     },
@@ -84,6 +84,70 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "flowframe/laravel-trend",
+                "version": "0.4.99",
+                "source": {
+                    "url": "https://github.com/Flowframe/laravel-trend.git",
+                    "type": "git",
+                    "reference": "5ace11d3075932652dc48963faa732c043aeb14d"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Flowframe\\Trend\\": "src"
+                    }
+                },
+                "require": {
+                    "php": "^8.0",
+                    "illuminate/contracts": "^8.37|^9|^10.0|^11.0|^12.0|^13.0",
+                    "illuminate/database": "^8.37|^9|^10.0|^11.0|^12.0|^13.0",
+                    "illuminate/support": "^8.37|^9|^10.0|^11.0|^12.0|^13.0",
+                    "spatie/laravel-package-tools": "^1.4.3"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "srmklive/paypal",
+                "version": "3.0.99",
+                "source": {
+                    "url": "https://github.com/srmklive/laravel-paypal.git",
+                    "type": "git",
+                    "reference": "1ddc49fd836a4785933ab953452152f3fedbac63"
+                },
+                "dist": {
+                    "url": "https://api.github.com/repos/srmklive/laravel-paypal/zipball/1ddc49fd836a4785933ab953452152f3fedbac63",
+                    "type": "zip",
+                    "reference": "1ddc49fd836a4785933ab953452152f3fedbac63"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Srmklive\\PayPal\\": "src/"
+                    }
+                },
+                "require": {
+                    "php": ">=7.2|^8.0",
+                    "ext-curl": "*",
+                    "guzzlehttp/guzzle": "~7.0",
+                    "nesbot/carbon": "~2.0|^3.0",
+                    "illuminate/support": "~6.0|~7.0|~8.0|~9.0|^10.0|^11.0|^12.0|^13.0",
+                    "illuminate/console": "~6.0|~7.0|~8.0|~9.0|^10.0|^11.0|^12.0|^13.0"
+                },
+                "extra": {
+                    "laravel": {
+                        "providers": ["Srmklive\\PayPal\\Providers\\PayPalServiceProvider"],
+                        "aliases": {
+                            "PayPal": "Srmklive\\PayPal\\Facades\\PayPal"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "minimum-stability": "dev",
     "prefer-stable": true
 }
