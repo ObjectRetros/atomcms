@@ -27,79 +27,79 @@ class HomeCategorySeeder extends Seeder
         return [
             [
                 'Cine',
-                '/assets/images/home/items/DH45rww.png',
+                '/assets/images/home/items/cat-cine.png',
             ],
             [
                 'Bling Alphabet',
-                '/assets/images/home/items/miq0Aiv.png',
+                '/assets/images/home/items/cat-bling-alphabet.png',
             ],
             [
                 'Keep it Real',
-                '/assets/images/home/items/pmSUjjP.png',
+                '/assets/images/home/items/cat-keep-it-real.png',
             ],
             [
                 'Summer Vacation',
-                '/assets/images/home/items/abzSMEH.gif',
+                '/assets/images/home/items/cat-summer-vacation.gif',
             ],
             [
                 'Pirates',
-                '/assets/images/home/items/XTRzzsI.png',
+                '/assets/images/home/items/cat-pirates.png',
             ],
             [
                 'Plastic Alphabet',
-                '/assets/images/home/items/A3VBOq9.png',
+                '/assets/images/home/items/cat-plastic-alphabet.png',
             ],
             [
                 'Valentine',
-                '/assets/images/home/items/K0HqFx4.png',
+                '/assets/images/home/items/cat-valentine.png',
             ],
             [
                 'Wooden Alphabet',
-                '/assets/images/home/items/ziDIYgy.png',
+                '/assets/images/home/items/cat-wooden-alphabet.png',
             ],
             [
                 'Buttons',
-                '/assets/images/home/items/lzfYaYp.png',
+                '/assets/images/home/items/cat-buttons.png',
             ],
             [
                 'Alhambra',
-                '/assets/images/home/items/Jry4aC6.png',
+                '/assets/images/home/items/cat-alhambra.png',
             ],
             [
                 'Sports',
-                '/assets/images/home/items/BDCtism.png',
+                '/assets/images/home/items/cat-sports.png',
             ],
             [
                 'WWE',
-                '/assets/images/home/items/ML7YRub.png',
+                '/assets/images/home/items/cat-wwe.png',
             ],
             [
                 'Paintings',
-                '/assets/images/home/items/UCvX3St.png',
+                '/assets/images/home/items/cat-paintings.png',
             ],
             [
                 'Dividers',
-                '/assets/images/home/items/vgjnpff.png',
+                '/assets/images/home/items/cat-dividers.png',
             ],
             [
                 'SnowStorm',
-                '/assets/images/home/items/oevdfAb.png',
+                '/assets/images/home/items/cat-snowstorm.png',
             ],
             [
                 'Habboween',
-                '/assets/images/home/items/NibQAwu.png',
+                '/assets/images/home/items/cat-habboween.png',
             ],
             [
                 'Coins and Related',
-                '/assets/images/home/items/2dv241o.png',
+                '/assets/images/home/items/cat-coins-and-related.png',
             ],
             [
                 'Forest and Related',
-                '/assets/images/home/items/93S5hn6.png',
+                '/assets/images/home/items/cat-forest-and-related.png',
             ],
             [
                 'Clamps and Related',
-                '/assets/images/home/items/9cAAtv0.png',
+                '/assets/images/home/items/cat-clamps-and-related.png',
             ],
         ];
     }

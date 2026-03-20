@@ -3,6 +3,7 @@
 namespace Database\Seeders\Compositions;
 
 use App\Models\Home\HomeCategory;
+use Illuminate\Support\Str;
 use Database\Seeders\Compositions\Home\HasAlhambraCategoryData;
 use Database\Seeders\Compositions\Home\HasArtistsCategoryData;
 use Database\Seeders\Compositions\Home\HasBackgroundsCategoryData;
@@ -53,6 +54,29 @@ trait HasUserProfileData
         HasWoodenAlphabetCategoryData,
         HasWWECategoryData;
 
+    private function nameFromImage(string $image, ?HomeCategory $category): string
+    {
+        $base = pathinfo(basename($image), PATHINFO_FILENAME);
+
+        // Strip category prefix (e.g. "cine-" from "cine-item-3")
+        $prefixes = ['bg-', 'widget-', 'note-', 'cat-'];
+        foreach ($prefixes as $p) {
+            if (str_starts_with($base, $p)) {
+                $base = substr($base, strlen($p));
+                break;
+            }
+        }
+
+        if ($category) {
+            $catSlug = Str::slug($category->name) . '-';
+            if (str_starts_with($base, $catSlug)) {
+                $base = substr($base, strlen($catSlug));
+            }
+        }
+
+        return Str::of($base)->replace('-', ' ')->title()->toString();
+    }
+
     protected function buildItemStructure(
         ?HomeCategory $category,
         string $image,
@@ -64,7 +88,7 @@ trait HasUserProfileData
             'type' => $type,
             'order' => $this->currentOrder++,
             'home_category_id' => $category?->id,
-            'name' => $name ?? sprintf('%s %s', config('app.name'), 'Item'),
+            'name' => $name ?? $this->nameFromImage($image, $category),
             'image' => $image,
             'price' => $price,
             'created_at' => now(),
