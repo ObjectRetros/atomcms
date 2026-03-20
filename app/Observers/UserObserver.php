@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Actions\Home\CreateDefaultHome;
 use App\Models\Game\Player\UserCurrency;
 use App\Models\User;
 
@@ -40,5 +41,7 @@ class UserObserver
                 'amount' => $user->username === 'Admin' ? 0 : (setting('start_points') ?: 0),
             ],
         ]);
+
+        CreateDefaultHome::for($user);
     }
 }
