@@ -6,6 +6,7 @@ use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Models\Community\Staff\WebsiteStaffApplications;
 use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Compositions\HasHome;
 use App\Models\Game\Furniture\Item;
 use App\Models\Game\Permission;
 use App\Models\Game\Player\MessengerFriendship;
@@ -43,7 +44,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, LogsActivity, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasHome, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     public $timestamps = false;
 
