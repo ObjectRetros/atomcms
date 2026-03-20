@@ -132,7 +132,12 @@ Alpine.data('homeManager', (username, isMe) => ({
         } catch (e) { console.error(e); }
     },
 
-    bg() { return this.activeBackground?.home_item?.image || ''; },
+    img(path) {
+        if (!path) return '';
+        if (path.startsWith('/') || path.startsWith('http')) return path;
+        return `/storage/${path}`;
+    },
+    bg() { return this.img(this.activeBackground?.home_item?.image); },
     visible() { return this.placedItems.filter(i => !this.removedItemIds.includes(i.id)); },
 
     select(item) {

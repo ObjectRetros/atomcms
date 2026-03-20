@@ -43,7 +43,7 @@
                     @click="select(item)"
                 >
                     <template x-if="item.home_item?.type === 's'">
-                        <img :src="item.home_item.image" class="max-w-none pointer-events-none" draggable="false">
+                        <img :src="img(item.home_item?.image)" class="max-w-none pointer-events-none" draggable="false">
                     </template>
                     <template x-if="item.home_item?.type === 'n'">
                         <div class="p-3 min-w-[150px] min-h-[80px] bg-amber-50 border border-amber-200 rounded shadow text-xs text-gray-800 pointer-events-none" x-html="item.parsed_data || item.extra_data || ''"></div>
@@ -92,7 +92,7 @@
                                         <div class="flex flex-wrap gap-1.5">
                                             <template x-for="item in invItems()" :key="item.home_item_id">
                                                 <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition" :class="invActive?.home_item_id === item.home_item_id ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'" @click="invActive = item; placeQty = 1" @dblclick="quickPlace(item)">
-                                                    <img :src="item.home_item?.image" class="max-w-[56px] max-h-[56px] object-contain" :style="invTab === 'backgrounds' ? 'image-rendering: pixelated' : ''">
+                                                    <img :src="img(item.home_item?.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="invTab === 'backgrounds' ? 'image-rendering: pixelated' : ''">
                                                     <span x-show="item.item_ids?.length > 1" class="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5" x-text="item.item_ids?.length"></span>
                                                 </div>
                                             </template>
@@ -104,7 +104,7 @@
                                     <template x-if="invActive">
                                         <div class="flex flex-col items-center gap-2 text-center">
                                             <p class="font-semibold text-sm" x-text="invActive.home_item?.name"></p>
-                                            <img :src="invActive.home_item?.image" class="max-w-[72px] max-h-[72px] object-contain">
+                                            <img :src="img(invActive.home_item?.image)" class="max-w-[72px] max-h-[72px] object-contain">
                                             <p class="text-xs text-gray-400"><span x-text="invActive.item_ids?.length"></span> {{ __('available') }}</p>
                                             <template x-if="invActive.home_item?.type === 's' && invActive.item_ids?.length > 1">
                                                 <input type="number" x-model.number="placeQty" min="1" :max="Math.min(15, invActive.item_ids?.length)" class="w-16 border dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-sm text-center">
@@ -128,7 +128,7 @@
                                         <p class="text-[10px] text-gray-400 uppercase tracking-wider px-3 mb-1">{{ __('Stickers') }}</p>
                                         <template x-for="cat in shopCategories" :key="cat.id">
                                             <button class="text-left px-3 py-1 rounded text-sm w-full flex items-center gap-1.5 transition truncate" :class="shopTab === 'cat-'+cat.id ? 'bg-[#eeb425] text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'" @click="openCat(cat.id)">
-                                                <img :src="cat.icon" class="w-4 h-4 shrink-0 object-contain">
+                                                <img :src="img(cat.icon)" class="w-4 h-4 shrink-0 object-contain">
                                                 <span x-text="cat.name" class="truncate"></span>
                                             </button>
                                         </template>
@@ -143,7 +143,7 @@
                                                 <div class="flex flex-wrap gap-1.5">
                                                     <template x-for="item in shopItems" :key="item.id">
                                                         <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition" :class="shopActive?.id === item.id ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'" @click="pickShop(item)">
-                                                            <img :src="item.image" class="max-w-[56px] max-h-[56px] object-contain" :style="item.type === 'b' ? 'image-rendering: pixelated' : ''">
+                                                            <img :src="img(item.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="item.type === 'b' ? 'image-rendering: pixelated' : ''">
                                                             <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1 rounded-tl leading-tight" x-text="item.price"></span>
                                                         </div>
                                                     </template>
@@ -157,7 +157,7 @@
                                     <template x-if="shopActive">
                                         <div class="flex flex-col items-center gap-2 text-center">
                                             <p class="font-semibold text-sm" x-text="shopActive.name"></p>
-                                            <img :src="shopActive.image" class="max-w-[72px] max-h-[72px] object-contain">
+                                            <img :src="img(shopActive.image)" class="max-w-[72px] max-h-[72px] object-contain">
                                             <div class="flex items-center gap-1 text-sm">
                                                 <img :src="currIcon(shopActive.currency_type)" class="w-4 h-4">
                                                 <span class="font-semibold" x-text="totalPrice"></span>

@@ -7,6 +7,8 @@ use App\Models\Home\HomeItem;
 use Database\Seeders\Compositions\HasUserProfileData;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class HomeItemSeeder extends Seeder
 {
@@ -47,6 +49,20 @@ class HomeItemSeeder extends Seeder
         $this->insertBackgroundsItemsData();
         $this->insertNotesItemsData();
         $this->insertWidgetsItemsData();
+        $this->publishAssets();
+    }
+
+    protected function publishAssets(): void
+    {
+        $source = database_path('seeders/assets/home-items');
+
+        if (! File::isDirectory($source)) {
+            return;
+        }
+
+        $dest = Storage::disk('public')->path('home-items');
+        File::ensureDirectoryExists($dest);
+        File::copyDirectory($source, $dest);
     }
 
     protected function addItemsForCategory(string $categoryName): void

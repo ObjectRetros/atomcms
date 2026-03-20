@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\Home;
 
 use App\Enums\CurrencyTypes;
+use App\Enums\HomeItemType;
 use App\Filament\Resources\Home\HomeItemResource\Pages;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\Home\HomeItem;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -74,11 +76,15 @@ class HomeItemResource extends Resource
                 ->columnSpanFull()
                 ->maxLength(255),
 
-            TextInput::make('image')
+            FileUpload::make('image')
                 ->label(__('filament::resources.inputs.image'))
                 ->required()
                 ->columnSpanFull()
-                ->maxLength(255),
+                ->image()
+                ->disk('public')
+                ->directory('home-items')
+                ->visibility('public')
+                ->imagePreviewHeight('80'),
 
             Select::make('currency_type')
                 ->native(false)
@@ -141,8 +147,9 @@ class HomeItemResource extends Resource
                 ->visible(fn (Component $livewire): bool => $livewire->isTableReordering),
 
             ImageColumn::make('image')
+                ->disk('public')
                 ->size('auto')
-                ->extraImgAttributes(['style' => 'max-width: 200px'])
+                ->extraImgAttributes(['style' => 'max-width: 200px; max-height: 60px'])
                 ->label(__('filament::resources.columns.image')),
 
             TextColumn::make('name')
@@ -152,18 +159,16 @@ class HomeItemResource extends Resource
             TextColumn::make('type')
                 ->label(__('filament::resources.columns.type'))
                 ->badge()
-                ->formatStateUsing(fn (string $state): string => match ($state) {
-                    's' => __('filament::resources.common.Sticker'),
-                    'w' => __('filament::resources.common.Widget'),
-                    'n' => __('filament::resources.common.Note'),
-                    'b' => __('filament::resources.common.Background'),
-                    default => $state,
+                ->formatStateUsing(fn (HomeItemType $state): string => match ($state) {
+                    HomeItemType::Sticker => __('filament::resources.common.Sticker'),
+                    HomeItemType::Widget => __('filament::resources.common.Widget'),
+                    HomeItemType::Note => __('filament::resources.common.Note'),
+                    HomeItemType::Background => __('filament::resources.common.Background'),
                 })
-                ->color(fn (string $state): string => match ($state) {
-                    's', 'n' => 'primary',
-                    'w' => 'success',
-                    'b' => 'danger',
-                    default => 'gray',
+                ->color(fn (HomeItemType $state): string => match ($state) {
+                    HomeItemType::Sticker, HomeItemType::Note => 'primary',
+                    HomeItemType::Widget => 'success',
+                    HomeItemType::Background => 'danger',
                 }),
 
             TextColumn::make('price')

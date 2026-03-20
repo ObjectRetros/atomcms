@@ -27,79 +27,79 @@ class HomeCategorySeeder extends Seeder
         return [
             [
                 'Cine',
-                '/assets/images/home/items/cat-cine.png',
+                'home-items/cat-cine.png',
             ],
             [
                 'Bling Alphabet',
-                '/assets/images/home/items/cat-bling-alphabet.png',
+                'home-items/cat-bling-alphabet.png',
             ],
             [
                 'Keep it Real',
-                '/assets/images/home/items/cat-keep-it-real.png',
+                'home-items/cat-keep-it-real.png',
             ],
             [
                 'Summer Vacation',
-                '/assets/images/home/items/cat-summer-vacation.gif',
+                'home-items/cat-summer-vacation.gif',
             ],
             [
                 'Pirates',
-                '/assets/images/home/items/cat-pirates.png',
+                'home-items/cat-pirates.png',
             ],
             [
                 'Plastic Alphabet',
-                '/assets/images/home/items/cat-plastic-alphabet.png',
+                'home-items/cat-plastic-alphabet.png',
             ],
             [
                 'Valentine',
-                '/assets/images/home/items/cat-valentine.png',
+                'home-items/cat-valentine.png',
             ],
             [
                 'Wooden Alphabet',
-                '/assets/images/home/items/cat-wooden-alphabet.png',
+                'home-items/cat-wooden-alphabet.png',
             ],
             [
                 'Buttons',
-                '/assets/images/home/items/cat-buttons.png',
+                'home-items/cat-buttons.png',
             ],
             [
                 'Alhambra',
-                '/assets/images/home/items/cat-alhambra.png',
+                'home-items/cat-alhambra.png',
             ],
             [
                 'Sports',
-                '/assets/images/home/items/cat-sports.png',
+                'home-items/cat-sports.png',
             ],
             [
                 'WWE',
-                '/assets/images/home/items/cat-wwe.png',
+                'home-items/cat-wwe.png',
             ],
             [
                 'Paintings',
-                '/assets/images/home/items/cat-paintings.png',
+                'home-items/cat-paintings.png',
             ],
             [
                 'Dividers',
-                '/assets/images/home/items/cat-dividers.png',
+                'home-items/cat-dividers.png',
             ],
             [
                 'SnowStorm',
-                '/assets/images/home/items/cat-snowstorm.png',
+                'home-items/cat-snowstorm.png',
             ],
             [
                 'Habboween',
-                '/assets/images/home/items/cat-habboween.png',
+                'home-items/cat-habboween.png',
             ],
             [
                 'Coins and Related',
-                '/assets/images/home/items/cat-coins-and-related.png',
+                'home-items/cat-coins-and-related.png',
             ],
             [
                 'Forest and Related',
-                '/assets/images/home/items/cat-forest-and-related.png',
+                'home-items/cat-forest-and-related.png',
             ],
             [
                 'Clamps and Related',
-                '/assets/images/home/items/cat-clamps-and-related.png',
+                'home-items/cat-clamps-and-related.png',
             ],
         ];
     }

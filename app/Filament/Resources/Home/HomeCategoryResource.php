@@ -65,6 +65,7 @@ class HomeCategoryResource extends Resource
                     ->visible(fn (Component $livewire): bool => $livewire->isTableReordering),
 
                 ImageColumn::make('icon')
+                    ->disk('public')
                     ->label(__('filament::resources.columns.icon'))
                     ->size('auto'),
 
