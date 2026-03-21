@@ -83,25 +83,42 @@
                             <div class="flex w-full min-h-0">
                                 <div class="w-44 shrink-0 border-r dark:border-gray-700 p-2 flex flex-col gap-0.5">
                                     <template x-for="t in ['stickers','notes','widgets','backgrounds']" :key="t">
-                                        <button class="text-left px-3 py-1.5 rounded text-sm capitalize transition" :class="invTab === t ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'" @click="invTab = t; invActive = null; placeQty = 1" x-text="t"></button>
+                                        <button class="text-left px-3 py-1.5 rounded text-sm capitalize transition" :class="invTab === t ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'" @click="invTab = t; invActive = null; invSelected = []; placeQty = 1" x-text="t"></button>
                                     </template>
                                 </div>
-                                <div class="flex-1 p-3 overflow-y-auto">
-                                    <template x-if="invLoading"><p class="text-gray-400 text-sm text-center py-10">{{ __('Loading...') }}</p></template>
-                                    <template x-if="!invLoading">
-                                        <div class="flex flex-wrap gap-1.5">
-                                            <template x-for="item in invItems()" :key="item.home_item_id">
-                                                <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition" :class="invActive?.home_item_id === item.home_item_id ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'" @click="invActive = item; placeQty = 1" @dblclick="quickPlace(item)">
-                                                    <img :src="img(item.home_item?.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="invTab === 'backgrounds' ? 'image-rendering: pixelated' : ''">
-                                                    <span x-show="item.item_ids?.length > 1" class="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5" x-text="item.item_ids?.length"></span>
-                                                </div>
-                                            </template>
-                                            <template x-if="invItems().length === 0"><p class="text-gray-400 text-sm w-full text-center py-10">{{ __('No items here.') }}</p></template>
-                                        </div>
-                                    </template>
+                                <div class="flex-1 flex flex-col min-h-0">
+                                    <div class="flex items-center justify-between px-3 pt-2 pb-1 shrink-0" x-show="invItems().length > 0">
+                                        <button class="text-[11px] text-gray-400 hover:text-gray-800 dark:hover:text-white transition" @click="invSelectAll()" x-text="invSelected.length === invItems().length ? '{{ __('Deselect all') }}' : '{{ __('Select all') }}'"></button>
+                                        <span class="text-[11px] text-gray-400" x-show="invSelected.length > 1" x-text="invSelected.length + ' selected'"></span>
+                                    </div>
+                                    <div class="flex-1 px-3 pb-3 overflow-y-auto">
+                                        <template x-if="invLoading"><p class="text-gray-400 text-sm text-center py-10">{{ __('Loading...') }}</p></template>
+                                        <template x-if="!invLoading">
+                                            <div class="flex flex-wrap gap-1.5">
+                                                <template x-for="item in invItems()" :key="item.home_item_id">
+                                                    <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition"
+                                                        :class="invIsSelected(item) ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'"
+                                                        @click="invToggle(item)" @dblclick="quickPlace(item)">
+                                                        <img :src="img(item.home_item?.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="invTab === 'backgrounds' ? 'image-rendering: pixelated' : ''">
+                                                        <span x-show="item.item_ids?.length > 1" class="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5" x-text="item.item_ids?.length"></span>
+                                                        <div x-show="invIsSelected(item)" class="absolute top-0 left-0 w-4 h-4 bg-[#eeb425] rounded-br flex items-center justify-center">
+                                                            <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                                <template x-if="invItems().length === 0"><p class="text-gray-400 text-sm w-full text-center py-10">{{ __('No items here.') }}</p></template>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                                 <div class="w-44 shrink-0 border-l dark:border-gray-700 p-3 flex flex-col">
-                                    <template x-if="invActive">
+                                    <template x-if="invSelected.length > 1">
+                                        <div class="flex flex-col items-center gap-2 text-center">
+                                            <p class="font-semibold text-sm"><span x-text="invSelected.length"></span> {{ __('items selected') }}</p>
+                                            <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition" @click="place()">{{ __('Place All') }}</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="invSelected.length === 1 && invActive">
                                         <div class="flex flex-col items-center gap-2 text-center">
                                             <p class="font-semibold text-sm" x-text="invActive.home_item?.name"></p>
                                             <img :src="img(invActive.home_item?.image)" class="max-w-[72px] max-h-[72px] object-contain">
@@ -112,7 +129,7 @@
                                             <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition mt-auto" @click="place()">{{ __('Place') }}</button>
                                         </div>
                                     </template>
-                                    <template x-if="!invActive"><p class="text-gray-400 text-xs text-center mt-8">{{ __('Select an item to place it on your home.') }}</p></template>
+                                    <template x-if="invSelected.length === 0"><p class="text-gray-400 text-xs text-center mt-8">{{ __('Click items to select, double-click to quick-place.') }}</p></template>
                                 </div>
                             </div>
                         </template>
@@ -134,27 +151,54 @@
                                         </template>
                                     </div>
                                 </div>
-                                <div class="flex-1 p-3 overflow-y-auto">
-                                    <template x-if="shopTab === 'home'"><p class="text-gray-400 text-sm text-center py-10">{{ __('Pick a category to browse items.') }}</p></template>
-                                    <template x-if="shopTab !== 'home'">
-                                        <div>
-                                            <template x-if="shopLoading"><p class="text-gray-400 text-sm text-center py-10">{{ __('Loading...') }}</p></template>
-                                            <template x-if="!shopLoading">
-                                                <div class="flex flex-wrap gap-1.5">
-                                                    <template x-for="item in shopItems" :key="item.id">
-                                                        <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition" :class="shopActive?.id === item.id ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'" @click="pickShop(item)">
-                                                            <img :src="img(item.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="item.type === 'b' ? 'image-rendering: pixelated' : ''">
-                                                            <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1 rounded-tl leading-tight" x-text="item.price"></span>
-                                                        </div>
-                                                    </template>
-                                                    <template x-if="shopItems.length === 0"><p class="text-gray-400 text-sm w-full text-center py-10">{{ __('No items.') }}</p></template>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
+                                <div class="flex-1 flex flex-col min-h-0">
+                                    <div class="flex items-center justify-between px-3 pt-2 pb-1 shrink-0" x-show="shopItems.length > 0 && shopTab !== 'home'">
+                                        <button class="text-[11px] text-gray-400 hover:text-gray-800 dark:hover:text-white transition" @click="shopSelectAll()" x-text="shopSelected.length === shopItems.length ? '{{ __('Deselect all') }}' : '{{ __('Select all') }}'"></button>
+                                        <span class="text-[11px] text-gray-400" x-show="shopSelected.length > 1" x-text="shopSelected.length + ' selected'"></span>
+                                    </div>
+                                    <div class="flex-1 px-3 pb-3 overflow-y-auto">
+                                        <template x-if="shopTab === 'home'"><p class="text-gray-400 text-sm text-center py-10">{{ __('Pick a category to browse items.') }}</p></template>
+                                        <template x-if="shopTab !== 'home'">
+                                            <div>
+                                                <template x-if="shopLoading"><p class="text-gray-400 text-sm text-center py-10">{{ __('Loading...') }}</p></template>
+                                                <template x-if="!shopLoading">
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        <template x-for="item in shopItems" :key="item.id">
+                                                            <div class="w-16 h-16 border rounded flex items-center justify-center cursor-pointer relative transition"
+                                                                :class="shopIsSelected(item) ? 'border-[#eeb425] bg-yellow-50 dark:bg-[#eeb425]/10' : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'"
+                                                                @click="shopToggle(item)">
+                                                                <img :src="img(item.image)" class="max-w-[56px] max-h-[56px] object-contain" :style="item.type === 'b' ? 'image-rendering: pixelated' : ''">
+                                                                <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1 rounded-tl leading-tight" x-text="item.price"></span>
+                                                                <div x-show="shopIsSelected(item)" class="absolute top-0 left-0 w-4 h-4 bg-[#eeb425] rounded-br flex items-center justify-center">
+                                                                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                        <template x-if="shopItems.length === 0"><p class="text-gray-400 text-sm w-full text-center py-10">{{ __('No items.') }}</p></template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                                 <div class="w-44 shrink-0 border-l dark:border-gray-700 p-3 flex flex-col">
-                                    <template x-if="shopActive">
+                                    <template x-if="shopSelected.length > 1">
+                                        <div class="flex flex-col items-center gap-2 text-center">
+                                            <p class="font-semibold text-sm"><span x-text="shopSelected.length"></span> {{ __('items selected') }}</p>
+                                            <div class="flex items-center gap-1 text-sm">
+                                                <span class="text-gray-400">{{ __('Total:') }}</span>
+                                                <span class="font-semibold" x-text="totalPrice"></span>
+                                            </div>
+                                            <button class="w-full border-2 border-yellow-400 bg-[#eeb425] hover:bg-[#d49f1c] text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buy()" :disabled="buying">
+                                                <span x-show="!buying">{{ __('Buy All') }}</span>
+                                                <span x-show="buying">{{ __('Buying...') }}</span>
+                                            </button>
+                                            <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buyAndPlace()" :disabled="buying">
+                                                {{ __('Buy & Place All') }}
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template x-if="shopSelected.length === 1 && shopActive">
                                         <div class="flex flex-col items-center gap-2 text-center">
                                             <p class="font-semibold text-sm" x-text="shopActive.name"></p>
                                             <img :src="img(shopActive.image)" class="max-w-[72px] max-h-[72px] object-contain">
@@ -165,13 +209,16 @@
                                             <template x-if="shopActive.type !== 'b' && shopActive.type !== 'w'">
                                                 <input type="number" x-model.number="buyQty" @input="calcPrice()" min="1" max="100" class="w-16 border dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-sm text-center">
                                             </template>
-                                            <button class="w-full border-2 border-yellow-400 bg-[#eeb425] hover:bg-[#d49f1c] text-white rounded font-semibold text-sm py-1.5 transition mt-auto disabled:opacity-50" @click="buy()" :disabled="buying">
+                                            <button class="w-full border-2 border-yellow-400 bg-[#eeb425] hover:bg-[#d49f1c] text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buy()" :disabled="buying">
                                                 <span x-show="!buying">{{ __('Buy') }}</span>
                                                 <span x-show="buying">{{ __('Buying...') }}</span>
                                             </button>
+                                            <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buyAndPlace()" :disabled="buying">
+                                                {{ __('Buy & Place') }}
+                                            </button>
                                         </div>
                                     </template>
-                                    <template x-if="!shopActive"><p class="text-gray-400 text-xs text-center mt-8">{{ __('Select an item to see details.') }}</p></template>
+                                    <template x-if="shopSelected.length === 0"><p class="text-gray-400 text-xs text-center mt-8">{{ __('Click items to select, or select all.') }}</p></template>
                                 </div>
                             </div>
                         </template>
@@ -179,6 +226,21 @@
                     </div>
                 </div>
             </div>
+        </template>
+
+        {{-- Toast --}}
+        <template x-if="toast">
+            <div
+                class="fixed bottom-6 right-6 z-[60] px-4 py-2.5 rounded-lg shadow-lg text-sm font-semibold text-white"
+                :class="toast.type === 'error' ? 'bg-red-500' : 'bg-green-600'"
+                x-text="toast.msg"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+            ></div>
         </template>
     </div>
 </x-app-layout>

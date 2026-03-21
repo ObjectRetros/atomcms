@@ -19,6 +19,7 @@ Alpine.data('homeManager', (username, isMe) => ({
     invTab: 'stickers',
     inventory: { stickers: [], notes: [], widgets: [], backgrounds: [] },
     invActive: null,
+    invSelected: [],
     placeQty: 1,
     invLoading: false,
 
@@ -26,6 +27,7 @@ Alpine.data('homeManager', (username, isMe) => ({
     shopCategories: [],
     shopItems: [],
     shopActive: null,
+    shopSelected: [],
     buyQty: 1,
     totalPrice: 0,
     shopLoading: false,
@@ -208,9 +210,13 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.showBag = true;
         this.shopActive = null;
         this.invActive = null;
+        this.invSelected = [];
+        this.shopSelected = [];
         if (tab === 'inventory') this.fetchInv();
         else this.fetchShopCats();
     },
+
+    // ─── Inventory ───
 
     async fetchInv() {
         this.invLoading = true;
@@ -225,35 +231,56 @@ Alpine.data('homeManager', (username, isMe) => ({
         return (this.inventory[this.invTab] || []).filter(i => i.item_ids?.length > 0);
     },
 
-    // Double-click to quick-place from inventory
+    invIsSelected(item) {
+        return this.invSelected.some(s => s.home_item_id === item.home_item_id);
+    },
+
+    invToggle(item) {
+        if (this.invIsSelected(item)) {
+            this.invSelected = this.invSelected.filter(s => s.home_item_id !== item.home_item_id);
+        } else {
+            this.invSelected.push(item);
+        }
+        this.invActive = this.invSelected.length === 1 ? this.invSelected[0] : null;
+    },
+
+    invSelectAll() {
+        const items = this.invItems();
+        if (this.invSelected.length === items.length) {
+            this.invSelected = [];
+            this.invActive = null;
+        } else {
+            this.invSelected = [...items];
+            this.invActive = null;
+        }
+    },
+
     quickPlace(item) {
+        this.invSelected = [item];
         this.invActive = item;
         this.placeQty = 1;
         this.place();
     },
 
-    place() {
-        if (!this.invActive) return;
-        const item = this.invActive;
+    _placeOne(item, qty = 1) {
         const type = item.home_item?.type;
-
         if (type === 'b') {
-            if (!item.item_ids.length) return;
+            if (!item.item_ids.length) return 0;
             const id = item.item_ids.shift();
             if (this.activeBackground) this._returnToInv(this.activeBackground);
             this.activeBackground = { id, home_item_id: item.home_item_id, home_item: item.home_item };
-            this._showToast('Background applied');
+            return 1;
         } else if (type === 'w') {
-            if (!item.item_ids.length) return;
+            if (!item.item_ids.length) return 0;
             const id = item.item_ids.shift();
             const pos = this._randomPos();
             const n = { id, home_item_id: item.home_item_id, home_item: item.home_item, ...pos, z: this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
             this.placedItems.push(n);
             this.fetchWidgetContent(n);
-            this._showToast('Widget placed');
+            return 1;
         } else {
-            const qty = Math.min(this.placeQty, item.item_ids.length);
-            for (let i = 0; i < qty; i++) {
+            const actual = Math.min(qty, item.item_ids.length);
+            for (let i = 0; i < actual; i++) {
                 const id = item.item_ids.shift();
                 const pos = this._randomPos();
                 if (this.removedItemIds.includes(id)) {
@@ -268,12 +295,28 @@ Alpine.data('homeManager', (username, isMe) => ({
                     });
                 }
             }
-            this._showToast(`${qty} item${qty > 1 ? 's' : ''} placed`);
+            return actual;
         }
+    },
+
+    place() {
+        let totalPlaced = 0;
+        const targets = this.invSelected.length > 0 ? this.invSelected : (this.invActive ? [this.invActive] : []);
+        if (!targets.length) return;
+
+        for (const item of targets) {
+            const qty = (targets.length === 1) ? this.placeQty : 1;
+            totalPlaced += this._placeOne(item, qty);
+        }
+
+        this._showToast(`${totalPlaced} item${totalPlaced !== 1 ? 's' : ''} placed`);
         this.invActive = null;
+        this.invSelected = [];
         this.placeQty = 1;
         this.showBag = false;
     },
+
+    // ─── Shop ───
 
     async fetchShopCats() {
         if (this.shopCategories.length) return;
@@ -288,6 +331,7 @@ Alpine.data('homeManager', (username, isMe) => ({
     setShopTab(tab) {
         this.shopTab = tab;
         this.shopActive = null;
+        this.shopSelected = [];
         this.buyQty = 1;
         this.totalPrice = 0;
         this.shopItems = [];
@@ -297,6 +341,7 @@ Alpine.data('homeManager', (username, isMe) => ({
     async openCat(id) {
         this.shopTab = 'cat-' + id;
         this.shopActive = null;
+        this.shopSelected = [];
         this.shopLoading = true;
         try {
             const res = await this._api(`/home/shop/category/${id}/items`);
@@ -314,10 +359,44 @@ Alpine.data('homeManager', (username, isMe) => ({
         finally { this.shopLoading = false; }
     },
 
+    shopIsSelected(item) {
+        return this.shopSelected.some(s => s.id === item.id);
+    },
+
+    shopToggle(item) {
+        if (this.shopIsSelected(item)) {
+            this.shopSelected = this.shopSelected.filter(s => s.id !== item.id);
+        } else {
+            this.shopSelected.push(item);
+        }
+        this.shopActive = this.shopSelected.length === 1 ? this.shopSelected[0] : null;
+        this._calcBatchPrice();
+    },
+
+    shopSelectAll() {
+        if (this.shopSelected.length === this.shopItems.length) {
+            this.shopSelected = [];
+            this.shopActive = null;
+        } else {
+            this.shopSelected = [...this.shopItems];
+            this.shopActive = null;
+        }
+        this._calcBatchPrice();
+    },
+
     pickShop(item) {
         this.shopActive = item;
+        this.shopSelected = [item];
         this.buyQty = 1;
         this.totalPrice = item.price;
+    },
+
+    _calcBatchPrice() {
+        if (this.shopSelected.length <= 1) {
+            this.totalPrice = this.shopActive?.price || 0;
+        } else {
+            this.totalPrice = this.shopSelected.reduce((sum, i) => sum + i.price, 0);
+        }
     },
 
     calcPrice() {
@@ -327,72 +406,83 @@ Alpine.data('homeManager', (username, isMe) => ({
     },
 
     async buy() {
-        if (this.buying || !this.shopActive) return;
+        const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
+        if (this.buying || !targets.length) return;
         this.buying = true;
-        try {
-            const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
-                item_id: this.shopActive.id, quantity: this.buyQty,
-            });
 
-            if (res.success && res.items) {
-                for (const p of res.items) {
-                    const tab = this._typeTab(p.home_item?.type);
-                    const ex = this.inventory[tab]?.find(i => i.home_item_id === p.home_item_id);
-                    if (ex) ex.item_ids = [...(ex.item_ids || []), ...p.item_ids];
-                    else if (this.inventory[tab]) this.inventory[tab].push({ home_item_id: p.home_item_id, home_item: p.home_item, item_ids: p.item_ids });
-                }
-                this._showToast(res.message);
-                this.shopActive = null;
-                this.buyQty = 1;
-                this.totalPrice = 0;
-            } else {
-                this._showToast(res.message || 'Purchase failed', 'error');
-            }
-        } catch (e) { console.error(e); }
-        finally { this.buying = false; }
+        let ok = 0, fail = 0;
+        for (const item of targets) {
+            try {
+                const qty = targets.length === 1 ? this.buyQty : 1;
+                const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
+                    item_id: item.id, quantity: qty,
+                });
+                if (res.success && res.items) {
+                    for (const p of res.items) {
+                        const tab = this._typeTab(p.home_item?.type);
+                        const ex = this.inventory[tab]?.find(i => i.home_item_id === p.home_item_id);
+                        if (ex) ex.item_ids = [...(ex.item_ids || []), ...p.item_ids];
+                        else if (this.inventory[tab]) this.inventory[tab].push({ home_item_id: p.home_item_id, home_item: p.home_item, item_ids: p.item_ids });
+                    }
+                    ok++;
+                } else { fail++; }
+            } catch { fail++; }
+        }
+
+        if (ok) this._showToast(`${ok} item${ok !== 1 ? 's' : ''} purchased`);
+        if (fail) this._showToast(`${fail} purchase${fail !== 1 ? 's' : ''} failed`, 'error');
+        this.shopActive = null;
+        this.shopSelected = [];
+        this.buyQty = 1;
+        this.totalPrice = 0;
+        this.buying = false;
     },
 
-    // After buying, switch to inventory to place the item immediately
     async buyAndPlace() {
-        if (this.buying || !this.shopActive) return;
+        const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
+        if (this.buying || !targets.length) return;
         this.buying = true;
-        const shopItem = this.shopActive;
-        try {
-            const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
-                item_id: shopItem.id, quantity: this.buyQty,
-            });
 
-            if (res.success && res.items) {
-                for (const p of res.items) {
-                    const type = p.home_item?.type;
-                    for (const id of p.item_ids) {
-                        const pos = this._randomPos();
-                        if (type === 'b') {
-                            if (this.activeBackground) this._returnToInv(this.activeBackground);
-                            this.activeBackground = { id, home_item_id: p.home_item_id, home_item: p.home_item };
-                        } else if (type === 'w') {
-                            const n = { id, home_item_id: p.home_item_id, home_item: p.home_item, ...pos, z: this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
-                            this.placedItems.push(n);
-                            this.fetchWidgetContent(n);
-                        } else {
-                            this.placedItems.push({
-                                id, home_item_id: p.home_item_id, home_item: p.home_item,
-                                ...pos, z: this._nextZ(), is_reversed: false,
-                                theme: type === 'n' ? 'note' : null, extra_data: '', parsed_data: '',
-                            });
+        let totalPlaced = 0;
+        for (const shopItem of targets) {
+            try {
+                const qty = targets.length === 1 ? this.buyQty : 1;
+                const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
+                    item_id: shopItem.id, quantity: qty,
+                });
+                if (res.success && res.items) {
+                    for (const p of res.items) {
+                        const type = p.home_item?.type;
+                        for (const id of p.item_ids) {
+                            const pos = this._randomPos();
+                            if (type === 'b') {
+                                if (this.activeBackground) this._returnToInv(this.activeBackground);
+                                this.activeBackground = { id, home_item_id: p.home_item_id, home_item: p.home_item };
+                            } else if (type === 'w') {
+                                const n = { id, home_item_id: p.home_item_id, home_item: p.home_item, ...pos, z: this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
+                                this.placedItems.push(n);
+                                this.fetchWidgetContent(n);
+                            } else {
+                                this.placedItems.push({
+                                    id, home_item_id: p.home_item_id, home_item: p.home_item,
+                                    ...pos, z: this._nextZ(), is_reversed: false,
+                                    theme: type === 'n' ? 'note' : null, extra_data: '', parsed_data: '',
+                                });
+                            }
+                            totalPlaced++;
                         }
                     }
                 }
-                this._showToast(res.message);
-                this.shopActive = null;
-                this.buyQty = 1;
-                this.totalPrice = 0;
-                this.showBag = false;
-            } else {
-                this._showToast(res.message || 'Purchase failed', 'error');
-            }
-        } catch (e) { console.error(e); }
-        finally { this.buying = false; }
+            } catch (e) { console.error(e); }
+        }
+
+        if (totalPlaced) this._showToast(`${totalPlaced} item${totalPlaced !== 1 ? 's' : ''} purchased & placed`);
+        this.shopActive = null;
+        this.shopSelected = [];
+        this.buyQty = 1;
+        this.totalPrice = 0;
+        this.showBag = false;
+        this.buying = false;
     },
 
     currIcon(type) {
