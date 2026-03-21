@@ -26,15 +26,21 @@ class ShopController extends Controller
 
     public function __invoke(?WebsiteShopCategory $category)
     {
-        $packages = WebsiteShopArticle::orderBy('position');
+        $articlesQuery = WebsiteShopArticle::orderBy('position');
+        $shopPackagesQuery = WebsiteShopPackage::with('items')
+            ->orderBy('sort_order');
 
         if ($category && $category->exists) {
-            $packages = $category->articles()->orderBy('position');
+            $articlesQuery = $category->articles()->orderBy('position');
+            $shopPackagesQuery = $category->packages()->with('items')->orderBy('sort_order');
         }
 
         return view('shop.shop', [
-            'articles' => $packages->with(['rank:id,rank_name', 'features'])->get(),
-            'categories' => WebsiteShopCategory::whereHas('articles')->get(),
+            'articles' => $articlesQuery->with(['rank:id,rank_name', 'features'])->get(),
+            'shopPackages' => $shopPackagesQuery->get(),
+            'categories' => WebsiteShopCategory::where('is_active', true)
+                ->where(fn ($q) => $q->whereHas('articles')->orWhereHas('packages'))
+                ->get(),
         ]);
     }
 
