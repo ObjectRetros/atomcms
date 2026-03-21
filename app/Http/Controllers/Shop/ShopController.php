@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\Shop\WebsiteShopCategory;
 use App\Models\Shop\WebsiteShopPackage;
+use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
 use App\Services\RconService;
 use Illuminate\Http\Request;
@@ -179,6 +180,18 @@ class ShopController extends Controller
             }
         }
 
+        if ($package->limit_per_user) {
+            $purchaseCount = WebsiteShopPurchase::where('user_id', Auth::id())
+                ->where('website_shop_package_id', $package->id)
+                ->count();
+
+            if ($purchaseCount >= $package->limit_per_user) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('You have already purchased this package the maximum number of times (:limit)', ['limit' => $package->limit_per_user])],
+                );
+            }
+        }
+
         if ($package->min_rank && $user->rank < $package->min_rank) {
             return to_route('shop.index')->withErrors(
                 ['message' => __('Your rank is too low to purchase this package')],
@@ -210,6 +223,12 @@ class ShopController extends Controller
         }
 
         $fulfillPackage->execute($user, $package);
+
+        WebsiteShopPurchase::create([
+            'user_id' => Auth::id(),
+            'website_shop_package_id' => $package->id,
+            'gifted_to' => $request->has('receiver') ? $user->id : null,
+        ]);
 
         $message = __('You have successfully purchased the package :name', ['name' => $package->name]);
 

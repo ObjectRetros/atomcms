@@ -37,6 +37,11 @@ class WebsiteShopPackage extends Model
         return $this->hasMany(WebsiteShopPackageItem::class);
     }
 
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(WebsiteShopPurchase::class);
+    }
+
     public function priceInDollars(): float|int
     {
         if ($this->price < 100) {
