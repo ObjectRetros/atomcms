@@ -51,14 +51,15 @@ Alpine.data('homeManager', (username, isMe) => ({
         let dragEl = null;
 
         const onStart = (e) => {
-            if (!this.editing) return;
+            if (!this.editing && !this.previewing) return;
             if (e.target.closest('[data-no-drag]')) return;
             const el = e.target.closest('[data-home-item]');
             if (!el) return;
 
-            const id = Number(el.dataset.homeItem);
-            const item = this.placedItems.find(i => i.id === id);
-            if (!item || this.removedItemIds.includes(id) || item._preview) return;
+            const rawId = el.dataset.homeItem;
+            const all = [...this.placedItems, ...this.previewItems];
+            const item = all.find(i => String(i.id) === rawId);
+            if (!item || this.removedItemIds.includes(item.id)) return;
 
             const container = el.closest('.home-canvas');
             if (!container) return;
@@ -497,40 +498,34 @@ Alpine.data('homeManager', (username, isMe) => ({
 
     // ─── Preview ───
 
-    preview(item) {
-        this.endPreview();
-        const type = item?.type;
+    _previewShopItems: [],
 
-        if (type === 'b') {
-            this.previewBg = item;
-        } else {
-            this.previewItems = [{
-                id: 'preview-' + item.id,
-                home_item_id: item.id,
-                home_item: item,
-                ...this._randomPos(),
-                z: this._nextZ(),
-                is_reversed: false,
-                theme: type === 'w' ? 'default' : (type === 'n' ? 'note' : null),
-                extra_data: '',
-                parsed_data: '',
-                content: type === 'w' ? '<p class="text-xs text-gray-400 italic">Preview</p>' : null,
-                _preview: true,
-            }];
-        }
-
-        this.previewing = true;
-        this.showBag = false;
-        this._showToast('Previewing — click End Preview when done');
-
-        this._previewTimer = setTimeout(() => this.endPreview(), 15000);
+    _makePreviewItem(item) {
+        return {
+            id: 'preview-' + item.id,
+            home_item_id: item.id,
+            home_item: item,
+            ...this._randomPos(),
+            z: this._nextZ() + this.previewItems.length,
+            is_reversed: false,
+            theme: item.type === 'w' ? 'default' : (item.type === 'n' ? 'note' : null),
+            extra_data: '',
+            parsed_data: '',
+            content: item.type === 'w' ? '<p class="text-xs text-gray-400 italic">Preview</p>' : null,
+            _preview: true,
+        };
     },
 
-    endPreview() {
-        if (this._previewTimer) { clearTimeout(this._previewTimer); this._previewTimer = null; }
-        this.previewItems = [];
-        this.previewBg = null;
-        this.previewing = false;
+    preview(item) {
+        this.endPreview();
+        if (item?.type === 'b') {
+            this.previewBg = item;
+        } else {
+            this.previewItems = [this._makePreviewItem(item)];
+        }
+        this._previewShopItems = [item];
+        this.previewing = true;
+        this.showBag = false;
     },
 
     previewSelected() {
@@ -538,36 +533,160 @@ Alpine.data('homeManager', (username, isMe) => ({
         if (!targets.length) return;
 
         this.endPreview();
-        const items = [];
-        let bgSet = false;
-
         for (const item of targets) {
-            if (item.type === 'b' && !bgSet) {
+            if (item.type === 'b' && !this.previewBg) {
                 this.previewBg = item;
-                bgSet = true;
             } else {
-                items.push({
-                    id: 'preview-' + item.id,
-                    home_item_id: item.id,
-                    home_item: item,
-                    ...this._randomPos(),
-                    z: this._nextZ() + items.length,
-                    is_reversed: false,
-                    theme: item.type === 'w' ? 'default' : (item.type === 'n' ? 'note' : null),
-                    extra_data: '',
-                    parsed_data: '',
-                    content: item.type === 'w' ? '<p class="text-xs text-gray-400 italic">Preview</p>' : null,
-                    _preview: true,
-                });
+                this.previewItems.push(this._makePreviewItem(item));
             }
         }
-
-        this.previewItems = items;
+        this._previewShopItems = [...targets];
         this.previewing = true;
         this.showBag = false;
-        this._showToast(`Previewing ${targets.length} item${targets.length !== 1 ? 's' : ''}`);
+    },
 
-        this._previewTimer = setTimeout(() => this.endPreview(), 15000);
+    endPreview() {
+        this.previewItems = [];
+        this.previewBg = null;
+        this._previewShopItems = [];
+        this.previewing = false;
+    },
+
+    async confirmPreviewPurchase() {
+        if (!this._previewShopItems.length) return;
+
+        const balance = await this._fetchBalance();
+        if (!balance) return;
+
+        const currNames = { '-1': 'Credits', '0': 'Duckets', '5': 'Diamonds', '101': 'Points' };
+
+        let items = [...this._previewShopItems];
+
+        const show = async () => {
+            const costByCurrency = {};
+            for (const item of items) {
+                const key = String(item.currency_type);
+                costByCurrency[key] = (costByCurrency[key] || 0) + item.price;
+            }
+
+            const unaffordable = [];
+            for (const [curr, cost] of Object.entries(costByCurrency)) {
+                if (cost > (balance[curr] || 0)) {
+                    unaffordable.push(currNames[curr] || curr);
+                }
+            }
+
+            let html = '<div class="text-left text-sm space-y-2">';
+            html += '<div class="max-h-[200px] overflow-y-auto space-y-1">';
+            for (const item of items) {
+                const curr = String(item.currency_type);
+                html += `<div class="flex items-center justify-between gap-2 py-1 border-b border-gray-200 dark:border-gray-700" data-item-id="${item.id}">`;
+                html += `<div class="flex items-center gap-2 min-w-0">`;
+                html += `<img src="${this.img(item.image)}" class="w-8 h-8 object-contain shrink-0">`;
+                html += `<span class="truncate">${item.name}</span>`;
+                html += `</div>`;
+                html += `<div class="flex items-center gap-1 shrink-0">`;
+                html += `<span class="font-semibold">${item.price}</span>`;
+                html += `<img src="${this.currIcon(item.currency_type)}" class="w-4 h-4">`;
+                if (items.length > 1) {
+                    html += `<button type="button" class="swal-remove-item ml-1 text-red-500 hover:text-red-400 text-lg leading-none" data-remove-id="${item.id}">&times;</button>`;
+                }
+                html += `</div></div>`;
+            }
+            html += '</div>';
+
+            html += '<div class="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">';
+            for (const [curr, cost] of Object.entries(costByCurrency)) {
+                const name = currNames[curr] || curr;
+                const have = balance[curr] || 0;
+                const enough = have >= cost;
+                html += `<div class="flex justify-between text-xs ${enough ? '' : 'text-red-500 font-bold'}">`;
+                html += `<span>${name}</span>`;
+                html += `<span>${cost} / ${have} ${enough ? '' : '(insufficient)'}</span>`;
+                html += `</div>`;
+            }
+            html += '</div>';
+
+            if (unaffordable.length) {
+                html += `<p class="text-red-500 text-xs mt-2">Not enough ${unaffordable.join(', ')}. Remove items to proceed.</p>`;
+            }
+            html += '</div>';
+
+            const result = await Swal.fire({
+                title: `Purchase ${items.length} item${items.length !== 1 ? 's' : ''}?`,
+                html,
+                icon: unaffordable.length ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonText: unaffordable.length ? 'Cannot afford' : 'Confirm Purchase',
+                confirmButtonColor: unaffordable.length ? '#9ca3af' : '#16a34a',
+                cancelButtonText: 'Cancel',
+                didOpen: (popup) => {
+                    popup.querySelectorAll('.swal-remove-item').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const removeId = Number(btn.dataset.removeId);
+                            items = items.filter(i => i.id !== removeId);
+                            this.previewItems = this.previewItems.filter(i => i.home_item_id !== removeId);
+                            if (this.previewBg?.id === removeId) this.previewBg = null;
+                            this._previewShopItems = items;
+                            Swal.close();
+                            if (items.length > 0) show();
+                            else this.endPreview();
+                        });
+                    });
+                },
+            });
+
+            if (!result.isConfirmed || unaffordable.length) return;
+
+            this.buying = true;
+            let placed = 0;
+            for (const shopItem of items) {
+                try {
+                    const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
+                        item_id: shopItem.id, quantity: 1,
+                    });
+                    if (res.success && res.items) {
+                        for (const p of res.items) {
+                            for (const id of p.item_ids) {
+                                const preview = this.previewItems.find(pi => pi.home_item_id === shopItem.id);
+                                const pos = preview ? { x: preview.x, y: preview.y } : this._randomPos();
+                                const type = p.home_item?.type;
+                                if (type === 'b') {
+                                    if (this.activeBackground) this._returnToInv(this.activeBackground);
+                                    this.activeBackground = { id, home_item_id: p.home_item_id, home_item: p.home_item };
+                                } else if (type === 'w') {
+                                    const n = { id, home_item_id: p.home_item_id, home_item: p.home_item, ...pos, z: preview?.z || this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
+                                    this.placedItems.push(n);
+                                    this.fetchWidgetContent(n);
+                                } else {
+                                    this.placedItems.push({
+                                        id, home_item_id: p.home_item_id, home_item: p.home_item,
+                                        ...pos, z: preview?.z || this._nextZ(), is_reversed: false,
+                                        theme: type === 'n' ? 'note' : null, extra_data: '', parsed_data: '',
+                                    });
+                                }
+                                placed++;
+                            }
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            }
+            this.buying = false;
+            this.endPreview();
+            if (placed) this._showToast(`${placed} item${placed !== 1 ? 's' : ''} purchased & placed`);
+        };
+
+        show();
+    },
+
+    async _fetchBalance() {
+        try {
+            const res = await this._api('/home/shop/balance');
+            return res.balance || null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
     },
 
     currIcon(type) {

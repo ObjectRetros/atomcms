@@ -32,8 +32,11 @@
         {{-- Preview Bar --}}
         <template x-if="previewing">
             <div class="w-full max-w-[928px] flex items-center justify-between bg-cyan-900/50 border border-cyan-700 rounded-lg px-4 py-2">
-                <span class="text-sm text-cyan-200">{{ __('Preview mode — items shown are not saved') }}</span>
-                <button class="border border-cyan-600 bg-cyan-700 hover:bg-cyan-600 text-white text-sm font-semibold px-4 py-1 rounded transition" @click="endPreview()">{{ __('End Preview') }}</button>
+                <span class="text-sm text-cyan-200">{{ __('Preview mode — drag items to arrange, then purchase') }}</span>
+                <div class="flex gap-2">
+                    <button class="border border-gray-500 text-gray-300 hover:bg-gray-700 text-sm font-semibold px-4 py-1 rounded transition" @click="endPreview()">{{ __('Cancel') }}</button>
+                    <button class="border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-1 rounded transition" @click="confirmPreviewPurchase()">{{ __('Buy & Save') }}</button>
+                </div>
             </div>
         </template>
 
@@ -49,7 +52,7 @@
                     :class="{
                         'cursor-grab active:cursor-grabbing': editing && !item._preview,
                         'ring-2 ring-[#eeb425] rounded': selectedItem?.id === item.id,
-                        'opacity-60 ring-2 ring-dashed ring-cyan-400 rounded pointer-events-none': item._preview,
+                        'opacity-60 ring-2 ring-dashed ring-cyan-400 rounded cursor-grab active:cursor-grabbing': item._preview,
                     }"
                     :style="{ left: (item.x||0)+'px', top: (item.y||0)+'px', zIndex: item.z||0, transform: item.is_reversed ? 'scaleX(-1)' : '' }"
                     :data-home-item="item.id"

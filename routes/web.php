@@ -134,6 +134,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::get('/categories', [HomeShopController::class, 'categories'])->name('categories');
                 Route::get('/category/{category}/items', [HomeShopController::class, 'itemsByCategory'])->name('category-items');
                 Route::get('/type/{type}/items', [HomeShopController::class, 'itemsByType'])->name('type-items');
+                Route::get('/balance', [HomeShopController::class, 'balance'])->name('balance');
             });
 
             Route::get('/{username}/inventory', [HomeShopController::class, 'inventory'])->name('inventory');

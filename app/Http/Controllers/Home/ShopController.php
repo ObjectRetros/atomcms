@@ -9,6 +9,7 @@ use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {
@@ -43,6 +44,20 @@ class ShopController extends Controller
 
         return $this->jsonResponse([
             'items' => HomeItem::where('type', $typeChar)->orderBy('order')->get()->values(),
+        ]);
+    }
+
+    public function balance(): JsonResponse
+    {
+        $user = Auth::user();
+
+        return $this->jsonResponse([
+            'balance' => [
+                '-1' => $user->credits,
+                '0' => $user->currency('duckets'),
+                '5' => $user->currency('diamonds'),
+                '101' => $user->currency('points'),
+            ],
         ]);
     }
 
