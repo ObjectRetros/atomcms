@@ -149,6 +149,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/{category:slug?}', ShopController::class)->name('shop.index');
 
             Route::post('/purchase/{package}', [ShopController::class, 'purchase'])->name('shop.buy');
+            Route::post('/purchase-package/{package}', [ShopController::class, 'purchasePackage'])->name('shop.buy-package');
             Route::post('/voucher', ShopVoucherController::class)->name('shop.use-voucher');
         });
 
@@ -179,7 +180,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         });
 
         // Paypal routes
-        Route::controller(PayPalController::class)->prefix('paypal')->group(function () {
+        Route::controller(PaypalController::class)->prefix('paypal')->group(function () {
             Route::get('/process-transaction', 'process')->name('paypal.process-transaction');
             Route::get('/successful-transaction', 'successful')->name('paypal.successful-transaction');
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');

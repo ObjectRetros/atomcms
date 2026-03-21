@@ -13,4 +13,9 @@ class WebsiteShopCategory extends Model
     {
         return $this->hasMany(WebsiteShopArticle::class);
     }
+
+    public function packages(): HasMany
+    {
+        return $this->hasMany(WebsiteShopPackage::class);
+    }
 }

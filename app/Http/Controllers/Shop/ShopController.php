@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Shop;
 
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
+use App\Actions\Shop\FulfillPackage;
 use App\Http\Controllers\Controller;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\Shop\WebsiteShopCategory;
+use App\Models\Shop\WebsiteShopPackage;
 use App\Models\User;
 use App\Services\RconService;
 use Illuminate\Http\Request;
@@ -143,5 +145,72 @@ class ShopController extends Controller
         $sendFurniture = app(SendFurniture::class);
 
         $sendFurniture->execute(Auth::user(), $furniture);
+    }
+
+    public function purchasePackage(WebsiteShopPackage $package, Request $request, FulfillPackage $fulfillPackage): Response
+    {
+        $user = Auth::user();
+
+        if (! $package->isAvailable()) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('This package is no longer available')],
+            );
+        }
+
+        if ($request->has('receiver')) {
+            if (! $package->is_giftable) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('This package is not giftable')],
+                );
+            }
+
+            $user = User::where('username', $request->input('receiver'))->first();
+
+            if (! $user) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('Recipient not found')],
+                );
+            }
+        }
+
+        if ($package->min_rank && $user->rank < $package->min_rank) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Your rank is too low to purchase this package')],
+            );
+        }
+
+        if ($package->max_rank && $user->rank > $package->max_rank) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Your rank is too high to purchase this package')],
+            );
+        }
+
+        if (! $this->rconService->isConnected && $user->online === '1') {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Please logout before purchasing a package')],
+            );
+        }
+
+        if (Auth::user()->website_balance < $package->priceInDollars()) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('You need to top-up your account with another $:amount to purchase this package', ['amount' => ($package->priceInDollars() - Auth::user()->website_balance)])],
+            );
+        }
+
+        Auth::user()?->decrement('website_balance', $package->priceInDollars());
+
+        if ($package->stock !== null) {
+            $package->decrement('stock');
+        }
+
+        $fulfillPackage->execute($user, $package);
+
+        $message = __('You have successfully purchased the package :name', ['name' => $package->name]);
+
+        if ($user->username !== Auth::user()->username) {
+            $message = __('You have successfully purchased the package :name for :username', ['name' => $package->name, 'username' => $user->username]);
+        }
+
+        return to_route('shop.index')->with('success', $message);
     }
 }
