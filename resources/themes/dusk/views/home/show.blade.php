@@ -29,15 +29,28 @@
             <h2 class="text-xl font-semibold text-gray-100">{{ __('Home of :u', ['u' => $user->username]) }}</h2>
         @endif
 
+        {{-- Preview Bar --}}
+        <template x-if="previewing">
+            <div class="w-full max-w-[928px] flex items-center justify-between bg-cyan-900/50 border border-cyan-700 rounded-lg px-4 py-2">
+                <span class="text-sm text-cyan-200">{{ __('Preview mode — items shown are not saved') }}</span>
+                <button class="border border-cyan-600 bg-cyan-700 hover:bg-cyan-600 text-white text-sm font-semibold px-4 py-1 rounded transition" @click="endPreview()">{{ __('End Preview') }}</button>
+            </div>
+        </template>
+
         {{-- Canvas --}}
         <div
-            class="home-canvas relative w-full max-w-[928px] h-[1360px] border border-gray-700 rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat"
+            class="home-canvas relative w-full max-w-[928px] h-[1360px] border rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat"
+            :class="previewing ? 'border-cyan-700' : 'border-gray-700'"
             :style="{ backgroundImage: `url(${bg()})` }"
         >
             <template x-for="item in visible()" :key="item.id">
                 <div
                     class="absolute select-none"
-                    :class="{ 'cursor-grab active:cursor-grabbing': editing, 'ring-2 ring-[#eeb425] rounded': selectedItem?.id === item.id }"
+                    :class="{
+                        'cursor-grab active:cursor-grabbing': editing && !item._preview,
+                        'ring-2 ring-[#eeb425] rounded': selectedItem?.id === item.id,
+                        'opacity-60 ring-2 ring-dashed ring-cyan-400 rounded pointer-events-none': item._preview,
+                    }"
                     :style="{ left: (item.x||0)+'px', top: (item.y||0)+'px', zIndex: item.z||0, transform: item.is_reversed ? 'scaleX(-1)' : '' }"
                     :data-home-item="item.id"
                     @click="select(item)"
@@ -198,6 +211,9 @@
                                             <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buyAndPlace()" :disabled="buying">
                                                 {{ __('Buy & Place All') }}
                                             </button>
+                                            <button class="w-full border border-cyan-600 text-cyan-300 hover:bg-cyan-900/40 rounded text-sm py-1 transition mt-1" @click="previewSelected()">
+                                                {{ __('Preview') }}
+                                            </button>
                                         </div>
                                     </template>
                                     <template x-if="shopSelected.length === 1 && shopActive">
@@ -217,6 +233,9 @@
                                             </button>
                                             <button class="w-full border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white rounded font-semibold text-sm py-1.5 transition disabled:opacity-50" @click="buyAndPlace()" :disabled="buying">
                                                 {{ __('Buy & Place') }}
+                                            </button>
+                                            <button class="w-full border border-cyan-600 text-cyan-300 hover:bg-cyan-900/40 rounded text-sm py-1 transition mt-1" @click="preview(shopActive)">
+                                                {{ __('Preview') }}
                                             </button>
                                         </div>
                                     </template>

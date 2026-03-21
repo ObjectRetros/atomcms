@@ -32,6 +32,10 @@ Alpine.data('homeManager', (username, isMe) => ({
     totalPrice: 0,
     shopLoading: false,
     buying: false,
+    previewing: false,
+    previewItems: [],
+    previewBg: null,
+    _previewTimer: null,
 
     init() {
         this.fetchPlacedItems();
@@ -54,7 +58,7 @@ Alpine.data('homeManager', (username, isMe) => ({
 
             const id = Number(el.dataset.homeItem);
             const item = this.placedItems.find(i => i.id === id);
-            if (!item || this.removedItemIds.includes(id)) return;
+            if (!item || this.removedItemIds.includes(id) || item._preview) return;
 
             const container = el.closest('.home-canvas');
             if (!container) return;
@@ -139,8 +143,14 @@ Alpine.data('homeManager', (username, isMe) => ({
         if (path.startsWith('/') || path.startsWith('http')) return path;
         return `/storage/${path}`;
     },
-    bg() { return this.img(this.activeBackground?.home_item?.image); },
-    visible() { return this.placedItems.filter(i => !this.removedItemIds.includes(i.id)); },
+    bg() {
+        if (this.previewBg) return this.img(this.previewBg.image);
+        return this.img(this.activeBackground?.home_item?.image);
+    },
+    visible() {
+        const placed = this.placedItems.filter(i => !this.removedItemIds.includes(i.id));
+        return [...placed, ...this.previewItems];
+    },
 
     select(item) {
         if (!this.editing) return;
@@ -483,6 +493,81 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.totalPrice = 0;
         this.showBag = false;
         this.buying = false;
+    },
+
+    // ─── Preview ───
+
+    preview(item) {
+        this.endPreview();
+        const type = item?.type;
+
+        if (type === 'b') {
+            this.previewBg = item;
+        } else {
+            this.previewItems = [{
+                id: 'preview-' + item.id,
+                home_item_id: item.id,
+                home_item: item,
+                ...this._randomPos(),
+                z: this._nextZ(),
+                is_reversed: false,
+                theme: type === 'w' ? 'default' : (type === 'n' ? 'note' : null),
+                extra_data: '',
+                parsed_data: '',
+                content: type === 'w' ? '<p class="text-xs text-gray-400 italic">Preview</p>' : null,
+                _preview: true,
+            }];
+        }
+
+        this.previewing = true;
+        this.showBag = false;
+        this._showToast('Previewing — click End Preview when done');
+
+        this._previewTimer = setTimeout(() => this.endPreview(), 15000);
+    },
+
+    endPreview() {
+        if (this._previewTimer) { clearTimeout(this._previewTimer); this._previewTimer = null; }
+        this.previewItems = [];
+        this.previewBg = null;
+        this.previewing = false;
+    },
+
+    previewSelected() {
+        const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
+        if (!targets.length) return;
+
+        this.endPreview();
+        const items = [];
+        let bgSet = false;
+
+        for (const item of targets) {
+            if (item.type === 'b' && !bgSet) {
+                this.previewBg = item;
+                bgSet = true;
+            } else {
+                items.push({
+                    id: 'preview-' + item.id,
+                    home_item_id: item.id,
+                    home_item: item,
+                    ...this._randomPos(),
+                    z: this._nextZ() + items.length,
+                    is_reversed: false,
+                    theme: item.type === 'w' ? 'default' : (item.type === 'n' ? 'note' : null),
+                    extra_data: '',
+                    parsed_data: '',
+                    content: item.type === 'w' ? '<p class="text-xs text-gray-400 italic">Preview</p>' : null,
+                    _preview: true,
+                });
+            }
+        }
+
+        this.previewItems = items;
+        this.previewing = true;
+        this.showBag = false;
+        this._showToast(`Previewing ${targets.length} item${targets.length !== 1 ? 's' : ''}`);
+
+        this._previewTimer = setTimeout(() => this.endPreview(), 15000);
     },
 
     currIcon(type) {
