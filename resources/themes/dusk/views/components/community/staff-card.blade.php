@@ -2,7 +2,7 @@
 
 <div class="relative h-24 w-full overflow-hidden rounded-lg bg-[#171a23] md:mt-0">
     <div class="h-[65%] w-full staff-bg"
-        style="background: rgba(0, 0, 0, 0.6) url({{ asset(sprintf('assets/images/%s', $user->permission->staff_background)) }});">
+        style="background: rgba(0, 0, 0, 0.6) url({{ asset(sprintf('assets/images/%s', $user->permission?->staff_background ?? 'staff-bg.png')) }});">
     </div>
 
     <div class="absolute left-3 top-3">

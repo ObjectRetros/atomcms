@@ -1,12 +1,12 @@
 services:
     laravel.test:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.4
+            context: ./vendor/laravel/sail/runtimes/8.5
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
                 MYSQL_CLIENT: mariadb-client
-        image: sail-8.4/app
+        image: sail-8.5/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
