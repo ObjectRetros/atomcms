@@ -60,14 +60,12 @@ class WebsiteBadge extends Model
 
         File::put($fullPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     
-        touch($fullPath);
-    
         \Log::info("Badge added + cache busting", ['badge_key' => $badge->badge_key]);
     }
 
     public static function removeFromUITextsJson($badge)
     {
-        $uiTextsPath = app(\App\Services\SettingsService::class)->getOrDefault('nitro_ui_texts', '');
+        $uiTextsPath = app(\App\Services\SettingsService::class)->getOrDefault('nitro_ui_texts_path', '');
         
         if (empty($uiTextsPath)) return;
         
