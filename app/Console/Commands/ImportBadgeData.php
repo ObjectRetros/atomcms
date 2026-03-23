@@ -87,7 +87,14 @@ class ImportBadgeData extends Command
                 ['badge_key'],
                 ['badge_name', 'badge_description'],
             );
+            $keys = $chunk->pluck('badge_key')->all();
 
+            $badges = WebsiteBadge::whereIn('badge_key', $keys)->get();
+
+            foreach ($badges as $badge) {
+                WebsiteBadge::syncUITextsForBadge($badge);
+            }
+            
             $this->info('Processed ' . $chunk->count() . ' badges.');
         });
     }
