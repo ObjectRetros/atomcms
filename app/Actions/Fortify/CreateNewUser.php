@@ -34,7 +34,7 @@ class CreateNewUser implements CreatesNewUsers
             ]);
         }
 
-        $ip = request()?->ip();
+        $ip = request()->ip();
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
             throw ValidationException::withMessages([
                 'registration' => __('Your IP address seems to be invalid'),

@@ -75,7 +75,7 @@ class InstallationMiddleware
                     'step' => 0,
                     'completed' => false,
                     'installation_key' => Str::uuid(),
-                    'user_ip' => request()?->ip(),
+                    'user_ip' => request()->ip(),
                 ]);
             }
 

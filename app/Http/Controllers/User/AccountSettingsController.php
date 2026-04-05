@@ -42,7 +42,7 @@ class AccountSettingsController extends Controller
 
         // $allowedNameChange = $user->settings?->allow_name_change && $user->username !== $request->input('username');
 
-        if (! $this->rconService->isConnected() && Auth::user()->online === '1') {
+        if (! $this->rconService->isConnected() && Auth::user()->online) {
             return back()->withErrors('You must be offline to change your account settings');
         }
 

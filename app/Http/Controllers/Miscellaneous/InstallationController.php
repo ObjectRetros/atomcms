@@ -45,14 +45,14 @@ class InstallationController extends Controller
     {
         $this->updateSettings($request);
 
-        WebsiteInstallation::increment('step');
+        WebsiteInstallation::first()->increment('step');
 
         return to_route('installation.show-step', WebsiteInstallation::first()->step);
     }
 
     public function previousStep()
     {
-        WebsiteInstallation::decrement('step');
+        WebsiteInstallation::first()->decrement('step');
 
         return to_route('installation.show-step', WebsiteInstallation::first()->step);
     }
@@ -99,7 +99,7 @@ class InstallationController extends Controller
 
     private function getSettingsForStep(int $step)
     {
-        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), ceil(WebsiteSetting::count() / 4));
+        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), (int) ceil(WebsiteSetting::count() / 4));
 
         $settings = match ($step) {
             1 => $settingsData[0] ?? [],

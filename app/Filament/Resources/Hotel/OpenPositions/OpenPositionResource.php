@@ -19,6 +19,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OpenPositionResource extends Resource
 {
@@ -73,8 +74,8 @@ class OpenPositionResource extends Resource
                         column: 'team_id',
                         ignoreRecord: true,
                     )
-                    ->placeholder('Select a rank'),
-              
+                    ->placeholder('Select a team'),
+
                 Textarea::make('description')
                     ->label('Position Description')
                     ->required()
@@ -156,6 +157,11 @@ class OpenPositionResource extends Resource
                             ->body('The selected open positions and their related applications (if rank-based) have been deleted successfully.'),
                     ),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['permission', 'team']);
     }
 
     public static function getPages(): array
