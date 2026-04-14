@@ -9,8 +9,31 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $room_id
+ * @property \Illuminate\Support\Carbon $timestamp
+ * @property string $url
+ * @property int $visible
+ * @property-read mixed $formatted_date
+ * @property-read Room|null $room
+ * @property-read User|null $user
+ *
+ * @method static Builder<static>|CameraWeb newModelQuery()
+ * @method static Builder<static>|CameraWeb newQuery()
+ * @method static Builder<static>|CameraWeb period($period)
+ * @method static Builder<static>|CameraWeb query()
+ * @method static Builder<static>|CameraWeb whereId($value)
+ * @method static Builder<static>|CameraWeb whereRoomId($value)
+ * @method static Builder<static>|CameraWeb whereTimestamp($value)
+ * @method static Builder<static>|CameraWeb whereUrl($value)
+ * @method static Builder<static>|CameraWeb whereUserId($value)
+ * @method static Builder<static>|CameraWeb whereVisible($value)
+ *
+ * @mixin \Eloquent
+ */
 class CameraWeb extends Model
 {
     protected $table = 'camera_web';
@@ -46,16 +69,6 @@ class CameraWeb extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
-    }
-
-    public function likes(): HasMany
-    {
-        return $this->hasMany(CameraLike::class);
-    }
-
-    public function views(): HasMany
-    {
-        return $this->hasMany(CameraView::class);
     }
 
     public function formattedDate(): Attribute

@@ -2,22 +2,59 @@
 
 namespace App\Models;
 
-use App\Enums\NotificationType;
-use App\Models\Article\ArticleComment;
-use App\Models\Article\ArticleReaction;
-use App\Models\Compositions\HasNotificationUrl;
+use App\Models\Articles\Tag;
+use App\Models\Articles\WebsiteArticleComment;
+use App\Models\Articles\WebsiteArticleReaction;
 use Auth;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Carbon;
 use Str;
 
+/**
+ * @property int $id
+ * @property string $slug
+ * @property string $title
+ * @property string $short_story
+ * @property string $full_story
+ * @property int|null $user_id
+ * @property string $image
+ * @property int $can_comment
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property string|null $deleted_at
+ * @property-read User|null $user
+ *
+ * @method static Builder<static>|Article defaultRelationships()
+ * @method static Builder<static>|Article newModelQuery()
+ * @method static Builder<static>|Article newQuery()
+ * @method static Builder<static>|Article query()
+ * @method static Builder<static>|Article valid()
+ * @method static Builder<static>|Article whereCanComment($value)
+ * @method static Builder<static>|Article whereCreatedAt($value)
+ * @method static Builder<static>|Article whereDeletedAt($value)
+ * @method static Builder<static>|Article whereFullStory($value)
+ * @method static Builder<static>|Article whereId($value)
+ * @method static Builder<static>|Article whereImage($value)
+ * @method static Builder<static>|Article whereShortStory($value)
+ * @method static Builder<static>|Article whereSlug($value)
+ * @method static Builder<static>|Article whereTitle($value)
+ * @method static Builder<static>|Article whereUpdatedAt($value)
+ * @method static Builder<static>|Article whereUserId($value)
+ *
+ * @property-read Collection<int, Tag> $tags
+ * @property-read int|null $tags_count
+ *
+ * @mixin \Eloquent
+ */
 class Article extends Model
 {
     use HasFactory;
-    use HasNotificationUrl;
 
     protected $guarded = [];
 
@@ -38,22 +75,17 @@ class Article extends Model
         static::creating(function (Article $article) {
             $article->user_id = Auth::id();
             $article->slug = Str::slug($article->title);
-            $article->predominant_color = getPredominantImageColor($article->image);
         });
 
         static::updating(function (Article $article) {
             $article->slug = Str::slug($article->title);
-
-            if ($article->isDirty('image')) {
-                $article->predominant_color = getPredominantImageColor($article->image);
-            }
         });
     }
 
     public function syncPaginatedComments(): void
     {
         $this->setRelation('comments',
-            $this->comments()->defaultRelationships()->paginate(10)->fragment('comments'),
+            $this->comments()->paginate(10)->fragment('comments'),
         );
     }
 
@@ -100,43 +132,27 @@ class Article extends Model
         $query->with([
             'user:id,username,look,gender',
             'tags',
-            'reactions' => fn ($query) => $query->defaultRelationships(),
-            'user.followers',
+            'reactions',
         ]);
     }
 
     public function comments(): HasMany
     {
-        return $this->hasMany(ArticleComment::class)->defaultBehavior();
+        return $this->hasMany(WebsiteArticleComment::class);
     }
 
     public function reactions(): HasMany
     {
-        return $this->hasMany(ArticleReaction::class)->defaultBehavior();
+        return $this->hasMany(WebsiteArticleReaction::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function tags()
+    public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
-    }
-
-    public function titleColor(): Attribute
-    {
-        return new Attribute(
-            get: fn () => isDarkColor($this->predominant_color) ? '#fff' : '#000',
-        );
-    }
-
-    public function createFollowersNotification(): void
-    {
-        $this->user->followers()
-            ->with('user:id,username')
-            ->each(fn (AuthorNotification $follower) => $follower->user->notify($this->user, NotificationType::ArticlePosted, $this->getNotificationUrl()),
-            );
     }
 }

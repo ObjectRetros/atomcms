@@ -92,7 +92,7 @@ class ShopController extends Controller
             );
         }
 
-        if (! $this->rconService->isConnected && $user->online === '1') {
+        if (! $this->rconService->isConnected && $user->online) {
             return to_route('shop.index')->withErrors(
                 ['message' => __('Please logout before purchasing a package')],
             );

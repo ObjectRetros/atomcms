@@ -43,6 +43,6 @@ class CommentService
             ]);
         }
 
-        return $comment->delete();
+        return true;
     }
 }
