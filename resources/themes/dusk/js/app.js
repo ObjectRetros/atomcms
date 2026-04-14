@@ -12,6 +12,8 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+import "../../../js/components/HomeManager.js";
+
 Alpine.plugin(Focus);
 Alpine.start();
 

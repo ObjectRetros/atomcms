@@ -70,6 +70,10 @@
                         <x-navigation.dropdown-child :route="route('profile.show', Auth::user()->username)">
                             {{ __('My profile') }}
                         </x-navigation.dropdown-child>
+
+                        <x-navigation.dropdown-child :route="route('home.show', Auth::user()->username)">
+                            {{ __('My Home') }}
+                        </x-navigation.dropdown-child>
 						
 						<x-navigation.dropdown-child :route="route('draw-badge')">
 							{{ __('Badge Drawer') }}
