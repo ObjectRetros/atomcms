@@ -22,6 +22,11 @@ yarn.lock
 /.vscode
 /public/assets/images/generated-logos
 CLAUDE.md
+AGENTS.md
+AUDIT.md
+.agents/
+_ide_helper.php
+_ide_helper_models.php
 .phpunit.cache
 .yarn
 public/js
@@ -31,7 +36,6 @@ public/vendor
 .opencode
 .junie
 .claude
-.github
 .ai
 .codex
 .cursor

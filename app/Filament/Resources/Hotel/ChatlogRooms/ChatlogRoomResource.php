@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ChatlogRoomResource extends Resource
 {
@@ -96,6 +97,11 @@ class ChatlogRoomResource extends Resource
                 ->dateTime('Y-m-d H:i')
                 ->toggleable(),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['room', 'sender', 'receiver']);
     }
 
     public static function getPages(): array

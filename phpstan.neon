@@ -1,0 +1,42 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    level: 5
+
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Fortify contract requires User return, but referral logic redirects - intentional
+        - identifier: return.type
+          path: app/Actions/Fortify/CreateNewUser.php
+
+        # Fortify internals - overridden from vendor
+        - identifier: nullsafe.neverNull
+          path: app/Actions/Fortify/RedirectIfTwoFactorAuthenticatable.php
+        - identifier: method.notFound
+          path: app/Actions/Fortify/RedirectIfTwoFactorAuthenticatable.php
+
+        # Turnstile package may not be installed in all environments
+        - identifier: class.notFound
+          path: app/Rules/TurnstileCheck.php
+
+        # Schema::hasTable() result can change after migration runs
+        - identifier: booleanNot.alwaysTrue
+          path: app/Http/Middleware/InstallationMiddleware.php
+
+        # Collection items have properties at runtime that PHPStan can't infer through closures
+        - identifier: property.notFound
+          path: app/Livewire/ArticleReactions.php
+
+        # Nullsafe is intentional - these relations CAN be null at runtime despite PHPDoc
+        - identifier: nullsafe.neverNull
+          path: app/Models/User.php
+
+    excludePaths:
+        - app/Console/Commands/AtomSetupCommand.php
+        - app/Filament/
+

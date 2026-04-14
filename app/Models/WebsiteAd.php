@@ -6,9 +6,27 @@ use App\Services\SettingsService;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property string $image
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read string $image_url
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd whereImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebsiteAd whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
+ */
 class WebsiteAd extends Model
 {
     use HasFactory;
