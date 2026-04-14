@@ -290,17 +290,17 @@
             <div x-show="showConfirmModal" x-transition x-on:click="showConfirmModal = false" class="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
                 <div x-show="showConfirmModal" x-transition.opacity class="fixed inset-0 bg-black/50"></div>
 
-                <div x-on:click.stop x-trap.noscroll.inert="showConfirmModal" class="relative w-full max-w-md rounded px-6 py-6 shadow-md bg-[#21242e] text-gray-200">
-                    <button type="button" x-on:click="showConfirmModal = false" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white">
+                <div x-on:click.stop x-trap.noscroll.inert="showConfirmModal" class="relative flex flex-col w-full max-w-md max-h-[85vh] rounded px-6 py-6 shadow-md bg-[#21242e] text-gray-200">
+                    <button type="button" x-on:click="showConfirmModal = false" class="absolute top-3 right-2.5 z-10 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white">
                         <svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                         <span class="sr-only">{{ __('Close modal') }}</span>
                     </button>
 
-                    <div class="my-4 flex flex-col items-center" :id="$id('confirm-modal')">
+                    <div class="my-4 flex flex-col items-center shrink-0" :id="$id('confirm-modal')">
                         <h3 class="font-semibold text-lg text-gray-100" x-text="`{{ __('Purchase') }} ${confirmItems.length} {{ __('item(s)') }}`"></h3>
                     </div>
 
-                    <div class="max-h-[200px] overflow-y-auto space-y-1">
+                    <div class="overflow-y-auto space-y-1 min-h-0">
                         <template x-for="item in confirmItems" :key="item.id">
                             <div class="flex items-center justify-between gap-2 py-1.5 border-b border-gray-700">
                                 <div class="flex items-center gap-2 min-w-0">
@@ -316,25 +316,27 @@
                         </template>
                     </div>
 
-                    <div class="border-t border-gray-700 pt-3 mt-3 space-y-1">
-                        <template x-for="[curr, cost] in Object.entries(confirmCosts)" :key="curr">
-                            <div class="flex justify-between text-xs" :class="getBalance(curr) < cost ? 'text-red-500 font-bold' : 'text-gray-400'">
-                                <span x-text="currName(curr)"></span>
-                                <span x-text="`${cost} / ${getBalance(curr)} ${getBalance(curr) < cost ? '(insufficient)' : ''}`"></span>
-                            </div>
+                    <div class="shrink-0">
+                        <div class="border-t border-gray-700 pt-3 mt-3 space-y-1">
+                            <template x-for="[curr, cost] in Object.entries(confirmCosts)" :key="curr">
+                                <div class="flex justify-between text-xs" :class="getBalance(curr) < cost ? 'text-red-500 font-bold' : 'text-gray-400'">
+                                    <span x-text="currName(curr)"></span>
+                                    <span x-text="`${cost} / ${getBalance(curr)} ${getBalance(curr) < cost ? '(insufficient)' : ''}`"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <template x-if="confirmUnaffordable.length > 0">
+                            <p class="text-red-500 text-xs mt-2" x-text="`{{ __('Not enough') }} ${confirmUnaffordable.join(', ')}. {{ __('Remove items to proceed.') }}`"></p>
                         </template>
-                    </div>
 
-                    <template x-if="confirmUnaffordable.length > 0">
-                        <p class="text-red-500 text-xs mt-2" x-text="`{{ __('Not enough') }} ${confirmUnaffordable.join(', ')}. {{ __('Remove items to proceed.') }}`"></p>
-                    </template>
-
-                    <div class="mt-5 flex gap-2">
-                        <button type="button" @click="showConfirmModal = false" class="w-full rounded bg-red-500 hover:bg-red-600 text-white p-2 border-2 border-red-400 transition ease-in-out duration-150 font-semibold">{{ __('Cancel') }}</button>
-                        <x-form.secondary-button type="button" x-on:click="confirmPurchase()" x-bind:disabled="confirmUnaffordable.length > 0" classes="disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span x-show="confirmUnaffordable.length > 0">{{ __('Cannot afford') }}</span>
-                            <span x-show="confirmUnaffordable.length === 0">{{ __('Confirm Purchase') }}</span>
-                        </x-form.secondary-button>
+                        <div class="mt-5 flex gap-2">
+                            <button type="button" @click="showConfirmModal = false" class="w-full rounded bg-red-500 hover:bg-red-600 text-white p-2 border-2 border-red-400 transition ease-in-out duration-150 font-semibold">{{ __('Cancel') }}</button>
+                            <button type="button" @click="confirmPurchase()" :disabled="confirmUnaffordable.length > 0" class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="confirmUnaffordable.length > 0">{{ __('Cannot afford') }}</span>
+                                <span x-show="confirmUnaffordable.length === 0">{{ __('Confirm Purchase') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
