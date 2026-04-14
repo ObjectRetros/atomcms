@@ -9,7 +9,7 @@ class PurchasePackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'receiver' => ['sometimes', 'string', 'max:255'],
+            'receiver' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

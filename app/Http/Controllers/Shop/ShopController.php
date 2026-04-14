@@ -163,7 +163,7 @@ class ShopController extends Controller
             );
         }
 
-        if ($request->has('receiver')) {
+        if ($request->filled('receiver')) {
             if (! $package->is_giftable) {
                 return to_route('shop.index')->withErrors(
                     ['message' => __('This package is not giftable')],
@@ -241,7 +241,7 @@ class ShopController extends Controller
             WebsiteShopPurchase::create([
                 'user_id' => $buyer->id,
                 'website_shop_package_id' => $package->id,
-                'gifted_to' => $request->has('receiver') ? $recipient->id : null,
+                'gifted_to' => $request->filled('receiver') ? $recipient->id : null,
             ]);
         });
 
