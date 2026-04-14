@@ -38,6 +38,10 @@ class DatabaseSeeder extends Seeder
 
             // Housekeeping permissions
             HousekeepingPermissionSeeder::class,
+
+            // Home items
+            HomeCategorySeeder::class,
+            HomeItemSeeder::class,
         ]);
 
         // \App\Models\User::factory(10)->create();

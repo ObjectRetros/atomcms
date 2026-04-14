@@ -1,0 +1,87 @@
+<?php
+
+namespace Database\Seeders\Compositions\Home;
+
+use Illuminate\Support\Facades\DB;
+
+trait HasBackgroundsCategoryData
+{
+    public function insertBackgroundsItemsData()
+    {
+        $this->currentOrder = 1;
+
+        DB::table('home_items')->insert([
+            $this->buildItemStructure(null, 'home-items/bg-default-home-background.png', 'Default Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-2.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-3.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-4.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-5.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-6.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-7.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-8.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-9.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-10.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-11.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-12.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-13.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-14.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-15.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-16.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-17.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-18.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-19.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-20.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-21.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-22.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-23.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-24.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-25.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-26.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-27.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-28.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-29.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-30.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-31.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-32.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-33.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-34.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-35.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-36.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-37.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-38.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-39.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-40.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-41.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-42.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-43.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-44.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-45.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-46.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-47.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-48.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-49.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-50.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-51.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-52.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-53.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-54.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-55.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-56.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-57.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-58.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-59.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-60.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-61.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-62.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-63.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-64.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-65.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-66.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-67.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-68.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-69.png', 'Home Background', 15, 'b'),
+            $this->buildItemStructure(null, 'home-items/bg-home-background-70.png', 'Home Background', 15, 'b'),
+        ]);
+    }
+}

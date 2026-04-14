@@ -10,6 +10,7 @@ use App\Services\RconService;
 use App\Services\SettingsService;
 use App\Services\ViteService;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
@@ -53,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::preventLazyLoading(! $this->app->isProduction());
+
         if (config('habbo.site.force_https')) {
             URL::forceScheme('https');
         }

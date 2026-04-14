@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Articles\WebsiteArticle;
+use App\Models\Articles\WebsiteArticleComment;
 use App\Rules\WebsiteWordfilterRule;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class ArticleComments extends Component
@@ -48,6 +50,7 @@ class ArticleComments extends Component
 
     public function deleteComment(int $commentId): void
     {
+        /** @var WebsiteArticleComment|null $comment */
         $comment = $this->article->comments()->find($commentId);
 
         if (! $comment) {
@@ -65,7 +68,7 @@ class ArticleComments extends Component
         $this->dispatch('toast', icon: 'success', title: __('Comment deleted successfully'));
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.article-comments', [
             'article' => $this->article->load(['comments.user']),

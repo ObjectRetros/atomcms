@@ -10,6 +10,8 @@ import Focus from "@alpinejs/focus";
 import ThemeSwitcher from "./components/ThemeSwitcher.js";
 import AtomSliders from "./components/AtomSliders.js";
 
+import "../../../js/components/HomeManager.js";
+
 ThemeSwitcher.init();
 AtomSliders.init();
 Alpine.plugin(Focus);

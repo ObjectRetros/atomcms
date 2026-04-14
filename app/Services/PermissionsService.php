@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class PermissionsService
 {
-    public ?Collection $permissions;
+    public Collection $permissions;
 
     public function __construct()
     {
@@ -21,7 +21,7 @@ class PermissionsService
 
     public function getOrDefault(string $permissionName, bool $default = false): bool
     {
-        if (! array_key_exists($permissionName, $this->permissions->toArray())) {
+        if (! $this->permissions->has($permissionName)) {
             return $default;
         }
 

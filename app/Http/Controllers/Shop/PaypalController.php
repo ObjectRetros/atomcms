@@ -94,7 +94,7 @@ class PaypalController extends Controller
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
         }
 
-        if (($response['status'] ?? null) === null) {
+        if (! isset($response['status'])) {
             $details = $response['error']['details'][0];
             $transaction->update([
                 'status' => $response['name'],

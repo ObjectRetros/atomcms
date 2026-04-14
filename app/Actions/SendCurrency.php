@@ -11,7 +11,7 @@ class SendCurrency
 
     public function execute($user, string $type, ?int $amount)
     {
-        if (! $amount && $amount <= 0) {
+        if ($amount === null || $amount <= 0) {
             return false;
         }
 

@@ -27,7 +27,7 @@ class StaffApplicationsController extends Controller
     {
         abort_unless($position->position_kind === 'rank', 404);
         $position->loadMissing('permission');
-        abort_unless($position->permission, 404);
+        abort_unless($position->permission !== null, 404);
 
         return view('community.staff-apply', compact('position'));
     }

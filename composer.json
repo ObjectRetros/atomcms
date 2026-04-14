@@ -13,6 +13,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "itsgoingd/clockwork": "*",
         "jenssegers/agent": "^2.6",
+        "laravel/boost": "^2.4",
         "laravel/fortify": "^1.16",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
@@ -27,10 +28,12 @@
         "stevebauman/purify": "^6.0"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.9.1",
+        "filament/blueprint": "^2.1",
         "filament/upgrade": "^5.0",
         "fruitcake/laravel-debugbar": "*",
-        "laravel/boost": "^2.0",
+        "larastan/larastan": "^3.9",
         "laravel/pint": "^v1.14",
         "laravel/sail": "*",
         "mockery/mockery": "^1.4.4",
@@ -85,6 +88,11 @@
         }
     },
     "repositories": [
+        {
+            "name": "filament",
+            "type": "composer",
+            "url": "https://packages.filamentphp.com/composer"
+        },
         {
             "type": "package",
             "package": {
