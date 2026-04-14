@@ -39,45 +39,47 @@
         @endif
     </div>
 
-    <div class="pt-2 mt-auto flex gap-4">
-        @if($package->is_giftable)
-            <x-modals.modal-wrapper>
-                <div x-on:click="open = true">
-                    <x-form.primary-button type="button" classes="px-10">
-                        <x-icons.gift />
-                    </x-form.primary-button>
-                </div>
-
-                <x-modals.regular-modal>
-                    <x-slot name="title">
-                        <h2 class="text-2xl">
-                            {{ __('Gift :package', ['package' => $package->name]) }}
-                        </h2>
-                    </x-slot>
-
-                    <div class="mt-4">
-                        <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
-                            @csrf
-
-                            <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
-
-                            <button type="submit"
-                                    class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
-                                {{ __('Gift for $:cost', ['cost' => $package->priceInDollars()]) }}
-                            </button>
-                        </form>
+    @auth
+        <div class="pt-2 mt-auto flex gap-4">
+            @if($package->is_giftable)
+                <x-modals.modal-wrapper>
+                    <div x-on:click="open = true">
+                        <x-form.primary-button type="button" classes="px-10">
+                            <x-icons.gift />
+                        </x-form.primary-button>
                     </div>
-                </x-modals.regular-modal>
-            </x-modals.modal-wrapper>
-        @endif
 
-        <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
-            @csrf
+                    <x-modals.regular-modal>
+                        <x-slot name="title">
+                            <h2 class="text-2xl">
+                                {{ __('Gift :package', ['package' => $package->name]) }}
+                            </h2>
+                        </x-slot>
 
-            <button type="submit"
-                    class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
-                {{ __('Buy for $:cost', ['cost' => $package->priceInDollars()]) }}
-            </button>
-        </form>
-    </div>
+                        <div class="mt-4">
+                            <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
+                                @csrf
+
+                                <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
+
+                                <button type="submit"
+                                        class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
+                                    {{ __('Gift for $:cost', ['cost' => $package->priceInDollars()]) }}
+                                </button>
+                            </form>
+                        </div>
+                    </x-modals.regular-modal>
+                </x-modals.modal-wrapper>
+            @endif
+
+            <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
+                @csrf
+
+                <button type="submit"
+                        class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
+                    {{ __('Buy for $:cost', ['cost' => $package->priceInDollars()]) }}
+                </button>
+            </form>
+        </div>
+    @endauth
 </x-content.shop-card>

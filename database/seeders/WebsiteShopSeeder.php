@@ -338,8 +338,8 @@ class WebsiteShopSeeder extends Seeder
                     'max_rank' => $def['max_rank'] ?? null,
                     'stock' => $def['stock'] ?? null,
                     'limit_per_user' => $def['limit_per_user'] ?? null,
-                    'available_from' => isset($def['available_from']) ? $def['available_from'] : null,
-                    'available_to' => isset($def['available_to']) ? $def['available_to'] : null,
+                    'available_from' => $def['available_from'] ?? null,
+                    'available_to' => $def['available_to'] ?? null,
                 ],
             );
 

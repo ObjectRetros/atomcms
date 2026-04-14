@@ -7,6 +7,7 @@ use App\Actions\SendFurniture;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\User;
 use App\Services\RconService;
+use RuntimeException;
 
 class FulfillPackage
 {
@@ -28,7 +29,7 @@ class FulfillPackage
                 'furniture' => $this->giveFurniture($user, $item->type_value, $quantity),
                 'badge' => $this->giveBadge($user, $item->type_value),
                 'rank' => $this->giveRank($user, (int) $item->type_value),
-                default => null,
+                default => throw new RuntimeException("Unknown shop item type: {$item->type}"),
             };
         }
     }
@@ -52,9 +53,7 @@ class FulfillPackage
 
     private function giveBadge(User $user, string $badgeCode): void
     {
-        $ownedBadges = $user->badges()->pluck('badge_code')->toArray();
-
-        if (in_array($badgeCode, $ownedBadges)) {
+        if ($user->badges()->where('badge_code', $badgeCode)->exists()) {
             return;
         }
 

@@ -42,13 +42,9 @@ class WebsiteShopPackage extends Model
         return $this->hasMany(WebsiteShopPurchase::class);
     }
 
-    public function priceInDollars(): float|int
+    public function priceInDollars(): float
     {
-        if ($this->price < 100) {
-            return 1;
-        }
-
-        return $this->price / 100;
+        return round($this->price / 100, 2);
     }
 
     public function isAvailable(): bool

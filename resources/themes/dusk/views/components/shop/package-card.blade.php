@@ -48,46 +48,48 @@
         @endif
     </div>
 
-    <div class="pt-4 mt-auto flex gap-4">
-        <div class="w-full flex gap-2">
-            @if($package->is_giftable)
-                <x-modals.modal-wrapper>
-                    <div x-on:click="open = true">
-                        <x-form.primary-button classes="!text-blue-100 px-4 w-full !bg-[#0b80b3] !border-[#1891c4] hover:!bg-[#096891] transition-all">
-                            <x-icons.gift />
-                        </x-form.primary-button>
-                    </div>
-
-                    <x-modals.regular-modal>
-                        <x-slot name="title">
-                            <h2 class="text-2xl">
-                                {{ __('Gift :package', ['package' => $package->name]) }}
-                            </h2>
-                        </x-slot>
-
-                        <div class="mt-4">
-                            <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
-                                @csrf
-
-                                <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
-
-                                <button type="submit"
-                                        class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
-                                    {{ __('Gift for $:cost', ['cost' => $package->priceInDollars()]) }}
-                                </button>
-                            </form>
+    @auth
+        <div class="pt-4 mt-auto flex gap-4">
+            <div class="w-full flex gap-2">
+                @if($package->is_giftable)
+                    <x-modals.modal-wrapper>
+                        <div x-on:click="open = true">
+                            <x-form.primary-button classes="!text-blue-100 px-4 w-full !bg-[#0b80b3] !border-[#1891c4] hover:!bg-[#096891] transition-all">
+                                <x-icons.gift />
+                            </x-form.primary-button>
                         </div>
-                    </x-modals.regular-modal>
-                </x-modals.modal-wrapper>
-            @endif
+
+                        <x-modals.regular-modal>
+                            <x-slot name="title">
+                                <h2 class="text-2xl">
+                                    {{ __('Gift :package', ['package' => $package->name]) }}
+                                </h2>
+                            </x-slot>
+
+                            <div class="mt-4">
+                                <form action="{{ route('shop.buy-package', $package) }}" method="POST" class="w-full">
+                                    @csrf
+
+                                    <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
+
+                                    <button type="submit"
+                                            class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
+                                        {{ __('Gift for $:cost', ['cost' => $package->priceInDollars()]) }}
+                                    </button>
+                                </form>
+                            </div>
+                        </x-modals.regular-modal>
+                    </x-modals.modal-wrapper>
+                @endif
+            </div>
+
+            <form action="{{ route('shop.buy-package', $package) }}" method="POST">
+                @csrf
+
+                <x-form.secondary-button type="submit" classes="text-green-100 px-4">
+                    {{ __('Buy') }}
+                </x-form.secondary-button>
+            </form>
         </div>
-
-        <form action="{{ route('shop.buy-package', $package) }}" method="POST">
-            @csrf
-
-            <x-form.secondary-button type="submit" classes="text-green-100 px-4">
-                {{ __('Buy') }}
-            </x-form.secondary-button>
-        </form>
-    </div>
+    @endauth
 </x-content.shop-card>

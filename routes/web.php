@@ -176,7 +176,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/{category:slug?}', ShopController::class)->name('shop.index');
 
             Route::post('/purchase/{package}', [ShopController::class, 'purchase'])->name('shop.buy');
-            Route::post('/purchase-package/{package}', [ShopController::class, 'purchasePackage'])->name('shop.buy-package');
+            Route::post('/purchase-package/{package}', [ShopController::class, 'purchasePackage'])->name('shop.buy-package')->middleware('throttle:10,1');
             Route::post('/voucher', ShopVoucherController::class)->name('shop.use-voucher');
         });
 
