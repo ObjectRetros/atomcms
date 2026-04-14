@@ -33,17 +33,22 @@ class ShopController extends Controller
 
     public function itemsByType(string $type): JsonResponse
     {
-        $typeChar = substr($type, 0, 1);
-        $validTypes = HomeItemType::valuesExcept(HomeItemType::Sticker);
+        $typeMap = [
+            'notes' => HomeItemType::Note,
+            'widgets' => HomeItemType::Widget,
+            'backgrounds' => HomeItemType::Background,
+        ];
 
-        if (! $typeChar || ! in_array($typeChar, $validTypes)) {
+        $itemType = $typeMap[$type] ?? null;
+
+        if (! $itemType) {
             return $this->jsonResponse([
                 'message' => __('Invalid item type.'),
             ], 404);
         }
 
         return $this->jsonResponse([
-            'items' => HomeItem::where('type', $typeChar)->orderBy('order')->get()->values(),
+            'items' => HomeItem::where('type', $itemType)->orderBy('order')->get()->values(),
         ]);
     }
 
@@ -64,6 +69,8 @@ class ShopController extends Controller
     public function inventory(string $username): JsonResponse
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        abort_unless($user->id === Auth::id(), 403);
 
         $allInventoryItems = $user->groupedInventoryItems()->get();
 

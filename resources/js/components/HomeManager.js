@@ -29,13 +29,19 @@ Alpine.data('homeManager', (username, isMe) => ({
     shopActive: null,
     shopSelected: [],
     buyQty: 1,
-    totalPrice: 0,
     shopLoading: false,
     buying: false,
     previewing: false,
     previewItems: [],
     previewBg: null,
-    _previewTimer: null,
+
+    userBalance: null,
+    balanceLoading: false,
+
+    showConfirmModal: false,
+    confirmItems: [],
+    confirmCosts: {},
+    confirmUnaffordable: [],
 
     init() {
         this.fetchPlacedItems();
@@ -61,7 +67,7 @@ Alpine.data('homeManager', (username, isMe) => ({
             const item = all.find(i => String(i.id) === rawId);
             if (!item || this.removedItemIds.includes(item.id)) return;
 
-            const container = el.closest('.home-canvas');
+            const container = this.$refs.canvas;
             if (!container) return;
 
             const rect = container.getBoundingClientRect();
@@ -78,7 +84,7 @@ Alpine.data('homeManager', (username, isMe) => ({
 
         const onMove = (e) => {
             if (!this.dragging || !dragEl) return;
-            const container = document.querySelector('.home-canvas');
+            const container = this.$refs.canvas;
             if (!container) return;
 
             const rect = container.getBoundingClientRect();
@@ -128,7 +134,7 @@ Alpine.data('homeManager', (username, isMe) => ({
             for (const item of this.placedItems) {
                 if (item.home_item?.type === 'w') this.fetchWidgetContent(item);
             }
-        } catch (e) { console.error(e); }
+        } catch { /* noop */ }
     },
 
     async fetchWidgetContent(item) {
@@ -136,7 +142,7 @@ Alpine.data('homeManager', (username, isMe) => ({
             const res = await this._api(`/home/${this.username}/widget-content/${item.id}`);
             item.content = res.content;
             item.widget_type = res.widget_type;
-        } catch (e) { console.error(e); }
+        } catch { /* noop */ }
     },
 
     img(path) {
@@ -144,10 +150,12 @@ Alpine.data('homeManager', (username, isMe) => ({
         if (path.startsWith('/') || path.startsWith('http')) return path;
         return `/storage/${path}`;
     },
+
     bg() {
         if (this.previewBg) return this.img(this.previewBg.image);
         return this.img(this.activeBackground?.home_item?.image);
     },
+
     visible() {
         const placed = this.placedItems.filter(i => !this.removedItemIds.includes(i.id));
         return [...placed, ...this.previewItems];
@@ -203,8 +211,16 @@ Alpine.data('homeManager', (username, isMe) => ({
                 items, backgroundId: this.activeBackground?.id || 0,
             });
 
-            if (res.success && res.href) window.location.href = res.href;
-        } catch (e) { console.error(e); }
+            if (res.success) {
+                this.removedItemIds = [];
+                this.editing = false;
+                this.selectedItem = null;
+                this.showBag = false;
+                this._showToast(res.message || 'Home saved successfully.');
+            }
+        } catch (e) {
+            this._showToast(e.message || 'Failed to save home.', 'error');
+        }
         finally { this.saving = false; }
     },
 
@@ -224,17 +240,78 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.invSelected = [];
         this.shopSelected = [];
         if (tab === 'inventory') this.fetchInv();
-        else this.fetchShopCats();
+        else {
+            this.fetchShopCats();
+            this.fetchBalance();
+        }
     },
 
-    // ─── Inventory ───
+    // --- Balance ---
+
+    async fetchBalance() {
+        this.balanceLoading = true;
+        try {
+            const res = await this._api('/home/shop/balance');
+            this.userBalance = res.balance || null;
+        } catch { this.userBalance = null; }
+        finally { this.balanceLoading = false; }
+    },
+
+    getBalance(currencyType) {
+        if (!this.userBalance) return 0;
+        return this.userBalance[String(currencyType)] || 0;
+    },
+
+    canAffordItem(item, qty = 1) {
+        if (!this.userBalance) return true;
+        return (item.price * qty) <= this.getBalance(item.currency_type);
+    },
+
+    canAffordSelection() {
+        if (!this.userBalance) return true;
+        const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
+        if (!targets.length) return true;
+
+        const costByCurrency = {};
+        for (const item of targets) {
+            const key = String(item.currency_type);
+            const qty = (targets.length === 1) ? this.buyQty : 1;
+            costByCurrency[key] = (costByCurrency[key] || 0) + (item.price * qty);
+        }
+
+        for (const [curr, cost] of Object.entries(costByCurrency)) {
+            if (cost > (this.userBalance[curr] || 0)) return false;
+        }
+        return true;
+    },
+
+    totalsByCurrency() {
+        const targets = this.shopSelected.length > 1 ? this.shopSelected : [];
+        if (!targets.length) return [];
+
+        const grouped = {};
+        for (const item of targets) {
+            const key = String(item.currency_type);
+            if (!grouped[key]) grouped[key] = { currency_type: item.currency_type, total: 0 };
+            grouped[key].total += item.price;
+        }
+        return Object.values(grouped);
+    },
+
+    currName(type) {
+        return { '-1': 'Credits', '0': 'Duckets', '5': 'Diamonds', '101': 'Points' }[String(type)] || 'Currency';
+    },
+
+    // --- Inventory ---
 
     async fetchInv() {
         this.invLoading = true;
         try {
             const res = await this._api(`/home/${this.username}/inventory`);
             this.inventory = res.inventory || { stickers: [], notes: [], widgets: [], backgrounds: [] };
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            this._showToast(e.message || 'Failed to load inventory.', 'error');
+        }
         finally { this.invLoading = false; }
     },
 
@@ -327,7 +404,7 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.showBag = false;
     },
 
-    // ─── Shop ───
+    // --- Shop ---
 
     async fetchShopCats() {
         if (this.shopCategories.length) return;
@@ -335,7 +412,9 @@ Alpine.data('homeManager', (username, isMe) => ({
         try {
             const res = await this._api('/home/shop/categories');
             this.shopCategories = res.categories || [];
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            this._showToast(e.message || 'Failed to load shop.', 'error');
+        }
         finally { this.shopLoading = false; }
     },
 
@@ -344,7 +423,6 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.shopActive = null;
         this.shopSelected = [];
         this.buyQty = 1;
-        this.totalPrice = 0;
         this.shopItems = [];
         if (tab !== 'home' && tab !== 'categories') this._fetchShopType(tab);
     },
@@ -357,7 +435,9 @@ Alpine.data('homeManager', (username, isMe) => ({
         try {
             const res = await this._api(`/home/shop/category/${id}/items`);
             this.shopItems = res.items || [];
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            this._showToast(e.message || 'Failed to load category.', 'error');
+        }
         finally { this.shopLoading = false; }
     },
 
@@ -366,7 +446,9 @@ Alpine.data('homeManager', (username, isMe) => ({
         try {
             const res = await this._api(`/home/shop/type/${type}/items`);
             this.shopItems = res.items || [];
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            this._showToast(e.message || 'Failed to load items.', 'error');
+        }
         finally { this.shopLoading = false; }
     },
 
@@ -381,7 +463,7 @@ Alpine.data('homeManager', (username, isMe) => ({
             this.shopSelected.push(item);
         }
         this.shopActive = this.shopSelected.length === 1 ? this.shopSelected[0] : null;
-        this._calcBatchPrice();
+        this.buyQty = 1;
     },
 
     shopSelectAll() {
@@ -392,36 +474,24 @@ Alpine.data('homeManager', (username, isMe) => ({
             this.shopSelected = [...this.shopItems];
             this.shopActive = null;
         }
-        this._calcBatchPrice();
     },
 
-    pickShop(item) {
-        this.shopActive = item;
-        this.shopSelected = [item];
-        this.buyQty = 1;
-        this.totalPrice = item.price;
-    },
-
-    _calcBatchPrice() {
-        if (this.shopSelected.length <= 1) {
-            this.totalPrice = this.shopActive?.price || 0;
-        } else {
-            this.totalPrice = this.shopSelected.reduce((sum, i) => sum + i.price, 0);
-        }
-    },
-
-    calcPrice() {
-        if (!this.shopActive) return;
+    clampBuyQty() {
         this.buyQty = Math.max(1, Math.min(100, parseInt(this.buyQty) || 1));
-        this.totalPrice = this.shopActive.price * this.buyQty;
     },
 
     async buy() {
         const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
         if (this.buying || !targets.length) return;
-        this.buying = true;
 
-        let ok = 0, fail = 0;
+        if (!this.canAffordSelection()) {
+            this._showToast('You cannot afford this purchase.', 'error');
+            return;
+        }
+
+        this.buying = true;
+        let ok = 0, fail = 0, lastError = '';
+
         for (const item of targets) {
             try {
                 const qty = targets.length === 1 ? this.buyQty : 1;
@@ -436,25 +506,38 @@ Alpine.data('homeManager', (username, isMe) => ({
                         else if (this.inventory[tab]) this.inventory[tab].push({ home_item_id: p.home_item_id, home_item: p.home_item, item_ids: p.item_ids });
                     }
                     ok++;
-                } else { fail++; }
-            } catch { fail++; }
+                } else {
+                    fail++;
+                    lastError = res.message || '';
+                }
+            } catch (e) {
+                fail++;
+                lastError = e.message || '';
+            }
         }
 
         if (ok) this._showToast(`${ok} item${ok !== 1 ? 's' : ''} purchased`);
-        if (fail) this._showToast(`${fail} purchase${fail !== 1 ? 's' : ''} failed`, 'error');
+        if (fail) this._showToast(lastError || `${fail} purchase${fail !== 1 ? 's' : ''} failed`, 'error');
+
         this.shopActive = null;
         this.shopSelected = [];
         this.buyQty = 1;
-        this.totalPrice = 0;
         this.buying = false;
+        this.fetchBalance();
     },
 
     async buyAndPlace() {
         const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
         if (this.buying || !targets.length) return;
-        this.buying = true;
 
+        if (!this.canAffordSelection()) {
+            this._showToast('You cannot afford this purchase.', 'error');
+            return;
+        }
+
+        this.buying = true;
         let totalPlaced = 0;
+
         for (const shopItem of targets) {
             try {
                 const qty = targets.length === 1 ? this.buyQty : 1;
@@ -483,20 +566,24 @@ Alpine.data('homeManager', (username, isMe) => ({
                             totalPlaced++;
                         }
                     }
+                } else {
+                    this._showToast(res.message || 'Purchase failed.', 'error');
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                this._showToast(e.message || 'Purchase failed.', 'error');
+            }
         }
 
         if (totalPlaced) this._showToast(`${totalPlaced} item${totalPlaced !== 1 ? 's' : ''} purchased & placed`);
         this.shopActive = null;
         this.shopSelected = [];
         this.buyQty = 1;
-        this.totalPrice = 0;
         this.showBag = false;
         this.buying = false;
+        this.fetchBalance();
     },
 
-    // ─── Preview ───
+    // --- Preview ---
 
     _previewShopItems: [],
 
@@ -517,30 +604,29 @@ Alpine.data('homeManager', (username, isMe) => ({
     },
 
     preview(item) {
-        this.endPreview();
-        if (item?.type === 'b') {
-            this.previewBg = item;
-        } else {
-            this.previewItems = [this._makePreviewItem(item)];
-        }
-        this._previewShopItems = [item];
-        this.previewing = true;
-        this.showBag = false;
+        this._addToPreview([item]);
     },
 
     previewSelected() {
         const targets = this.shopSelected.length > 0 ? this.shopSelected : (this.shopActive ? [this.shopActive] : []);
         if (!targets.length) return;
+        this._addToPreview(targets);
+    },
 
-        this.endPreview();
-        for (const item of targets) {
-            if (item.type === 'b' && !this.previewBg) {
+    _addToPreview(items) {
+        for (const item of items) {
+            if (this._previewShopItems.some(p => p.id === item.id)) continue;
+
+            if (item.type === 'b') {
+                if (this.previewBg) {
+                    this._previewShopItems = this._previewShopItems.filter(p => p.id !== this.previewBg.id);
+                }
                 this.previewBg = item;
             } else {
                 this.previewItems.push(this._makePreviewItem(item));
             }
+            this._previewShopItems.push(item);
         }
-        this._previewShopItems = [...targets];
         this.previewing = true;
         this.showBag = false;
     },
@@ -552,141 +638,94 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.previewing = false;
     },
 
-    async confirmPreviewPurchase() {
+    async openConfirmModal() {
         if (!this._previewShopItems.length) return;
 
-        const balance = await this._fetchBalance();
-        if (!balance) return;
+        await this.fetchBalance();
+        if (!this.userBalance) return;
 
-        const currNames = { '-1': 'Credits', '0': 'Duckets', '5': 'Diamonds', '101': 'Points' };
-
-        let items = [...this._previewShopItems];
-
-        const show = async () => {
-            const costByCurrency = {};
-            for (const item of items) {
-                const key = String(item.currency_type);
-                costByCurrency[key] = (costByCurrency[key] || 0) + item.price;
-            }
-
-            const unaffordable = [];
-            for (const [curr, cost] of Object.entries(costByCurrency)) {
-                if (cost > (balance[curr] || 0)) {
-                    unaffordable.push(currNames[curr] || curr);
-                }
-            }
-
-            let html = '<div class="text-left text-sm space-y-2">';
-            html += '<div class="max-h-[200px] overflow-y-auto space-y-1">';
-            for (const item of items) {
-                const curr = String(item.currency_type);
-                html += `<div class="flex items-center justify-between gap-2 py-1 border-b border-gray-200 dark:border-gray-700" data-item-id="${item.id}">`;
-                html += `<div class="flex items-center gap-2 min-w-0">`;
-                html += `<img src="${this.img(item.image)}" class="w-8 h-8 object-contain shrink-0">`;
-                html += `<span class="truncate">${item.name}</span>`;
-                html += `</div>`;
-                html += `<div class="flex items-center gap-1 shrink-0">`;
-                html += `<span class="font-semibold">${item.price}</span>`;
-                html += `<img src="${this.currIcon(item.currency_type)}" class="w-4 h-4">`;
-                if (items.length > 1) {
-                    html += `<button type="button" class="swal-remove-item ml-1 text-red-500 hover:text-red-400 text-lg leading-none" data-remove-id="${item.id}">&times;</button>`;
-                }
-                html += `</div></div>`;
-            }
-            html += '</div>';
-
-            html += '<div class="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">';
-            for (const [curr, cost] of Object.entries(costByCurrency)) {
-                const name = currNames[curr] || curr;
-                const have = balance[curr] || 0;
-                const enough = have >= cost;
-                html += `<div class="flex justify-between text-xs ${enough ? '' : 'text-red-500 font-bold'}">`;
-                html += `<span>${name}</span>`;
-                html += `<span>${cost} / ${have} ${enough ? '' : '(insufficient)'}</span>`;
-                html += `</div>`;
-            }
-            html += '</div>';
-
-            if (unaffordable.length) {
-                html += `<p class="text-red-500 text-xs mt-2">Not enough ${unaffordable.join(', ')}. Remove items to proceed.</p>`;
-            }
-            html += '</div>';
-
-            const result = await Swal.fire({
-                title: `Purchase ${items.length} item${items.length !== 1 ? 's' : ''}?`,
-                html,
-                icon: unaffordable.length ? 'warning' : 'question',
-                showCancelButton: true,
-                confirmButtonText: unaffordable.length ? 'Cannot afford' : 'Confirm Purchase',
-                confirmButtonColor: unaffordable.length ? '#9ca3af' : '#16a34a',
-                cancelButtonText: 'Cancel',
-                didOpen: (popup) => {
-                    popup.querySelectorAll('.swal-remove-item').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const removeId = Number(btn.dataset.removeId);
-                            items = items.filter(i => i.id !== removeId);
-                            this.previewItems = this.previewItems.filter(i => i.home_item_id !== removeId);
-                            if (this.previewBg?.id === removeId) this.previewBg = null;
-                            this._previewShopItems = items;
-                            Swal.close();
-                            if (items.length > 0) show();
-                            else this.endPreview();
-                        });
-                    });
-                },
-            });
-
-            if (!result.isConfirmed || unaffordable.length) return;
-
-            this.buying = true;
-            let placed = 0;
-            for (const shopItem of items) {
-                try {
-                    const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
-                        item_id: shopItem.id, quantity: 1,
-                    });
-                    if (res.success && res.items) {
-                        for (const p of res.items) {
-                            for (const id of p.item_ids) {
-                                const preview = this.previewItems.find(pi => pi.home_item_id === shopItem.id);
-                                const pos = preview ? { x: preview.x, y: preview.y } : this._randomPos();
-                                const type = p.home_item?.type;
-                                if (type === 'b') {
-                                    if (this.activeBackground) this._returnToInv(this.activeBackground);
-                                    this.activeBackground = { id, home_item_id: p.home_item_id, home_item: p.home_item };
-                                } else if (type === 'w') {
-                                    const n = { id, home_item_id: p.home_item_id, home_item: p.home_item, ...pos, z: preview?.z || this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
-                                    this.placedItems.push(n);
-                                    this.fetchWidgetContent(n);
-                                } else {
-                                    this.placedItems.push({
-                                        id, home_item_id: p.home_item_id, home_item: p.home_item,
-                                        ...pos, z: preview?.z || this._nextZ(), is_reversed: false,
-                                        theme: type === 'n' ? 'note' : null, extra_data: '', parsed_data: '',
-                                    });
-                                }
-                                placed++;
-                            }
-                        }
-                    }
-                } catch (e) { console.error(e); }
-            }
-            this.buying = false;
-            this.endPreview();
-            if (placed) this._showToast(`${placed} item${placed !== 1 ? 's' : ''} purchased & placed`);
-        };
-
-        show();
+        this.confirmItems = [...this._previewShopItems];
+        this._recalcConfirmCosts();
+        this.showConfirmModal = true;
     },
 
-    async _fetchBalance() {
-        try {
-            const res = await this._api('/home/shop/balance');
-            return res.balance || null;
-        } catch (e) {
-            console.error(e);
-            return null;
+    _recalcConfirmCosts() {
+        const costs = {};
+        for (const item of this.confirmItems) {
+            const key = String(item.currency_type);
+            costs[key] = (costs[key] || 0) + item.price;
         }
+        this.confirmCosts = costs;
+
+        this.confirmUnaffordable = [];
+        for (const [curr, cost] of Object.entries(costs)) {
+            if (cost > this.getBalance(curr)) {
+                this.confirmUnaffordable.push(this.currName(curr));
+            }
+        }
+    },
+
+    confirmRemoveItem(itemId) {
+        this.confirmItems = this.confirmItems.filter(i => i.id !== itemId);
+        this.previewItems = this.previewItems.filter(i => i.home_item_id !== itemId);
+        if (this.previewBg?.id === itemId) this.previewBg = null;
+        this._previewShopItems = this.confirmItems;
+
+        if (this.confirmItems.length === 0) {
+            this.showConfirmModal = false;
+            this.endPreview();
+            return;
+        }
+        this._recalcConfirmCosts();
+    },
+
+    async confirmPurchase() {
+        if (this.confirmUnaffordable.length) return;
+
+        this.showConfirmModal = false;
+        this.buying = true;
+        let placed = 0;
+
+        for (const shopItem of this.confirmItems) {
+            try {
+                const res = await this._api(`/home/${this.username}/buy-item`, 'POST', {
+                    item_id: shopItem.id, quantity: 1,
+                });
+                if (res.success && res.items) {
+                    for (const p of res.items) {
+                        for (const id of p.item_ids) {
+                            const preview = this.previewItems.find(pi => pi.home_item_id === shopItem.id);
+                            const pos = preview ? { x: preview.x, y: preview.y } : this._randomPos();
+                            const type = p.home_item?.type;
+                            if (type === 'b') {
+                                if (this.activeBackground) this._returnToInv(this.activeBackground);
+                                this.activeBackground = { id, home_item_id: p.home_item_id, home_item: p.home_item };
+                            } else if (type === 'w') {
+                                const n = { id, home_item_id: p.home_item_id, home_item: p.home_item, ...pos, z: preview?.z || this._nextZ(), is_reversed: false, theme: 'default', content: null, widget_type: null };
+                                this.placedItems.push(n);
+                                this.fetchWidgetContent(n);
+                            } else {
+                                this.placedItems.push({
+                                    id, home_item_id: p.home_item_id, home_item: p.home_item,
+                                    ...pos, z: preview?.z || this._nextZ(), is_reversed: false,
+                                    theme: type === 'n' ? 'note' : null, extra_data: '', parsed_data: '',
+                                });
+                            }
+                            placed++;
+                        }
+                    }
+                } else {
+                    this._showToast(res.message || 'Purchase failed.', 'error');
+                }
+            } catch (e) {
+                this._showToast(e.message || 'Purchase failed.', 'error');
+            }
+        }
+
+        this.buying = false;
+        this.endPreview();
+        this.fetchBalance();
+        if (placed) this._showToast(`${placed} item${placed !== 1 ? 's' : ''} purchased & placed`);
     },
 
     currIcon(type) {
@@ -701,6 +740,17 @@ Alpine.data('homeManager', (username, isMe) => ({
             opts.body = JSON.stringify(body);
         }
         const res = await fetch(url, opts);
+
+        if (res.status === 419) {
+            this._showToast('Session expired. Please refresh the page.', 'error');
+            throw new Error('Session expired. Please refresh the page.');
+        }
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || `Request failed (${res.status})`);
+        }
+
         return res.json();
     },
 }));

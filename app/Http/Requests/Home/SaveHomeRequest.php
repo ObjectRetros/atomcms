@@ -12,15 +12,23 @@ class SaveHomeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'items.*.id' => ['required', 'integer'],
-            'items.*.x' => ['required', 'integer'],
-            'items.*.y' => ['required', 'integer'],
-            'items.*.z' => ['required', 'integer'],
+            'items' => ['nullable', 'array', 'max:200'],
+            'items.*.id' => ['required', 'integer', 'min:1'],
+            'items.*.x' => ['required', 'integer', 'min:0', 'max:2000'],
+            'items.*.y' => ['required', 'integer', 'min:0', 'max:2000'],
+            'items.*.z' => ['required', 'integer', 'min:0', 'max:1000'],
             'items.*.is_reversed' => ['nullable', 'boolean'],
-            'items.*.theme' => ['nullable', 'string'],
+            'items.*.theme' => ['nullable', 'string', 'max:50'],
             'items.*.placed' => ['nullable', 'boolean'],
-            'items.*.extra_data' => ['nullable', 'string'],
-            'backgroundId' => ['required', 'integer'],
+            'items.*.extra_data' => ['nullable', 'string', 'max:2000'],
+            'backgroundId' => ['required', 'integer', 'min:0'],
         ];
+    }
+
+    public function authorize(): bool
+    {
+        $username = $this->route('username');
+
+        return $this->user()?->username === $username;
     }
 }

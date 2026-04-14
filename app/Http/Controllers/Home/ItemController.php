@@ -19,15 +19,7 @@ class ItemController extends Controller
     public function store(BuyHomeItemRequest $request): JsonResponse
     {
         $data = $request->validated();
-
-        $item = HomeItem::with('homeCategory')->find($data['item_id']);
-
-        if (! $item) {
-            return $this->jsonResponse([
-                'message' => __('Home item not found.'),
-            ], 404);
-        }
-
+        $item = HomeItem::with('homeCategory')->findOrFail($data['item_id']);
         $user = Auth::user();
         $totalPrice = $item->price * $data['quantity'];
 

@@ -64,7 +64,6 @@ class HomeController extends Controller
 
         return $this->jsonResponse([
             'message' => __('Home saved successfully.'),
-            'href' => route('home.show', $user->username),
         ]);
     }
 }

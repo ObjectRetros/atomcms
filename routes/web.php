@@ -124,10 +124,10 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/{username}/placed-items', [UserHomeController::class, 'getPlacedItems'])->name('placed-items')->withoutMiddleware('auth');
             Route::get('/{username}/widget-content/{itemId}', [HomeItemController::class, 'getWidgetContent'])->name('widget-content')->withoutMiddleware('auth');
 
-            Route::post('/{username}/save', [UserHomeController::class, 'save'])->name('save');
-            Route::post('/{username}/buy-item', [HomeItemController::class, 'store'])->name('buy-item');
-            Route::post('/{username}/rating', [HomeRatingController::class, 'store'])->name('rating');
-            Route::post('/{username}/message', [HomeMessageController::class, 'store'])->name('message');
+            Route::post('/{username}/save', [UserHomeController::class, 'save'])->name('save')->middleware('throttle:10,1');
+            Route::post('/{username}/buy-item', [HomeItemController::class, 'store'])->name('buy-item')->middleware('throttle:30,1');
+            Route::post('/{username}/rating', [HomeRatingController::class, 'store'])->name('rating')->middleware('throttle:10,1');
+            Route::post('/{username}/message', [HomeMessageController::class, 'store'])->name('message')->middleware('throttle:10,1');
 
             // Shop & Inventory API
             Route::prefix('shop')->as('shop.')->group(function () {

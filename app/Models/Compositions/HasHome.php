@@ -91,15 +91,32 @@ trait HasHome
         return $this->currencies->where('type', $type->value)->first()?->amount ?? 0;
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function discountCurrency(CurrencyTypes $type, int $amount): void
     {
         if ($type === CurrencyTypes::Credits) {
-            $this->decrement('credits', $amount);
+            $affected = DB::table($this->getTable())
+                ->where('id', $this->id)
+                ->where('credits', '>=', $amount)
+                ->update(['credits' => DB::raw("credits - {$amount}")]);
+
+            if ($affected === 0) {
+                throw new \RuntimeException(__('Insufficient balance.'));
+            }
 
             return;
         }
 
-        $this->currencies()->where('type', $type->value)->decrement('amount', $amount);
+        $affected = $this->currencies()
+            ->where('type', $type->value)
+            ->where('amount', '>=', $amount)
+            ->update(['amount' => DB::raw("amount - {$amount}")]);
+
+        if ($affected === 0) {
+            throw new \RuntimeException(__('Insufficient balance.'));
+        }
     }
 
     public function loadRoomsForHome(): self

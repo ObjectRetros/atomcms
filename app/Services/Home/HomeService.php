@@ -158,7 +158,7 @@ class HomeService
 
     public function clearWidgetCache(User $user, UserHomeItem $widget): void
     {
-        Cache::forget("user_{$user->id}_widget_{$widget->id}_content");
+        Cache::forget("user_{$user->id}_widget_{$widget->id}_html");
     }
 
     private function loadWidgetData(User $user, UserHomeItem $item): User

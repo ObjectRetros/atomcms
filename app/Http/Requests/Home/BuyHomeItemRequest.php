@@ -12,8 +12,15 @@ class BuyHomeItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'item_id' => ['required', 'integer'],
+            'item_id' => ['required', 'integer', 'exists:home_items,id'],
             'quantity' => ['required', 'integer', 'between:1,100'],
         ];
+    }
+
+    public function authorize(): bool
+    {
+        $username = $this->route('username');
+
+        return $this->user()?->username === $username;
     }
 }
