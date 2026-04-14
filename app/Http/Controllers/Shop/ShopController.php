@@ -22,6 +22,7 @@ class ShopController extends Controller
 {
     public function __construct(
         private RconService $rconService,
+        private SendFurniture $sendFurniture,
     ) {}
 
     public function __invoke(?WebsiteShopCategory $category)
@@ -146,9 +147,9 @@ class ShopController extends Controller
         return to_route('shop.index')->with('success', $message);
     }
 
-    private function handleFurniture(array $furniture, SendFurniture $sendFurniture): void
+    private function handleFurniture(array $furniture): void
     {
-        $sendFurniture->execute(Auth::user(), $furniture);
+        $this->sendFurniture->execute(Auth::user(), $furniture);
     }
 
     public function purchasePackage(WebsiteShopPackage $package, PurchasePackageRequest $request, FulfillPackage $fulfillPackage): Response
