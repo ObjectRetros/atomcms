@@ -1,5 +1,3 @@
-package com.npc.chat;
-
 import com.eu.habbo.Emulator;
 import com.eu.habbo.habbohotel.bots.Bot;
 import com.eu.habbo.habbohotel.rooms.Room;
@@ -13,14 +11,15 @@ import com.eu.habbo.plugin.EventListener;
 import com.eu.habbo.plugin.HabboPlugin;
 import com.eu.habbo.plugin.events.users.UserTalkEvent;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import org.json.JSONObject;
 
 /**
  * Arcturus Morningstar Plugin: AI NPC Chat
@@ -118,7 +117,7 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
         // Make the bot look at the player
         npcBot.getRoomUnit().lookAtPoint(playerTile);
         room.sendComposer(new RoomUserTalkComposer(
-                new RoomChatMessage(new RoomChatMessage("...", npcBot.getRoomUnit(), RoomChatMessageBubbles.NORMAL))
+                new RoomChatMessage("...", npcBot.getRoomUnit(), RoomChatMessageBubbles.NORMAL)
         ).compose());
 
         // Send to API asynchronously to avoid blocking the game thread
@@ -155,7 +154,7 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
                                     final int delay = i * 1500; // 1.5s between each line
                                     Emulator.getThreading().run(() -> {
                                         currentRoom.sendComposer(new RoomUserTalkComposer(
-                                                new RoomChatMessage(new RoomChatMessage(line, chatBot.getRoomUnit(), RoomChatMessageBubbles.BOT))
+                                                new RoomChatMessage(line, chatBot.getRoomUnit(), RoomChatMessageBubbles.BOT)
                                         ).compose());
                                     }, delay);
                                 }
@@ -171,13 +170,14 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
 
     /**
      * Send the player's chat message to the Atom CMS NPC Chat API.
+     * Uses Gson (bundled with Arcturus) for JSON serialization.
      */
     private String sendChatToApi(int userId, String username, int botId, String message, int playerX, int playerY) {
         try {
             URL url = new URL(this.apiUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Accept", "application/json");
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(15000);
@@ -188,13 +188,14 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
 
             conn.setDoOutput(true);
 
-            JSONObject payload = new JSONObject();
-            payload.put("user_id", userId);
-            payload.put("username", username);
-            payload.put("bot_id", botId);
-            payload.put("message", message);
-            payload.put("player_x", playerX);
-            payload.put("player_y", playerY);
+            // Build JSON payload with Gson
+            JsonObject payload = new JsonObject();
+            payload.addProperty("user_id", userId);
+            payload.addProperty("username", username);
+            payload.addProperty("bot_id", botId);
+            payload.addProperty("message", message);
+            payload.addProperty("player_x", playerX);
+            payload.addProperty("player_y", playerY);
 
             try (OutputStream os = conn.getOutputStream()) {
                 byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
@@ -210,9 +211,12 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
                         responseBody.append(line);
                     }
 
-                    JSONObject jsonResponse = new JSONObject(responseBody.toString());
-                    if (jsonResponse.optBoolean("success", false)) {
-                        return jsonResponse.optString("response", null);
+                    // Parse response with Gson
+                    JsonObject jsonResponse = JsonParser.parseString(responseBody.toString()).getAsJsonObject();
+
+                    boolean success = jsonResponse.has("success") && jsonResponse.get("success").getAsBoolean();
+                    if (success && jsonResponse.has("response") && !jsonResponse.get("response").isJsonNull()) {
+                        return jsonResponse.get("response").getAsString();
                     }
                 }
             } else {

@@ -11,6 +11,10 @@ return new class extends Migration
      *
      * Inserts the AI NPC bot into the Arcturus 'bots' table for room 208.
      * The bot is placed at the center of the room.
+     *
+     * Note: The Arcturus bots table often uses latin1 charset which cannot
+     * store Turkish/Unicode characters. We convert the relevant columns
+     * to utf8mb4 before inserting.
      */
     public function up(): void
     {
@@ -18,6 +22,11 @@ return new class extends Migration
         if (!Schema::hasTable('bots')) {
             return;
         }
+
+        // Convert bots table columns to utf8mb4 so Turkish characters work
+        DB::statement('ALTER TABLE `bots` MODIFY `name` VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        DB::statement('ALTER TABLE `bots` MODIFY `motto` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        DB::statement('ALTER TABLE `bots` MODIFY `chat_lines` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 
         DB::table('bots')->insert([
             'user_id' => 1, // Admin user
@@ -29,7 +38,7 @@ return new class extends Migration
             'x' => config('npc.bot.x', 13),
             'y' => config('npc.bot.y', 13),
             'z' => config('npc.bot.z', 0.0),
-            'chat_lines' => 'Merhaba! Yanıma gel ve benimle sohbet et.\rNasıl yardımcı olabilirim?\rBuradayım, merak ettiğin bir şey var mı?',
+            'chat_lines' => "Merhaba! Yanıma gel ve benimle sohbet et.\rNasıl yardımcı olabilirim?\rBuradayım, merak ettiğin bir şey var mı?",
             'chat_auto' => 1,
             'chat_random' => 1,
             'chat_delay' => 30,
