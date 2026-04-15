@@ -9,6 +9,7 @@ use App\Http\Middleware\LocalizationMiddleware;
 use App\Http\Middleware\LogViewerMiddleware;
 use App\Http\Middleware\MaintenanceMiddleware;
 use App\Http\Middleware\SetThemeMiddleware;
+use App\Http\Middleware\VerifyNpcApiToken;
 use App\Http\Middleware\VPNCheckerMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -79,5 +80,6 @@ class Kernel extends HttpKernel
         'vpn.checker' => VPNCheckerMiddleware::class,
         'log.viewer' => LogViewerMiddleware::class,
         'force.staff.2fa' => ForceStaffTwoFactorMiddleware::class,
+        'npc.token' => VerifyNpcApiToken::class,
     ];
 }
