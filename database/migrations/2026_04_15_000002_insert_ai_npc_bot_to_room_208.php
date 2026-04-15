@@ -39,13 +39,14 @@ return new class extends Migration
             'y' => config('npc.bot.y', 13),
             'z' => config('npc.bot.z', 0.0),
             'chat_lines' => "Merhaba! Yanıma gel ve benimle sohbet et.\rNasıl yardımcı olabilirim?\rBuradayım, merak ettiğin bir şey var mı?",
-            'chat_auto' => 1,
-            'chat_random' => 1,
+            'chat_auto' => '1',
+            'chat_random' => '1',
             'chat_delay' => 30,
             'dance' => 0,
-            'freeroam' => 0,
+            'freeroam' => '0',
             'type' => 'generic',
             'effect' => 0,
+            'bubble_id' => 31,
         ]);
     }
 

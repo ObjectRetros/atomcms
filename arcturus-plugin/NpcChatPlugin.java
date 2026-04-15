@@ -66,7 +66,7 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
     @Override
     public void onDisable() {
         executor.shutdown();
-        Emulator.getLogging().logShutDown("[NPC Chat] AI NPC Chat plugin disabled.");
+        Emulator.getLogging().logStart("[NPC Chat] AI NPC Chat plugin disabled.");
     }
 
     @Override
