@@ -67,6 +67,11 @@
             {{ __('Leaderboards') }}
         </a>
 
+        <a href="{{ route('achievements.index') }}"
+           class="nav-item dark:text-gray-200 {{ request()->routeIs('achievements.*') ? 'md:border-b-4 md:border-b-[#eeb425]' : '' }}">
+            🏆 {{ __('Başarımlar') }}
+        </a>
+
         <a href="{{ route('shop.index') }}"
            class="nav-item dark:text-gray-200 {{ request()->routeIs('shop.*') ? 'md:border-b-4 md:border-b-[#eeb425]' : '' }}">
                 <i class="navigation-icon mr-1 hidden lg:inline-flex shop"></i>

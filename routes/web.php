@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BannedController;
 use App\Http\Controllers\FlashController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceController;
@@ -94,6 +95,10 @@ Route::middleware(['maintenance', 'check-ban', 'force.staff.2fa'])->group(functi
 
         // Leaderboard routes
         Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard.index');
+
+        // Achievement routes
+        Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
+        Route::get('/achievements/{user:username}', [AchievementController::class, 'profile'])->name('achievements.profile');
 
         // Rules routes
         Route::view('/rules', 'rules')->name('rules.index')->withoutMiddleware('auth');
