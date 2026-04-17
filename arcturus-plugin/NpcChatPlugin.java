@@ -116,9 +116,6 @@ public class NpcChatPlugin extends HabboPlugin implements EventListener {
 
         // Make the bot look at the player
         npcBot.getRoomUnit().lookAtPoint(playerTile);
-        room.sendComposer(new RoomUserTalkComposer(
-                new RoomChatMessage("...", npcBot.getRoomUnit(), RoomChatMessageBubbles.NORMAL)
-        ).compose());
 
         // Send to API asynchronously to avoid blocking the game thread
         final Bot finalBot = npcBot;

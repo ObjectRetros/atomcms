@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('bot_id');
-            $table->json('messages')->nullable();
-            $table->timestamps();
+            $table->text('player_message');
+            $table->text('bot_response');
+            $table->timestamp('created_at')->useCurrent();
 
-            $table->index(['user_id', 'bot_id']);
-            $table->index('updated_at');
+            $table->index(['user_id', 'bot_id', 'created_at']);
         });
     }
 
