@@ -28,7 +28,7 @@
                                 {{ __('If you believe this is a mistake, please reach out to one of our staff members through our Discord server!') }}
                             </p>
 
-                            <a href="{{ setting('discord_invitation_link') }}" target="_blank">
+                            <a href="https://discord.gg/7jftX65hYV" target="_blank">
                                 <x-form.primary-button>
                                     {{ __('Join discord') }}
                                 </x-form.primary-button>

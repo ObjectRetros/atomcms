@@ -1,175 +1,173 @@
 <x-app-layout>
     @push('title', $user->username)
 
-    <div class="col-span-12">
-        <div class="grid grid-cols-1 gap-y-14">
-            <div class="grid grid-cols-3 gap-x-8">
-                <div class="col-span-3 md:col-span-1 h-[150px] lg:h-[220px] profile-bg rounded-lg relative flex gap-x-2 items-center text-white overflow-hidden">
-                    <img class="drop-shadow mt-14 lg:mt-0" style="image-rendering: pixelated;" src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l" alt="">
+    <div class="col-span-12 flex flex-col gap-y-5">
 
-                    <div class="flex flex-col">
-                        <h3 class="text-xl font-semibold">{{ __('My name is,') }}</h3>
-                        <h2 class="text-4xl">
-                            {{ $user->username }}
-                        </h2>
+        {{-- ── PROFILE HEADER ── --}}
+        <div class="rounded-xl overflow-hidden profile-bg relative flex items-end md:items-center min-h-[160px]">
+            {{-- dark overlay --}}
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
 
-                        <h4 class="text-lg font-semibold italic">{{ $user->motto }}</h4>
+            <div class="relative flex flex-col md:flex-row items-start md:items-center gap-x-5 gap-y-2 p-5 w-full">
+                {{-- Avatar --}}
+                <div class="flex-shrink-0 -mb-1">
+                    <img style="image-rendering: pixelated;"
+                         class="h-[110px] md:h-[130px] drop-shadow-lg"
+                         src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l"
+                         alt="{{ $user->username }}">
+                </div>
+
+                {{-- Info --}}
+                <div class="flex-1 text-white">
+                    <p class="text-sm opacity-70">{{ __('My name is,') }}</p>
+                    <h2 class="text-3xl font-black leading-tight">{{ $user->username }}</h2>
+                    @if($user->motto)
+                        <p class="text-sm italic opacity-80 mt-1">"{{ $user->motto }}"</p>
+                    @endif
+                </div>
+
+                {{-- Currency badges --}}
+                <div class="hidden md:flex gap-x-3">
+                    <div class="flex flex-col items-center bg-black/30 backdrop-blur-sm rounded-xl px-4 py-2">
+                        <img src="{{ asset('/assets/images/profile/credits.png') }}" alt="Credits" class="w-6">
+                        <span class="text-[#f8ef2b] font-bold text-lg leading-tight">{{ number_format($user->credits) }}</span>
+                        <span class="text-white/60 text-xs">Credits</span>
                     </div>
-                </div>
-
-                <div class="col-span-3 md:col-span-2 grid grid-cols-1 md:grid-cols-3 w-full mt-4 md:mt-0 space-y-3 md:space-y-0">
-                    <div class="rounded-lg md:rounded-none md:rounded-l-lg bg-[#f8ef2b] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
-                        <img src="{{ asset('/assets/images/profile/credits.png') }}" alt="">
-
-                        <h4 class="text-[#b16d18] font-semibold text-2xl">
-                            {{ $user->credits }}
-                        </h4>
+                    <div class="flex flex-col items-center bg-black/30 backdrop-blur-sm rounded-xl px-4 py-2">
+                        <img src="{{ asset('/assets/images/profile/duckets.png') }}" alt="Duckets" class="w-6">
+                        <span class="text-[#e99bdc] font-bold text-lg leading-tight">{{ number_format($user->currency('duckets')) }}</span>
+                        <span class="text-white/60 text-xs">Duckets</span>
                     </div>
-
-                    <div class="rounded-lg md:rounded-none bg-[#e99bdc] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
-                        <img src="{{ asset('/assets/images/profile/duckets.png') }}" alt="">
-
-                        <h4 class="text-[#812378] font-semibold text-2xl">
-                            {{ $user->currency('duckets') }}
-                        </h4>
+                    <div class="flex flex-col items-center bg-black/30 backdrop-blur-sm rounded-xl px-4 py-2">
+                        <img src="{{ asset('/assets/images/profile/diamonds.png') }}" alt="Diamonds" class="w-6">
+                        <span class="text-[#82d6db] font-bold text-lg leading-tight">{{ number_format($user->currency('diamonds')) }}</span>
+                        <span class="text-white/60 text-xs">Diamonds</span>
                     </div>
-
-                    <div class="rounded-lg md:rounded-none md:rounded-r-lg bg-[#82d6db] flex flex-col gap-y-2 items-center justify-center py-3 md:py-0">
-                        <img src="{{ asset('/assets/images/profile/diamonds.png') }}" alt="">
-
-                        <h4 class="text-[#146867] font-semibold text-2xl">
-                            {{ $user->currency('diamonds') }}
-                        </h4>
-                    </div>
-                </div>
-            </div>
-
-            <div class="hidden md:grid grid-cols-2 gap-x-14">
-                <div class="col-span-1">
-                    <x-user.profile-info-card col-span="1">
-                        <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/badges.png') }}" alt="">
-                        </x-slot:image>
-
-                        <x-slot:title>
-                            {{ __('Badges') }}
-                        </x-slot:title>
-
-                       <div class="flex justify-between">
-                           @forelse($user->badges as $badge)
-                               <div data-tippy-content="{{ $badge->badge_code }}" class="user-badge h-[70px] w-[70px] border-2 dark:border-gray-700 rounded-full flex items-center justify-center cursor-pointer">
-                                   <img  src="{{ setting('badges_path') }}/{{ $badge->badge_code }}.gif" class="max-h-[55px] max-w-[55px]" alt="">
-                               </div>
-                           @empty
-                               <div class="col-span-4">
-                                   {{ __('It seems like :user has no badges.', ['user' => $user->username]) }}
-                               </div>
-                           @endforelse
-                       </div>
-                    </x-user.profile-info-card>
-                </div>
-
-                <div class="col-span-1">
-                    <x-user.profile-info-card col-span="1">
-                        <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/groups.png') }}" alt="">
-                        </x-slot:image>
-
-                        <x-slot:title>
-                            {{ __('Groups') }}
-                        </x-slot:title>
-
-                        <div class="flex justify-between">
-                            @forelse($groups as $group)
-                                <div class="h-[70px] w-[70px] rounded-full border-2 dark:border-gray-700 overflow-hidden flex items-center justify-center p-1 rounded-md cursor-pointer friend" data-tippy-content="{{ $group->name ?? 'Unknown' }}">
-                                    <img src="{{ setting('group_badge_path') }}/{{ $group->badge }}.png" alt="">
-                                </div>
-                            @empty
-                                <div class="w-full">
-                                    {{ __('It seems like :user is not a member of any groups.', ['user' => $user->username]) }}
-
-                                </div>
-                            @endforelse
-                        </div>
-                    </x-user.profile-info-card>
-                </div>
-            </div>
-
-            <div class="hidden md:grid grid-cols-2 gap-x-14">
-                <div class="col-span-1">
-                    <x-user.profile-info-card col-span="1">
-                        <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/rooms.png') }}" alt="">
-                        </x-slot:image>
-
-                        <x-slot:title>
-                            {{ __('Rooms') }}
-                        </x-slot:title>
-
-                        <div class="flex justify-between">
-                            @forelse($user->rooms as $room)
-                                <div class="flex h-[150px] w-[120px] flex-col gap-y-1 rounded-md dark:bg-gray-900 bg-gray-200 p-1 overflow-hidden">
-                                    <div class="h-full bg-[#C3C3C3] dark:bg-gray-800 rounded-md border border-gray-500 dark:border-gray-700 relative flex items-center justify-center flex-col">
-                                        <img src="{{ setting('room_thumbnail_path') }}/{{ $room->id }}.png" alt="{{ $room->name }}" onerror="this.onerror=null;this.src='{{ asset('/assets/images/profile/room_placeholder.png') }}';">
-
-                                        <div class="{{ $room->users > 0 ? 'bg-[#00800B]' : 'bg-gray-400' }} px-1 py-[1px] -mt-3 font-semibold rounded flex gap-x-[3px] text-white items-center text-xs">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-[12px]" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                            </svg>
-
-                                            {{ $room->users }}
-                                        </div>
-                                    </div>
-
-                                    <div class="flex justify-between items-center px-1">
-                                        <p class="truncate">{{ Str::limit($room->name, 6) }}</p>
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-300 hover:text-cyan-400 mt-1 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-span-4">
-                                    {{ __('It seems like :user got no rooms.', ['user' => $user->username]) }}
-                                </div>
-                            @endforelse
-                        </div>
-                    </x-user.profile-info-card>
-                </div>
-
-                <div class="col-span-1">
-                    <x-user.profile-info-card col-span="1">
-                        <x-slot:image>
-                            <img src="{{ asset('/assets/images/profile/friends.png') }}" alt="">
-                        </x-slot:image>
-
-                        <x-slot:title>
-                            {{ __('Friends') }}
-                        </x-slot:title>
-
-                        <div class="grid grid-cols-4 xl:grid-cols-6 gap-2 xl:pl-3">
-                            @forelse($friends as $friend)
-                                <a href="{{ route('profile.show', $friend->user->username ?? 'SystemAccount') }}" class="h-[70px] w-[70px] rounded-full border-2 dark:border-gray-700 overflow-hidden flex items-center p-1 rounded-md cursor-pointer friend" data-tippy-content="{{ $friend->user->username ?? 'Unknown' }}">
-                                    <img class="mt-6 transition ease-in-out duration-200 hover:scale-110" src="{{ setting('avatar_imager') }}?figure={{ $friend->user?->look }}" alt="">
-                                </a>
-                            @empty
-                                <div class="col-span-6">
-                                    {{ __('It seems like :user has no friends.', ['user' => $user->username]) }}
-                                </div>
-                            @endforelse
-                        </div>
-                    </x-user.profile-info-card>
                 </div>
             </div>
         </div>
+
+        {{-- Mobile currency row --}}
+        <div class="flex md:hidden gap-x-3">
+            <div class="flex-1 flex flex-col items-center bg-[#f8ef2b] rounded-xl py-3">
+                <img src="{{ asset('/assets/images/profile/credits.png') }}" alt="" class="w-5">
+                <span class="text-[#b16d18] font-bold text-lg">{{ number_format($user->credits) }}</span>
+            </div>
+            <div class="flex-1 flex flex-col items-center bg-[#e99bdc] rounded-xl py-3">
+                <img src="{{ asset('/assets/images/profile/duckets.png') }}" alt="" class="w-5">
+                <span class="text-[#812378] font-bold text-lg">{{ number_format($user->currency('duckets')) }}</span>
+            </div>
+            <div class="flex-1 flex flex-col items-center bg-[#82d6db] rounded-xl py-3">
+                <img src="{{ asset('/assets/images/profile/diamonds.png') }}" alt="" class="w-5">
+                <span class="text-[#146867] font-bold text-lg">{{ number_format($user->currency('diamonds')) }}</span>
+            </div>
+        </div>
+
+        {{-- ── TABS ── --}}
+        <div x-data="{ tab: 'badges' }">
+
+            {{-- Tab buttons --}}
+            <div class="flex gap-x-1 border-b border-gray-200 dark:border-gray-700 mb-5">
+                @foreach([
+                    ['key' => 'badges',  'label' => __('Badges'),  'icon' => '🏅'],
+                    ['key' => 'groups',  'label' => __('Groups'),  'icon' => '🛡️'],
+                    ['key' => 'rooms',   'label' => __('Rooms'),   'icon' => '🏠'],
+                    ['key' => 'friends', 'label' => __('Friends'), 'icon' => '👥'],
+                ] as $t)
+                <button
+                    @click="tab = '{{ $t['key'] }}'"
+                    :class="tab === '{{ $t['key'] }}'
+                        ? 'border-b-2 border-[#eeb425] text-gray-900 dark:text-white font-semibold'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="px-4 py-2 text-sm flex items-center gap-x-1.5 transition -mb-px">
+                    <span>{{ $t['icon'] }}</span>
+                    <span>{{ $t['label'] }}</span>
+                </button>
+                @endforeach
+            </div>
+
+            {{-- BADGES --}}
+            <div x-show="tab === 'badges'" x-transition>
+                @forelse($user->badges as $badge)
+                    <div class="inline-flex m-1 h-[70px] w-[70px] border-2 dark:border-gray-700 rounded-full items-center justify-center cursor-pointer bg-white dark:bg-gray-900 shadow"
+                         data-tippy-content="{{ $badge->badge_code }}">
+                        <img src="{{ setting('badges_path') }}/{{ $badge->badge_code }}.gif"
+                             class="max-h-[55px] max-w-[55px]" alt="">
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-400 dark:text-gray-500">
+                        {{ __('It seems like :user has no badges.', ['user' => $user->username]) }}
+                    </p>
+                @endforelse
+            </div>
+
+            {{-- GROUPS --}}
+            <div x-show="tab === 'groups'" x-transition>
+                @forelse($groups as $group)
+                    <div class="inline-flex m-1 h-[70px] w-[70px] border-2 dark:border-gray-700 rounded-full overflow-hidden items-center justify-center p-1 cursor-pointer bg-white dark:bg-gray-900 shadow"
+                         data-tippy-content="{{ $group->name ?? 'Unknown' }}">
+                        <img src="{{ setting('group_badge_path') }}/{{ $group->badge }}.png" alt="">
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-400 dark:text-gray-500">
+                        {{ __('It seems like :user is not a member of any groups.', ['user' => $user->username]) }}
+                    </p>
+                @endforelse
+            </div>
+
+            {{-- ROOMS --}}
+            <div x-show="tab === 'rooms'" x-transition>
+                <div class="flex flex-wrap gap-3">
+                    @forelse($user->rooms as $room)
+                        <div class="flex flex-col gap-y-1 rounded-lg bg-gray-100 dark:bg-gray-900 p-2 w-[120px] overflow-hidden shadow">
+                            <div class="h-[100px] bg-gray-200 dark:bg-gray-800 rounded-md border border-gray-300 dark:border-gray-700 relative flex items-center justify-center">
+                                <img src="{{ setting('room_thumbnail_path') }}/{{ $room->id }}.png"
+                                     alt="{{ $room->name }}"
+                                     class="w-full h-full object-cover rounded-md"
+                                     onerror="this.onerror=null;this.src='{{ asset('/assets/images/profile/room_placeholder.png') }}';">
+                                <div class="{{ $room->users > 0 ? 'bg-green-600' : 'bg-gray-400' }} absolute bottom-1 right-1 px-1.5 py-0.5 rounded-full flex gap-x-1 text-white items-center text-xs font-bold">
+                                    <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                    </svg>
+                                    {{ $room->users }}
+                                </div>
+                            </div>
+                            <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate px-1">{{ $room->name }}</p>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-400 dark:text-gray-500">
+                            {{ __('It seems like :user got no rooms.', ['user' => $user->username]) }}
+                        </p>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- FRIENDS --}}
+            <div x-show="tab === 'friends'" x-transition>
+                <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 xl:grid-cols-12 gap-2">
+                    @forelse($friends as $friend)
+                        <a href="{{ route('profile.show', $friend->user->username ?? 'SystemAccount') }}"
+                           class="h-[70px] w-[70px] rounded-full border-2 dark:border-gray-700 overflow-hidden flex items-center p-1 cursor-pointer bg-white dark:bg-gray-900 shadow hover:scale-105 transition"
+                           data-tippy-content="{{ $friend->user->username ?? 'Unknown' }}">
+                            <img class="mt-6" style="image-rendering: pixelated;"
+                                 src="{{ setting('avatar_imager') }}?figure={{ $friend->user?->look }}" alt="">
+                        </a>
+                    @empty
+                        <p class="col-span-full text-sm text-gray-400 dark:text-gray-500">
+                            {{ __('It seems like :user has no friends.', ['user' => $user->username]) }}
+                        </p>
+                    @endforelse
+                </div>
+            </div>
+
+        </div>
+        {{-- end tabs --}}
+
     </div>
 
     @push('javascript')
-        <script type="module">
-            tippy('.user-badge');
-            tippy('.friend');
-            tippy('.group');
-        </script>
+    <script type="module">
+        tippy('[data-tippy-content]');
+    </script>
     @endpush
 </x-app-layout>
