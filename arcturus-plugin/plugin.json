@@ -1,8 +1,5 @@
 {
     "name": "NpcChatPlugin",
     "author": "AtomCMS",
-    "version": "1.0.0",
-    "main_class": "NpcChatPlugin",
-    "minimum_emulator_build": "2.5.0",
-    "description": "AI-powered NPC chat using OpenAI API. Allows players within 1 tile of the NPC to have intelligent conversations."
+    "main": "NpcChatPlugin"
 }
