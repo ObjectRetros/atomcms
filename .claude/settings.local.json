@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(find /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova -name \"composer.lock\" -exec grep -A 5 '\"name\"' {} \\\\;)",
+      "Bash(grep -r \"table\\\\|Table\" /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/database/migrations/*.php)",
+      "Bash(find /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/database/migrations -type f -name \"*.php\" -exec basename {} \\\\;)",
+      "Bash(grep -h \"Schema::\" /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/database/migrations/*.php)",
+      "Bash(find /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/app/Http/Controllers -type f -name \"*.php\" -exec basename {} \\\\;)",
+      "Bash(grep -r \"users\\\\|player\\\\|room\" /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/database/migrations/*.php)",
+      "Bash(grep -h \"Schema::\\\\|protected.*table\\\\|protected.*connection\" /c/inetpub/wwwroot/.claude/worktrees/eloquent-tereshkova/database/migrations/*.php)"
+    ]
+  }
+}

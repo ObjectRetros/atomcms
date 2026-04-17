@@ -81,7 +81,8 @@ Route::middleware(['maintenance', 'check-ban', 'force.staff.2fa'])->group(functi
                 Route::delete('/article/{comment}/comment', [WebsiteArticleCommentsController::class, 'destroy'])->name('article.comment.destroy');
 
                 Route::get('/staff', StaffController::class)->name('staff.index');
-                Route::get('/teams', WebsiteTeamsController::class)->name('teams.index');
+                // /teams redirects to /staff (merged)
+                Route::redirect('/teams', '/community/staff')->name('teams.index');
             });
 
             Route::get('/staff-applications', [StaffApplicationsController::class, 'index'])->name('staff-applications.index');
@@ -112,7 +113,6 @@ Route::middleware(['maintenance', 'check-ban', 'force.staff.2fa'])->group(functi
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {
             Route::get('/nitro', NitroController::class)->name('nitro-client');
-            Route::get('/flash', FlashController::class)->name('flash-client');
         });
     });
 });
