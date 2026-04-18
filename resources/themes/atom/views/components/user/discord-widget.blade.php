@@ -9,7 +9,7 @@
 
     <div class=" text-sm dark:text-gray-200">
         <div id="guildUsers" class="h-[129px] overflow-auto"> </div>
-        <a id="guildInvite" target="blank">
+        <a id="guildInvite" href="https://discord.gg/7jftX65hYV" target="_blank">
             <x-form.secondary-button classes="mt-3">
                 {{ __('Join server') }}
             </x-form.secondary-button>
@@ -105,15 +105,8 @@
                             document.getElementById('guildUsers').appendChild(container)
                         }
 
-                        //Checks if join server link is null and removes btn form webpage
-                        if (data.instant_invite === null) {
-                            document.getElementById('guildInvite').remove()
-                            document.getElementById('guildUsers').style.height = "176px"
-                        } else {
-                            //Gives the "Join server" button an href to the default selected chennel in the server
-                            //link is recived from widget json
-                            document.getElementById('guildInvite').setAttribute('href', data.instant_invite)
-                        }
+                        // Always use our invite link regardless of Discord widget data
+                        document.getElementById('guildInvite').setAttribute('href', 'https://discord.gg/7jftX65hYV')
                     })
                 });
         }
