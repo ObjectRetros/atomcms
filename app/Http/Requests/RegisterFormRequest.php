@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\GoogleRecaptchaRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class RegisterFormRequest extends FormRequest

@@ -28,9 +28,9 @@ class RconService
 
     private function initialize(): void
     {
-        $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
-        if (! $this->socket) {
+        if ($socket === false) {
             $error = socket_strerror(socket_last_error());
             Log::error("RCON initialization failed: $error");
 
@@ -38,6 +38,8 @@ class RconService
 
             return;
         }
+
+        $this->socket = $socket;
 
         if (! @socket_connect($this->socket, $this->config['ip'], $this->config['port'])) {
             $error = socket_strerror(socket_last_error());
@@ -195,7 +197,7 @@ class RconService
      */
     public function giveDuckets($user, int $amount): void
     {
-        $this->givePoints($user, CurrencyTypes::DUCKETS, $amount);
+        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     /**

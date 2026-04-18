@@ -5,13 +5,7 @@ use App\Services\PermissionsService;
 use App\Services\SettingsService;
 use Illuminate\Support\Str;
 
-if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_CF_CONNECTING_IP'];
-}
-
-if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_FORWARDED_FOR'];
-}
+// IP resolution is handled by TrustProxies middleware — do not override $_SERVER directly.
 
 if (! function_exists('setting')) {
     function setting(string $key, mixed $default = null): mixed
@@ -21,14 +15,14 @@ if (! function_exists('setting')) {
 }
 
 if (! function_exists('hasPermission')) {
-    function hasPermission(string $permission): string
+    function hasPermission(string $permission): bool
     {
         return app(PermissionsService::class)->getOrDefault($permission);
     }
 }
 
 if (! function_exists('hasHousekeepingPermission')) {
-    function hasHousekeepingPermission(string $permission): string
+    function hasHousekeepingPermission(string $permission): bool
     {
         return app(HousekeepingPermissionsService::class)->getOrDefault($permission);
     }
@@ -47,7 +41,7 @@ if (! function_exists('findMigration')) {
         // Iterate through all migration files in the migrations directory
         foreach (glob(database_path('migrations/*.php')) as $filename) {
             // Check if the migration file has the Schema::create() line with the given table name
-            if (strpos(file_get_contents($filename), "Schema::create('$tableName'")) {
+            if (str_contains(file_get_contents($filename), "Schema::create('$tableName'")) {
                 return basename($filename);
             }
         }
@@ -83,7 +77,9 @@ if (! function_exists('dropForeignKeyIfExists')) {
 
         foreach ($foreignKeys as $foreignKey) {
             if (! empty($foreignKey)) {
-                $connection->statement("ALTER TABLE {$table} DROP FOREIGN KEY {$foreignKey}");
+                $connection->statement(
+                    'ALTER TABLE `' . str_replace('`', '``', $table) . '` DROP FOREIGN KEY `' . str_replace('`', '``', $foreignKey) . '`',
+                );
             }
         }
     }

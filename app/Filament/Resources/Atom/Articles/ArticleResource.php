@@ -194,9 +194,11 @@ class ArticleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->withoutGlobalScopes([
-            SoftDeletingScope::class,
-        ]);
+        return parent::getEloquentQuery()
+            ->with('user')
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 
     public static function getRelations(): array

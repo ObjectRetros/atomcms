@@ -8,11 +8,11 @@ use Illuminate\Contracts\Validation\InvokableRule;
 
 class GoogleRecaptchaRule implements InvokableRule
 {
-    public function __invoke(string $attribute, mixed $value, Closure $fail)
+    public function __invoke(string $attribute, mixed $value, Closure $fail): void
     {
         // If recaptcha is disabled
         if (! (int) setting('google_recaptcha_enabled')) {
-            return true;
+            return;
         }
 
         $client = new Client;
@@ -29,10 +29,14 @@ class GoogleRecaptchaRule implements InvokableRule
 
         if ($response->getStatusCode() !== 200) {
             $fail(__('The Google recaptcha was not successful.'));
+
+            return;
         }
 
         $body = json_decode((string) $response->getBody());
 
-        return $body->success;
+        if (! $body->success) {
+            $fail(__('The Google recaptcha was not successful.'));
+        }
     }
 }

@@ -4,7 +4,9 @@ namespace App\Livewire;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleReaction;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -66,12 +68,13 @@ class ArticleReactions extends Component
         $this->dispatch('reactions:loaded');
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         $reactions = $this->article->reactions()
             ->with('user:id,username')
             ->get();
 
+        /** @var Collection<int, WebsiteArticleReaction> $reactions */
         $reactions = $reactions->unique(function ($reaction) {
             return $reaction->reaction . '-' . $reaction->user_id;
         })->values();
@@ -80,7 +83,7 @@ class ArticleReactions extends Component
 
         $articleReactions = $groupedReactions->map(function ($group, $reaction) {
             $users = $group->map(function ($reactionItem) {
-                return $reactionItem->user?->username ?? '';
+                return $reactionItem->user->username ?? '';
             })->values();
 
             return [
