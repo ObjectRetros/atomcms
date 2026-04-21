@@ -29,6 +29,11 @@ class ArticleController extends Controller
 
     public function show(WebsiteArticle $article): View
     {
+        $article->load(['user' => function ($query) {
+            $query->select('id', 'username', 'look', 'motto', 'rank', 'hidden_staff', 'online')
+                ->with('permission:id,rank_name,staff_background');
+        }]);
+
         $reactions = $article->reactions()
             ->with('user:id,username')
             ->get();

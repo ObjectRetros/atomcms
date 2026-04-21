@@ -27,7 +27,8 @@ class TeamService
             ->where('hidden_rank', false)
             ->orderByDesc('id')
             ->with(['users' => function ($query) {
-                $query->select('id', 'username', 'look', 'motto', 'rank', 'team_id', 'online');
+                $query->select('id', 'username', 'look', 'motto', 'rank', 'team_id', 'online')
+                    ->with('permission:id,rank_name,staff_background');
             }])
             ->get();
 

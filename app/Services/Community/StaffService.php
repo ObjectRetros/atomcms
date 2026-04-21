@@ -29,7 +29,8 @@ class StaffService
                 $query->select('id', 'username', 'rank', 'motto', 'look', 'hidden_staff', 'online')
                     ->when(Auth::user()->rank < (int) setting('min_rank_to_see_hidden_staff'), function ($query) {
                         return $query->where('hidden_staff', false);
-                    });
+                    })
+                    ->with('permission:id,rank_name,staff_background');
             }])
             ->get();
 
