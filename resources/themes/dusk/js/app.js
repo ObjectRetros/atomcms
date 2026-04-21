@@ -1,13 +1,11 @@
 import "./bootstrap";
 import "./external/flowbite";
 
-import "swiper/css";
-import "swiper/css/pagination";
-
 import Alpine from "alpinejs";
 import Focus from "@alpinejs/focus";
 
-import Swiper, { Navigation, Pagination } from "swiper";
+import Swiper from "swiper";
+import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -17,11 +15,10 @@ import "../../../js/components/HomeManager.js";
 Alpine.plugin(Focus);
 Alpine.start();
 
-Swiper.use([Navigation, Pagination]);
-
 // Swiper Initialization
 document.addEventListener("DOMContentLoaded", function () {
     const swiper = new Swiper(".swiper", {
+        modules: [Navigation, Pagination],
         // Your Swiper options here
         navigation: {
             nextEl: ".swiper-button-next",
