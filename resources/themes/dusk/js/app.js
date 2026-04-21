@@ -4,8 +4,7 @@ import "./external/flowbite";
 import Alpine from "alpinejs";
 import Focus from "@alpinejs/focus";
 
-import Swiper from "swiper";
-import { Navigation, Pagination } from "swiper/modules";
+import Swiper, { Navigation, Pagination } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
