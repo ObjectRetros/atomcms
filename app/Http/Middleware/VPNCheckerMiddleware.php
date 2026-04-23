@@ -11,10 +11,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class VPNCheckerMiddleware
 {
+    public function __construct(private readonly IpLookupService $ipLookupService) {}
+
     public function handle(Request $request, Closure $next): Response
     {
+        $apiKey = setting('ipdata_api_key');
+
         // Skip check if vpn checker is disabled
-        if (setting('vpn_block_enabled') === '0' || setting('ipdata_api_key') === 'ADD-API-KEY-HERE') {
+        if (setting('vpn_block_enabled') === '0' || blank($apiKey) || $apiKey === 'ADD-API-KEY-HERE') {
             return $next($request);
         }
 
@@ -35,10 +39,8 @@ class VPNCheckerMiddleware
             ]);
         }
 
-        // Instantiate the necessary things to look up the visitor IP
-        $ipService = new IpLookupService(setting('ipdata_api_key'));
         $userIp = $request->ip();
-        $apiResponse = $ipService->ipLookup($userIp);
+        $apiResponse = $this->ipLookupService->ipLookup($userIp, (string) $apiKey);
 
         $asn = $apiResponse['asn']['asn'] ?? '';
         $asnWhitelisted = WebsiteIpWhitelist::where('asn', $asn)

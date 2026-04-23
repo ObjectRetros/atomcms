@@ -2,34 +2,29 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class MaintenanceMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $isPostRequest = $request->method() === 'POST';
+        $isPostRequest = $request->isMethod('POST');
         $isMaintenanceRequest = $request->is('maintenance');
         $maintenanceEnabled = setting('maintenance_enabled');
+        $user = $request->user();
 
-        $fortify2faRoutes = [
-            'two-factor.login',
-            'two-factor.confirm',
-        ];
+        if (! $maintenanceEnabled) {
+            if ($isMaintenanceRequest && ! $isPostRequest) {
+                return to_route('welcome');
+            }
 
-        if ($maintenanceEnabled && $isPostRequest && ! Auth::check()) {
             return $next($request);
         }
 
-        $isFortify2faRoute = in_array($request->route()?->getName(), $fortify2faRoutes, true);
-        if ($maintenanceEnabled && $isFortify2faRoute) {
-            return $next($request);
-        }
-
-        if (Auth::check() && Auth::user()->rank >= setting('min_maintenance_login_rank')) {
+        if ($this->shouldBypassMaintenance($request, $user)) {
             if ($isMaintenanceRequest) {
                 return to_route('me.show');
             }
@@ -37,22 +32,28 @@ class MaintenanceMiddleware
             return $next($request);
         }
 
-        if (Auth::check() && Auth::user()->rank >= setting('min_maintenance_login_rank') && $isMaintenanceRequest) {
-            return to_route('me.show');
+        if ($isPostRequest && $user === null) {
+            return $next($request);
         }
 
-        if ($maintenanceEnabled && ! $isMaintenanceRequest && ! $isPostRequest) {
-            return to_route('maintenance.show');
-        }
-
-        if (! $maintenanceEnabled && $isMaintenanceRequest && ! $isPostRequest) {
-            return to_route('welcome');
-        }
-
-        if ($maintenanceEnabled && ! $isMaintenanceRequest && Auth::check() && Auth::user()->rank < setting('min_maintenance_login_rank')) {
+        if (! $isMaintenanceRequest) {
             return to_route('maintenance.show');
         }
 
         return $next($request);
+    }
+
+    private function shouldBypassMaintenance(Request $request, ?User $user): bool
+    {
+        $fortify2faRoutes = [
+            'two-factor.login',
+            'two-factor.confirm',
+        ];
+
+        if (in_array($request->route()?->getName(), $fortify2faRoutes, true)) {
+            return true;
+        }
+
+        return $user !== null && $user->rank >= setting('min_maintenance_login_rank');
     }
 }

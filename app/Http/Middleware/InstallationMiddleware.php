@@ -13,12 +13,15 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 class InstallationMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function __construct(private readonly InstallationService $installationService) {}
+
+    public function handle(Request $request, Closure $next): Response
     {
-        if (app(InstallationService::class)->isComplete()) {
+        if ($this->installationService->isComplete()) {
             if ($request->is('installation*')) {
                 return to_route('welcome');
             }
@@ -39,22 +42,24 @@ class InstallationMiddleware
         return $next($request);
     }
 
-    private function ensureInstallationTableExists()
+    private function ensureInstallationTableExists(): void
     {
-        if (! Schema::hasTable('website_installation')) {
-            Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('website_installation')]);
-
+        Cache::lock('installation:migrations', 30)->block(10, function (): void {
             if (! Schema::hasTable('website_installation')) {
-                throw new MigrationFailedException('website_installation');
-            }
-        }
+                Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('website_installation')]);
 
-        if (! Schema::hasTable('sessions')) {
-            Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('sessions')]);
-        }
+                if (! Schema::hasTable('website_installation')) {
+                    throw new MigrationFailedException('website_installation');
+                }
+            }
+
+            if (! Schema::hasTable('sessions')) {
+                Artisan::call('migrate', ['--path' => 'database/migrations/' . findMigration('sessions')]);
+            }
+        });
     }
 
-    private function getInstallation()
+    private function getInstallation(): WebsiteInstallation
     {
         try {
             $cacheKey = 'installation_record';
@@ -92,7 +97,7 @@ class InstallationMiddleware
         }
     }
 
-    private function handleInstallationSteps(Request $request, WebsiteInstallation $installation)
+    private function handleInstallationSteps(Request $request, WebsiteInstallation $installation): bool
     {
         if ($installation->completed) {
             return true;
@@ -121,54 +126,54 @@ class InstallationMiddleware
         return true;
     }
 
-    private function isWelcomeStep(Request $request, WebsiteInstallation $installation)
+    private function isWelcomeStep(Request $request, WebsiteInstallation $installation): bool
     {
         return $installation->step === 0 && $request->getRequestUri() === '/installation';
     }
 
-    private function isRedirectToWelcome(Request $request, WebsiteInstallation $installation)
+    private function isRedirectToWelcome(Request $request, WebsiteInstallation $installation): bool
     {
-        return $installation->step === 0 && $request->getRequestUri() !== '/installation' && $request->method() !== 'POST';
+        return $installation->step === 0 && $request->getRequestUri() !== '/installation' && ! $request->isMethod('POST');
     }
 
-    private function isInvalidAccess(Request $request, WebsiteInstallation $installation)
+    private function isInvalidAccess(Request $request, WebsiteInstallation $installation): bool
     {
         return $installation->step > 0 && $request->ip() !== $installation->user_ip;
     }
 
-    private function isInvalidStep(Request $request)
+    private function isInvalidStep(Request $request): bool
     {
         return ! $this->isValidStep($request) && $this->isNonPostRequest($request);
     }
 
-    private function isMismatchedStep(Request $request, WebsiteInstallation $installation)
+    private function isMismatchedStep(Request $request, WebsiteInstallation $installation): bool
     {
         return $this->getCurrentStep($request) !== $installation->step && $this->isNonPostRequest($request);
     }
 
-    private function isValidStep(Request $request)
+    private function isValidStep(Request $request): bool
     {
         $step = $this->getCurrentStep($request);
 
         return filter_var($step, FILTER_VALIDATE_INT) !== false;
     }
 
-    private function isNonPostRequest(Request $request)
+    private function isNonPostRequest(Request $request): bool
     {
-        return $request->method() !== 'POST' || $request->is('restart-installation');
+        return ! $request->isMethod('POST') || $request->is('restart-installation');
     }
 
-    private function getCurrentStep(Request $request)
+    private function getCurrentStep(Request $request): int
     {
         return (int) Str::after($request->path(), 'step/');
     }
 
-    private function redirectToStep(int $step)
+    private function redirectToStep(int $step): Response
     {
         return to_route('installation.show-step', $step);
     }
 
-    protected function redirectIfNotCompleted(WebsiteInstallation $installation)
+    protected function redirectIfNotCompleted(WebsiteInstallation $installation): Response
     {
 
         if ($installation->step === 0) {

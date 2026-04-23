@@ -8,14 +8,16 @@ class IpLookupService
 {
     private string $baseUrl = 'https://api.ipdata.co';
 
-    public function __construct(private string $apiKey) {}
-
-    public function ipLookup(string $ip)
+    public function ipLookup(string $ip, string $apiKey): array
     {
-        $response = Http::acceptJson()->get(sprintf('%s/%s?api-key=%s', $this->baseUrl, $ip, $this->apiKey));
+        $response = Http::acceptJson()
+            ->connectTimeout(3)
+            ->timeout(8)
+            ->get(sprintf('%s/%s?api-key=%s', $this->baseUrl, $ip, $apiKey));
 
         if (! $response->ok()) {
-            $message = array_key_exists('message', $response->json()) ? $response->json()['message'] : 'Unknown error';
+            $payload = $response->json();
+            $message = is_array($payload) && array_key_exists('message', $payload) ? $payload['message'] : 'Unknown error';
 
             return [
                 'message' => $message,
@@ -23,6 +25,8 @@ class IpLookupService
             ];
         }
 
-        return $response->json();
+        $payload = $response->json();
+
+        return is_array($payload) ? $payload : [];
     }
 }

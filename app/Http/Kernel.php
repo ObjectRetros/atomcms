@@ -12,7 +12,6 @@ use App\Http\Middleware\LocalizationMiddleware;
 use App\Http\Middleware\LogViewerMiddleware;
 use App\Http\Middleware\MaintenanceMiddleware;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
-use App\Http\Middleware\RealClientIpMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SetThemeMiddleware;
 use App\Http\Middleware\TrimStrings;
@@ -48,7 +47,6 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
-        RealClientIpMiddleware::class,
         TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
