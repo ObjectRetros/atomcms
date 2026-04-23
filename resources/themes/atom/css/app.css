@@ -1,294 +1,13 @@
-@import "tailwindcss";
-@import "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap";
-@plugin "@tailwindcss/forms";
-@plugin "@tailwindcss/typography";
-@custom-variant dark (&:where(.dark, .dark *));
-
-@theme {
-    --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    --breakpoint-sm: 40rem;
-    --breakpoint-md: 48rem;
-    --breakpoint-lg: 64rem;
-    --breakpoint-xl: 80rem;
-    --breakpoint-2xl: 96rem;
-}
-
-@layer components {
-    .nav-item {
-        @apply flex h-auto md:h-[60px] items-center text-[14px] font-semibold uppercase text-gray-700 transition duration-200 ease-in-out md:border-b-4! md:border-transparent! md:hover:border-b-[#eeb425]!;
-    }
-
-    .dropdown-item {
-        @apply block py-2 px-4 font-semibold hover:bg-gray-100 text-gray-900;
-    }
-}
-
-* {
-    font-family: poppins, sans-serif;
-}
-
-::-webkit-scrollbar-thumb {
-    border-radius: 100px;
-    border: 4px solid transparent;
-    background-clip: content-box;
-    background-color: #2c3039;
-}
-
-::-webkit-scrollbar {
-    width: 16px;
-}
-
-::placeholder {
-    color: #626565;
-    opacity: 1;
-}
-
-:-ms-input-placeholder {
-    color: #626565;
-}
-
-::-ms-input-placeholder {
-    color: #626565;
-}
-
-
-html {
-    scroll-behavior: smooth;
-}
-
-.drop-shadow {
-    -webkit-filter: drop-shadow(2px 1px 0 #fff) drop-shadow(-2px 1px 0 #fff) drop-shadow(0 -2px 0 #fff);
-}
-
-.drop-shadow-thin {
-    -webkit-filter: drop-shadow(1px 1px 0 #fff) drop-shadow(-1px 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
-}
-
-.article-image {
-    display: block;
-    width: 100%;
-    height: 100px;
-    background-position: 300px 220px !important;
-    margin: 0 0 20px;
-    transition: 0.3s;
-}
-
-.article-image-slide {
-    background-position: 350px 220px !important;
-}
-
-.recent-articles {
-    background-blend-mode: multiply;
-}
-
-.camera-icon {
-    background: #242c31 url("/public/assets/images/icons/camera.png") no-repeat center;
-}
-
-.discord-icon {
-    background: #25658d url("/public/assets/images/icons/discord.png") no-repeat center;
-}
-
-html.dark .camera-icon {
-    background: #25658d url("/public/assets/images/icons/camera.png") no-repeat center;
-}
-
-.hotel-icon {
-    background: #f68b08 url("/public/assets/images/icons/feeds.png") no-repeat center;
-}
-
-.chat-icon {
-    background: #375571 url("/public/assets/images/icons/chat.png") no-repeat center;
-}
-
-.article-icon {
-    background: #536e5e url("/public/assets/images/icons/article.gif") no-repeat center;
-}
-
-.lighthouse-icon {
-    background: #8554a6 url("/public/assets/images/icons/lighthouse.png") no-repeat center;
-}
-
-.currency-icon {
-    background: #e3ad06 url("/public/assets/images/icons/currency.png") no-repeat center;
-}
-
-.catalog-icon {
-    background: rgba(141, 74, 183, 0.51) url("/public/assets/images/icons/catalog.png") no-repeat center;
-}
-
-.inventory-icon {
-    background: #232121 url("/public/assets/images/icons/inventory.png") no-repeat center;
-}
-
-.duo-chat-icon {
-    background: #eec980 url("/public/assets/images/icons/due-chat.png") no-repeat center;
-}
-
-.friends-icon {
-    background: #b17f85 url("/public/assets/images/icons/friends.png") no-repeat center;
-}
-
-.nav-credit-icon {
-    background: #e9b124 url("/public/assets/images/icons/currency/credits.png") no-repeat center;
-    outline: 1px solid #b26d18;
-}
-
-.nav-ducket-icon {
-    background: #c44aac url("/public/assets/images/icons/currency/duckets.png") no-repeat center;
-    outline: 1px solid #812378;
-}
-
-.nav-diamond-icon {
-    background: #caf1f3 url("/public/assets/images/icons/currency/diamonds.png") no-repeat center;
-    outline: 1px solid #6caff4;
-}
-
-.me-backdrop {
-    height: 180px;
-    background-blend-mode: multiply;
-}
-
-.staff-bg {
-    background-blend-mode: multiply;
-}
-
-/* Nitro disconnect overlay */
-#disconnected {
-    display: none;
-}
-
-.profile-bg {
-    background: rgba(0, 0, 0, 0.5) url("/public/assets/images/profile/profile-bg.png");
-    background-blend-mode: multiply;
-}
-
-.leaderboard-first {
-    background: #f9d83e url("/public/assets/images/leaderboards/trophy-gold.png") no-repeat center;
-    color: transparent;
-}
-
-.leaderboard-second {
-    background: #b8c4d4 url("/public/assets/images/leaderboards/trophy-silver.png") no-repeat center;
-    color: transparent;
-}
-
-.leaderboard-third {
-    background: #f1851b url("/public/assets/images/leaderboards/trophy-bronze.png") no-repeat center;
-    color: transparent;
-}
-
-.site-bg {
-    background: url("/public/assets/images/background-light.jpg") no-repeat fixed right bottom;
-}
-
-.app.dark .site-bg {
-    background: url("/public/assets/images/background-dark.jpg") no-repeat fixed right bottom;
-}
-
-.app.dark .swal2-popup {
-    background: rgb(17 24 39);
-    color: white;
-}
-
-.turbolinks-progress-bar {
-    height: 5px;
-    background-color: #e9b124;
-    border-radius: 5px;
-}
-
-.navigation-icon {
-    width: 20px;
-    height: 25px;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.navigation-icon.shop {
-    background-image: url("/public/assets/images/icons/navigation/shop.png");
-}
-
-.navigation-icon.leaderboards {
-    background-image: url("/public/assets/images/icons/navigation/leaderboards.png");
-}
-
-.navigation-icon.rules {
-    background-image: url("/public/assets/images/icons/navigation/rules.gif");
-}
-
-.navigation-icon.home {
-    background-image: url("/public/assets/images/icons/navigation/home.png");
-}
-
-.navigation-icon.community {
-    background-image: url("/public/assets/images/icons/navigation/community.png");
-}
-
-.swiper-slide {
-    height: 215px !important;
-}
-
-.swiper-pagination-bullet-active,
-html.dark .swiper-pagination-bullet-active {
-    background: #e9b124 !important;
-}
-
-html.dark .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
-    background: white !important;
-}
-
-.prose-xl p:is([style*="text-align: center;"]) img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.prose-xl p:is([style*="text-align: left;"]) img {
-    margin-left: 0;
-    margin-right: auto;
-}
-
-.prose-xl p:is([style*="text-align: right;"]) img {
-    margin-left: auto;
-    margin-right: 0;
-}
-
-.prose-xl p {
-    font-size: 16px;
-}
-
-.atom-align-left {
-    float: left;
-    margin: 0 10px 10px 0;
-}
-
-.atom-align-right {
-    float: right;
-    margin: 0 0 10px 10px;
-}
-
-.atom-align-center {
-    display: block;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.atom-align-center > * {
-    text-align: center;
-}
-
-#article-content a {
-    color: #53b2f8;
-}
+@import "../../../css/global.css";
 
 .badge-drawer-button {
     background-image: linear-gradient(to bottom, #f2f2f3 51%, #d9d8d8 49%);
-    box-shadow: inset 0 0 0px 2px #d9d9d9;
+    box-shadow: inset 0 0 0 2px #d9d9d9;
     padding: 10px;
 
     &:hover {
-        background: linear-gradient(to bottom, #ffffff 50%, #EBEBEB 50%);
-        box-shadow: inset 0 0 0px 2px #ffffff;
+        background: linear-gradient(to bottom, #ffffff 50%, #ebebeb 50%);
+        box-shadow: inset 0 0 0 2px #ffffff;
     }
 
     .toggled {
@@ -296,15 +15,14 @@ html.dark .swiper-pagination-bullet:not(.swiper-pagination-bullet-active) {
     }
 }
 
-
 html.dark .badge-drawer-button {
     background-image: linear-gradient(to bottom, #141414 51%, #101010 49%);
-    box-shadow: inset 0 0 0px 2px #242424;
+    box-shadow: inset 0 0 0 2px #242424;
     padding: 10px;
 
     &:hover {
         background: linear-gradient(to bottom, #171717 50%, #111111 50%);
-        box-shadow: inset 0 0 0px 2px #363636;
+        box-shadow: inset 0 0 0 2px #363636;
     }
 
     .toggled {
@@ -315,7 +33,7 @@ html.dark .badge-drawer-button {
 .badge-drawer-palette {
     background-position: center;
     background-repeat: no-repeat;
-    color: #000;
+    color: #000000;
     height: 40px;
     cursor: pointer;
     border-radius: 0.25rem;
@@ -338,7 +56,7 @@ html.dark .badge-drawer-button {
         left: 0;
         right: 0;
         height: 50%;
-        background-color: #fff;
-        opacity: .1;
+        background-color: #ffffff;
+        opacity: 0.1;
     }
 }

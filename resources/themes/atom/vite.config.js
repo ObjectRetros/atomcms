@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import path from "path";
-import tailwindcss from "@tailwindcss/postcss";
-import autoprefixer from "autoprefixer";
+import { bladeRefreshPlugin, postcssPlugins } from "../../../vite.shared.js";
 
 export default defineConfig({
     plugins: [
@@ -15,17 +14,7 @@ export default defineConfig({
             ],
         }),
 
-        {
-            name: "blade",
-            handleHotUpdate({ file, server }) {
-                if (file.endsWith(".blade.php")) {
-                    server.ws.send({
-                        type: "full-reload",
-                        path: "*",
-                    });
-                }
-            },
-        },
+        bladeRefreshPlugin(),
     ],
     resolve: {
         alias: {
@@ -34,7 +23,7 @@ export default defineConfig({
     },
     css: {
         postcss: {
-            plugins: [tailwindcss(), autoprefixer()],
+            plugins: postcssPlugins(),
         },
     },
 });
