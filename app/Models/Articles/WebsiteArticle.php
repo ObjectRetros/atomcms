@@ -3,10 +3,13 @@
 namespace App\Models\Articles;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -55,9 +58,70 @@ use Spatie\Sluggable\SlugOptions;
  */
 class WebsiteArticle extends Model
 {
-    use HasSlug, SoftDeletes;
+    use HasFactory, HasSlug, SoftDeletes;
 
     protected $guarded = ['id'];
+
+    protected $table = 'website_articles';
+
+    protected $casts = [
+        'can_comment' => 'boolean',
+        'deleted_at' => 'datetime',
+    ];
+
+    public static function fromIdAndSlug(string $id, string $slug, bool $withDefaultRelationships = true): Builder
+    {
+        return self::valid()
+            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
+            ->whereKey($id)
+            ->where('slug', $slug);
+    }
+
+    public static function getLatestValidArticle(bool $withDefaultRelationships = true): ?self
+    {
+        $article = self::valid()
+            ->when($withDefaultRelationships, fn ($query) => $query->defaultRelationships())
+            ->latest()
+            ->first();
+
+        if (! $article) {
+            return null;
+        }
+
+        $article->syncPaginatedComments();
+
+        return $article;
+    }
+
+    public static function forIndex(int $limit): Builder
+    {
+        return self::valid()
+            ->with(['user:id,username,look,avatar_background'])
+            ->select(['id', 'user_id', 'title', 'slug', 'image', 'short_story', 'created_at', 'can_comment'])
+            ->limit($limit)
+            ->latest();
+    }
+
+    public function syncPaginatedComments(): void
+    {
+        $this->setRelation('comments',
+            $this->comments()->paginate(10)->fragment('comments'),
+        );
+    }
+
+    public function scopeValid(Builder $query): void
+    {
+        $query->whereNull($this->getQualifiedDeletedAtColumn());
+    }
+
+    public function scopeDefaultRelationships(Builder $query): void
+    {
+        $query->with([
+            'user:id,username,look,gender',
+            'tags',
+            'reactions',
+        ]);
+    }
 
     public function getSlugOptions(): SlugOptions
     {
@@ -100,7 +164,7 @@ class WebsiteArticle extends Model
         });
     }
 
-    public function tags()
+    public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }

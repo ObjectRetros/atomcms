@@ -65,6 +65,16 @@ class WebsiteTeam extends Model
         return $this->hasMany(WebsiteOpenPosition::class, 'team_id', 'id');
     }
 
+    public function getBadgePath(): string
+    {
+        return sprintf('%s%s.gif', setting('badges_path'), $this->getBadgeName());
+    }
+
+    public function getBadgeName(): string
+    {
+        return $this->badge ?: '';
+    }
+
     public function scopeVisible($query)
     {
         return $query->where('hidden_rank', false);
