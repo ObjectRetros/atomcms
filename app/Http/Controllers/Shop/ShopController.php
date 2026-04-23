@@ -4,35 +4,44 @@ namespace App\Http\Controllers\Shop;
 
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
+use App\Actions\Shop\FulfillPackage;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PurchasePackageRequest;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\Shop\WebsiteShopCategory;
+use App\Models\Shop\WebsiteShopPackage;
+use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
 use App\Services\RconService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class ShopController extends Controller
 {
-    private RconService $rconService;
-
-    public function __construct(RconService $rconService)
-    {
-        $this->rconService = $rconService;
-    }
+    public function __construct(
+        private RconService $rconService,
+        private SendFurniture $sendFurniture,
+    ) {}
 
     public function __invoke(?WebsiteShopCategory $category)
     {
-        $packages = WebsiteShopArticle::orderBy('position');
+        $articlesQuery = WebsiteShopArticle::orderBy('position');
+        $shopPackagesQuery = WebsiteShopPackage::with('items')
+            ->orderBy('sort_order');
 
         if ($category && $category->exists) {
-            $packages = $category->articles()->orderBy('position');
+            $articlesQuery = $category->articles()->orderBy('position');
+            $shopPackagesQuery = $category->packages()->with('items')->orderBy('sort_order');
         }
 
         return view('shop.shop', [
-            'articles' => $packages->with(['rank:id,rank_name', 'features'])->get(),
-            'categories' => WebsiteShopCategory::whereHas('articles')->get(),
+            'articles' => $articlesQuery->with(['rank:id,rank_name', 'features'])->get(),
+            'shopPackages' => $shopPackagesQuery->get(),
+            'categories' => WebsiteShopCategory::where('is_active', true)
+                ->where(fn ($q) => $q->whereHas('articles')->orWhereHas('packages'))
+                ->get(),
         ]);
     }
 
@@ -138,10 +147,110 @@ class ShopController extends Controller
         return to_route('shop.index')->with('success', $message);
     }
 
-    public function handleFurniture(array $furniture)
+    private function handleFurniture(array $furniture): void
     {
-        $sendFurniture = app(SendFurniture::class);
+        $this->sendFurniture->execute(Auth::user(), $furniture);
+    }
 
-        $sendFurniture->execute(Auth::user(), $furniture);
+    public function purchasePackage(WebsiteShopPackage $package, PurchasePackageRequest $request, FulfillPackage $fulfillPackage): Response
+    {
+        $buyer = Auth::user();
+        $recipient = $buyer;
+
+        if (! $package->isAvailable()) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('This package is no longer available')],
+            );
+        }
+
+        if ($request->filled('receiver')) {
+            if (! $package->is_giftable) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('This package is not giftable')],
+                );
+            }
+
+            $recipient = User::where('username', $request->input('receiver'))->first();
+
+            if (! $recipient) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('Recipient not found')],
+                );
+            }
+        }
+
+        if ($package->limit_per_user) {
+            $purchaseCount = WebsiteShopPurchase::where('user_id', $buyer->id)
+                ->where('website_shop_package_id', $package->id)
+                ->count();
+
+            if ($purchaseCount >= $package->limit_per_user) {
+                return to_route('shop.index')->withErrors(
+                    ['message' => __('You have already purchased this package the maximum number of times (:limit)', ['limit' => $package->limit_per_user])],
+                );
+            }
+        }
+
+        if ($package->min_rank && $recipient->rank < $package->min_rank) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Your rank is too low to purchase this package')],
+            );
+        }
+
+        if ($package->max_rank && $recipient->rank > $package->max_rank) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Your rank is too high to purchase this package')],
+            );
+        }
+
+        if (! $this->rconService->isConnected && $recipient->online) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('Please logout before purchasing a package')],
+            );
+        }
+
+        $price = $package->priceInDollars();
+
+        if ($buyer->website_balance < $price) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('You need to top-up your account with another $:amount to purchase this package', ['amount' => $price - $buyer->website_balance])],
+            );
+        }
+
+        DB::transaction(function () use ($buyer, $recipient, $package, $fulfillPackage, $request, $price) {
+            $buyer = User::lockForUpdate()->find($buyer->id);
+
+            if ($buyer->website_balance < $price) {
+                abort(422, __('Insufficient balance'));
+            }
+
+            $buyer->decrement('website_balance', $price);
+
+            if ($package->stock !== null) {
+                $affected = WebsiteShopPackage::where('id', $package->id)
+                    ->where('stock', '>', 0)
+                    ->decrement('stock');
+
+                if ($affected === 0) {
+                    abort(422, __('This package is out of stock'));
+                }
+            }
+
+            $fulfillPackage->execute($recipient, $package);
+
+            WebsiteShopPurchase::create([
+                'user_id' => $buyer->id,
+                'website_shop_package_id' => $package->id,
+                'gifted_to' => $request->filled('receiver') ? $recipient->id : null,
+            ]);
+        });
+
+        $message = __('You have successfully purchased the package :name', ['name' => $package->name]);
+
+        if ($recipient->id !== $buyer->id) {
+            $message = __('You have successfully purchased the package :name for :username', ['name' => $package->name, 'username' => $recipient->username]);
+        }
+
+        return to_route('shop.index')->with('success', $message);
     }
 }

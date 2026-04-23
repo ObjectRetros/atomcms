@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('website_shop_items', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('name');
+            $table->string('image')->nullable();
+            $table->string('type')->comment('e.g. currency, furniture, badge, rank');
+            $table->string('type_value')->comment('e.g. item id, currency type:amount (credits:100), badge code, rank id');
+            $table->boolean('is_active')->default(true);
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('website_shop_items');
+    }
+};
