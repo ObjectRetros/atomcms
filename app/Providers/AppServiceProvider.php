@@ -15,6 +15,7 @@ use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Blaze\Blaze;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +56,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(! $this->app->isProduction());
+
+        Blaze::optimize()
+            ->in(resource_path('themes/atom/components'))
+            ->in(resource_path('themes/dusk/components'));
 
         if (config('habbo.site.force_https')) {
             URL::forceScheme('https');
