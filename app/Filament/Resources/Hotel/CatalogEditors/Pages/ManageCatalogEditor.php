@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Hotel\CatalogEditors\Pages;
 use App\Filament\Resources\Hotel\CatalogEditors\CatalogEditorResource;
 use App\Models\Game\Furniture\CatalogItem;
 use App\Models\Game\Furniture\CatalogPage;
-use App\Models\Miscellaneous\WebsiteSetting;
 use Filament\Actions\Action as FilamentAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
@@ -15,7 +14,9 @@ use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
 class ManageCatalogEditor extends Page implements HasTable
 {
@@ -34,6 +35,83 @@ class ManageCatalogEditor extends Page implements HasTable
     public array $expandedPages = [];
 
     public array $selectedItemIds = [];
+
+    public function getCatalogTree(): array
+    {
+        $pages = CatalogPage::query()
+            ->orderBy('order_num')
+            ->orderBy('id')
+            ->get();
+
+        return $this->buildCatalogTree(
+            pages: $pages,
+            parentId: -1,
+            visibleIds: $this->getVisibleCatalogPageIds($pages),
+        );
+    }
+
+    protected function getVisibleCatalogPageIds(EloquentCollection $pages): ?array
+    {
+        $needle = trim($this->pageSearch);
+
+        if ($needle === '') {
+            return null;
+        }
+
+        $like = '%' . $this->escapeLike($needle) . '%';
+
+        $visiblePageIds = collect()
+            ->merge(
+                CatalogPage::query()
+                    ->whereRaw("caption LIKE ? ESCAPE '\\\\'", [$like])
+                    ->pluck('id'),
+            )
+            ->merge(
+                CatalogItem::query()
+                    ->whereRaw("catalog_name LIKE ? ESCAPE '\\\\'", [$like])
+                    ->when(ctype_digit($needle), fn ($query) => $query->orWhere('id', (int) $needle))
+                    ->pluck('page_id'),
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+        $idToParent = $pages->pluck('parent_id', 'id');
+
+        foreach ($visiblePageIds->all() as $pageId) {
+            $parentId = $idToParent[$pageId] ?? null;
+
+            while ($parentId && $parentId > 0) {
+                $visiblePageIds->push($parentId);
+                $parentId = $idToParent[$parentId] ?? null;
+            }
+        }
+
+        return $visiblePageIds->unique()->values()->all();
+    }
+
+    protected function buildCatalogTree(EloquentCollection $pages, int $parentId, ?array $visibleIds): array
+    {
+        return $pages
+            ->where('parent_id', $parentId)
+            ->map(function (CatalogPage $page) use ($pages, $visibleIds): ?array {
+                $children = $this->buildCatalogTree($pages, $page->id, $visibleIds);
+
+                if ($visibleIds !== null && ! in_array($page->id, $visibleIds, true) && empty($children)) {
+                    return null;
+                }
+
+                return [
+                    'page' => $page,
+                    'children' => $children,
+                    'iconUrl' => $this->buildCatalogIconUrl((int) $page->icon_image),
+                    'fallbackUrl' => $this->buildCatalogIconUrl(1),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
 
     /**
      * Escape LIKE wildcards for literal searches.
@@ -582,7 +660,7 @@ class ManageCatalogEditor extends Page implements HasTable
                                 <span class="text-sm text-gray-600 dark:text-gray-300">Icon #' . e($id) . '</span>
                             </div>';
 
-                            return new \Illuminate\Support\HtmlString($html);
+                            return new HtmlString($html);
                         }),
                 ])
                 ->fillForm(function (array $arguments): array {
@@ -763,16 +841,12 @@ class ManageCatalogEditor extends Page implements HasTable
 
     protected function getFurniIconBasePath(): string
     {
-        $setting = WebsiteSetting::where('key', 'furniture_icons_path')->first();
-
-        return $setting && $setting->value ? rtrim($setting->value, '/') : '/images/furniture';
+        return rtrim(setting('furniture_icons_path', '/images/furniture'), '/');
     }
 
     protected function getCatalogIconBasePath(): string
     {
-        $setting = WebsiteSetting::where('key', 'catalog_icons_path')->first();
-
-        return $setting && $setting->value ? rtrim($setting->value, '/') : '/gamedata/c_images/catalogue';
+        return rtrim(setting('catalog_icons_path', '/gamedata/c_images/catalogue'), '/');
     }
 
     protected function buildCatalogIconUrl(int $iconImage): string

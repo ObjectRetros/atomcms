@@ -1,5 +1,13 @@
 <ul class="pl-{{ $depth * 4 }} text-sm">
-    @foreach ($pages as $index => $page)
+    @foreach ($nodes as $index => $node)
+        @php
+            $page = $node['page'];
+            $children = $node['children'];
+            $hasChildren = $children !== [];
+            $iconUrl = $node['iconUrl'];
+            $fallbackUrl = $node['fallbackUrl'];
+        @endphp
+
         @if ($depth === 0 && $index > 0)
             <li class="list-none my-2">
                 <div
@@ -15,28 +23,6 @@
                 ></div>
             </li>
         @endif
-
-        @php
-            $filterIds = $visibleIds ?? null;
-            $children = \App\Models\Game\Furniture\CatalogPage::query()
-                ->where('parent_id', $page->id)
-                ->when($filterIds !== null, fn ($q) => $q->whereIn('id', $filterIds))
-                ->orderBy('order_num')
-                ->orderBy('id')
-                ->get();
-
-            $shouldShow = $filterIds === null
-                ? true
-                : in_array($page->id, $filterIds, true) || $children->isNotEmpty();
-
-            if (! $shouldShow) {
-                continue;
-            }
-
-            $hasChildren = $children->isNotEmpty();
-            $iconUrl     = $this->buildCatalogIconUrl((int) $page->icon_image);
-            $fallbackUrl = $this->buildCatalogIconUrl(1);
-        @endphp
 
         <li
             data-page-id="{{ $page->id }}"
@@ -164,10 +150,9 @@
 
             @if ($hasChildren && $this->isExpanded($page->id))
                 @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
-                    'pages'        => $children,
+                    'nodes'        => $children,
                     'depth'        => $depth + 1,
                     'selectedPage' => $selectedPage,
-                    'visibleIds'   => $filterIds,
                 ])
             @endif
         </li>

@@ -91,73 +91,10 @@
     </x-filament::input.wrapper>
 </div>
 
-@php
-if ($pageSearch !== '') {
-    $search = trim($pageSearch);
-
-     $matchedPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('caption', 'like', "%{$search}%")
-        ->get();
-
-    $matchedItems = \App\Models\Game\Furniture\CatalogItem::query()
-        ->where('catalog_name', 'like', "%{$search}%")
-        ->orWhere('id', (int) $search)
-        ->get(['page_id']);
-
-    $visiblePageIds = collect()
-        ->merge($matchedPages->pluck('id'))
-        ->merge($matchedItems->pluck('page_id'))
-        ->filter()
-        ->unique();
-
-    $allPages = \App\Models\Game\Furniture\CatalogPage::all(['id', 'parent_id']);
-    $idToParent = $allPages->pluck('parent_id', 'id');
-    foreach ($visiblePageIds as $pid) {
-        $parentId = $idToParent[$pid] ?? null;
-        while ($parentId && $parentId > 0) {
-            $visiblePageIds->push($parentId);
-            $parentId = $idToParent[$parentId] ?? null;
-        }
-    }
-    $visiblePageIds = $visiblePageIds->unique();
-
-    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('parent_id', -1)
-        ->where(function ($q) use ($visiblePageIds) {
-            $q->whereIn('id', $visiblePageIds)
-              ->orWhereIn('id', function ($sub) use ($visiblePageIds) {
-                  $sub->select('parent_id')
-                      ->from('catalog_pages')
-                      ->whereIn('id', $visiblePageIds);
-              });
-        })
-        ->orderBy('order_num')
-        ->get();
-
-    $expanded = $visiblePageIds->values()->all();
-    $this->expandedPages = array_unique(array_merge($this->expandedPages, $expanded));
-
-    if (! $this->selectedPage && $visiblePageIds->isNotEmpty()) {
-        $this->selectedPage = \App\Models\Game\Furniture\CatalogPage::find($visiblePageIds->first());
-        $this->resetTable();
-    }
-
-    $visibleIdsForTree = $visiblePageIds->all();
-} else {
-    $rootPages = \App\Models\Game\Furniture\CatalogPage::query()
-        ->where('parent_id', -1)
-        ->orderBy('order_num')
-        ->get();
-
-    $visibleIdsForTree = null;
-}
-@endphp
-
 @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
-    'pages'        => $rootPages,
+    'nodes'        => $this->getCatalogTree(),
     'depth'        => 0,
     'selectedPage' => $selectedPage,
-    'visibleIds'   => $visibleIdsForTree,
 ])
 
 
