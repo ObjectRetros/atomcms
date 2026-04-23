@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountTopupFormRequest;
+use App\Http\Requests\PaypalTokenRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,15 +16,11 @@ class PaypalController extends Controller
 
     private const STATUS_COMPLETED = 'COMPLETED';
 
-    public function __construct(private PayPalClient $provider)
-    {
-        $this->provider = new PayPalClient;
-        $this->provider->setApiCredentials(config('habbo.paypal'));
-        $this->provider->getAccessToken();
-    }
+    private PayPalClient $provider;
 
     public function process(AccountTopupFormRequest $request): Response|RedirectResponse
     {
+        $provider = $this->provider();
         $amount = $request->integer('amount');
         $orderData = [
             'intent' => 'CAPTURE',
@@ -46,7 +42,7 @@ class PaypalController extends Controller
             ],
         ];
 
-        $response = $this->provider->createOrder($orderData);
+        $response = $provider->createOrder($orderData);
 
         if (isset($response['id']) === false) {
             Log::error('Error creating order', ['response' => $response]);
@@ -72,21 +68,18 @@ class PaypalController extends Controller
         );
     }
 
-    public function successful(Request $request): Response
+    public function successful(PaypalTokenRequest $request): Response
     {
-        $request->validate([
-            'token' => 'required',
-        ]);
-
         $user = $request->user();
+        $provider = $this->provider();
 
         $transaction = $user->transactions()->where('transaction_id', $request['token'])->first();
         if ($transaction === null) {
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
         }
 
-        $response = $this->provider->capturePaymentOrder($request['token']);
-        $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
+        $response = $provider->capturePaymentOrder($request['token']);
+        $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0] ?? null;
 
         if (! isset($response['status'], $paymentDetails)) {
             Log::error('Invalid response from PayPal', ['response' => $response]);
@@ -94,18 +87,20 @@ class PaypalController extends Controller
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
         }
 
-        if (! isset($response['status'])) {
-            $details = $response['error']['details'][0];
+        if ($paymentDetails === null) {
+            $details = $response['error']['details'][0] ?? [
+                'issue' => $response['name'] ?? 'PayPal error',
+                'description' => $response['message'] ?? 'Unknown PayPal response',
+            ];
+
             $transaction->update([
-                'status' => $response['name'],
+                'status' => $response['name'] ?? 'FAILED',
                 'description' => sprintf('%s - %s', $details['issue'], $details['description']),
                 'amount' => 0,
             ]);
 
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
         }
-
-        $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
 
         $transaction->update([
             'status' => $paymentDetails['status'],
@@ -124,12 +119,8 @@ class PaypalController extends Controller
         return to_route('shop.index')->with('success', __('Transaction successful'));
     }
 
-    public function cancelled(Request $request): Response
+    public function cancelled(PaypalTokenRequest $request): Response
     {
-        $request->validate([
-            'token' => 'required',
-        ]);
-
         $transaction = $request->user()->transactions()->where('transaction_id', $request['token'])->first();
         if ($transaction !== null) {
             $transaction->update([
@@ -141,5 +132,18 @@ class PaypalController extends Controller
         return to_route('shop.index')->withErrors(
             ['message' => __('You have canceled the transaction')],
         );
+    }
+
+    private function provider(): PayPalClient
+    {
+        if (isset($this->provider)) {
+            return $this->provider;
+        }
+
+        $this->provider = new PayPalClient;
+        $this->provider->setApiCredentials(config('habbo.paypal'));
+        $this->provider->getAccessToken();
+
+        return $this->provider;
     }
 }

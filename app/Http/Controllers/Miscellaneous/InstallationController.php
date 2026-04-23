@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Miscellaneous;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreInstallationKeyRequest;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
-use App\Rules\ValidateInstallationKeyRule;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,12 +18,8 @@ class InstallationController extends Controller
         return view('installation.index');
     }
 
-    public function storeInstallationKey(Request $request)
+    public function storeInstallationKey(StoreInstallationKeyRequest $request)
     {
-        $request->validate([
-            'installation_key' => ['required', 'string', 'max:255', new ValidateInstallationKeyRule],
-        ]);
-
         WebsiteInstallation::first()->update([
             'step' => 1,
             'user_ip' => $request->ip(),

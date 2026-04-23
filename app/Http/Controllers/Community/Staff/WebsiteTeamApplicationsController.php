@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Community\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OpenPositionApplicationRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class WebsiteTeamApplicationsController extends Controller
 {
     public function index(): View
     {
-        $positions = \App\Models\Community\Staff\WebsiteOpenPosition::query()
+        $positions = WebsiteOpenPosition::query()
             ->where('position_kind', 'team')
             ->whereNotNull('team_id')
             ->with('team')
@@ -24,7 +24,7 @@ class WebsiteTeamApplicationsController extends Controller
         if (auth()->check()) {
             $teamIds = $positions->pluck('team_id')->filter()->unique()->all();
 
-            $userAppStatuses = \App\Models\Community\Staff\WebsiteStaffApplications::query()
+            $userAppStatuses = WebsiteStaffApplications::query()
                 ->where('user_id', auth()->id())
                 ->whereIn('team_id', $teamIds)
                 ->pluck('status', 'team_id')
@@ -48,13 +48,11 @@ class WebsiteTeamApplicationsController extends Controller
         ]);
     }
 
-    public function store(Request $request, WebsiteOpenPosition $position)
+    public function store(OpenPositionApplicationRequest $request, WebsiteOpenPosition $position)
     {
         abort_unless($position->position_kind === 'team', 404);
 
-        $request->validate([
-            'content' => ['required', 'string', 'min:10'],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
 
@@ -67,7 +65,7 @@ class WebsiteTeamApplicationsController extends Controller
         WebsiteStaffApplications::create([
             'user_id' => $user->id,
             'team_id' => $position->team_id,
-            'content' => $request->string('content'),
+            'content' => $validated['content'],
         ]);
 
         return redirect()

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Miscellaneous;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LogoGeneratorRequest;
 use App\Models\Miscellaneous\WebsiteSetting;
-use Illuminate\Http\Request;
 
 class LogoGeneratorController extends Controller
 {
@@ -19,9 +19,8 @@ class LogoGeneratorController extends Controller
         return view('logo-generator');
     }
 
-    public function store(Request $request)
+    public function store(LogoGeneratorRequest $request)
     {
-        $request->validate(['logo' => 'required|image']);
         $file = $request->file('logo');
         $filename = $file->getClientOriginalName();
         $path = '/assets/images/generated-logos';

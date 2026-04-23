@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Models\PasswordResetToken;
 use App\Models\User;
 use Carbon\Carbon;
@@ -17,12 +19,8 @@ class ForgotPasswordController extends Controller
         return view('auth.passwords.forget');
     }
 
-    public function submitForgetPassword(Request $request)
+    public function submitForgetPassword(ForgotPasswordRequest $request)
     {
-        $request->validate([
-            'mail' => 'required|email',
-        ]);
-
         // Do not tell the user that this email does not exist to prevent possible attacks
         if (User::where('mail', $request->mail)->exists()) {
             $token = Str::uuid();
@@ -58,13 +56,8 @@ class ForgotPasswordController extends Controller
         ]);
     }
 
-    public function submitResetPassword(Request $request, string $token)
+    public function submitResetPassword(ResetPasswordRequest $request, string $token)
     {
-        $request->validate([
-            'password' => 'required|min:8|confirmed',
-            'password_confirmation' => 'required',
-        ]);
-
         $prt = PasswordResetToken::select('email', 'token')->where('token', $token)->first();
         if ($prt === null) {
             return to_route('forgot.password.get')->withErrors('message', __('This token has expired!'));
