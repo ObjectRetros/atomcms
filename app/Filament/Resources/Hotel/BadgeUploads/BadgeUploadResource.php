@@ -25,8 +25,7 @@ class BadgeUploadResource extends Resource
             ->components([
                 FileUpload::make('badge_file')
                     ->label('Upload Badge')
-                    ->disk('local')
-                    ->directory(setting('badge_path_filesystem'))
+                    ->disk('badges')
                     ->required()
                     ->getUploadedFileNameForStorageUsing(
                         function (TemporaryUploadedFile $file): string {
@@ -58,8 +57,7 @@ class BadgeUploadResource extends Resource
 
     public static function getFiles(): array
     {
-        $badgePath = env('BadgePath', 'badges');
-        $files = Storage::disk('local')->files($badgePath);
+        $files = Storage::disk('badges')->files();
 
         return collect($files)->map(function ($file) {
             return [

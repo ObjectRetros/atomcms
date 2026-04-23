@@ -31,7 +31,6 @@ class DatabaseSeeder extends Seeder
             WebsiteRuleCategorySeeder::class,
             WebsiteRuleSeeder::class,
             WebsiteHelperCenterCategorySeeder::class,
-            WebsiteHelperCenterCategorySeeder::class,
 
             // Values
             WebsiteRareValuesCategorySeeder::class,

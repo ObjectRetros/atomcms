@@ -1,11 +1,11 @@
 <div align="center">
 <img src="https://i.imgur.com/9ePNdJ4.png" alt="Atom CMS"/>
 
-A modern, community-driven Retro CMS built with Laravel 12.x
+A modern, community-driven Retro CMS built with Laravel 13.x
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/pP6HyZedAj)
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.5+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
 
 [Live Demos](#-live-preview) • [Installation](#-installation) • [Documentation](https://github.com/atom-retros/atomcms/wiki) • [Contributing](#-contributing)
 
@@ -19,11 +19,11 @@ A modern, community-driven Retro CMS built with Laravel 12.x
 
 ## 🎯 About
 
-Atom CMS is a modern, community-driven CMS designed to provide a flexible and user-friendly platform for retro hotel management. Built on Laravel 12.x with a focus on extensibility and ease of use, Atom CMS features a built-in theme system that allows you to use any CSS framework or create fully customized vanilla designs.
+Atom CMS is a modern, community-driven CMS designed to provide a flexible and user-friendly platform for retro hotel management. Built on Laravel 13.x with a focus on extensibility and ease of use, Atom CMS features a built-in theme system that allows you to use any CSS framework or create fully customized vanilla designs.
 
 ### Built With
 
-- **[Laravel 12.x](https://laravel.com/docs/11.x)** - Elegant PHP framework powering the backend
+- **[Laravel 13.x](https://laravel.com/docs/13.x)** - Elegant PHP framework powering the backend
 - **[Vite](https://vitejs.dev/)** - Next-generation frontend tooling for blazing-fast builds
 - **[TailwindCSS](https://tailwindcss.com/)** - Utility-first CSS framework for responsive design
 
@@ -54,7 +54,7 @@ Experience Atom CMS with our official themes:
 
 | Requirement | Version |
 |------------|---------|
-| PHP | 8.2 or higher |
+| PHP | 8.5 or higher |
 | MySQL | 8.x or higher |
 | MariaDB | 10.x or higher |
 | Composer | v2 |
@@ -193,6 +193,7 @@ Update these variables in your `.env` file for production:
 APP_ENV=production
 APP_DEBUG=false
 FORCE_HTTPS=true  # If using Cloudflare's "Always use HTTPS"
+TRUSTED_PROXIES=127.0.0.1  # Set to your reverse proxy IPs when using Cloudflare/load balancers
 ```
 
 ### Cloudflare Turnstile Captcha
