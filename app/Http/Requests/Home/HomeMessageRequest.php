@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Home;
 
+use App\Models\User;
 use App\Rules\WebsiteWordfilterRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,9 +10,12 @@ class HomeMessageRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $username = $this->route('username');
+        $routeUser = $this->route('user');
+        $user = $routeUser instanceof User
+            ? $routeUser
+            : User::where('username', $routeUser)->first();
 
-        return $this->user()?->username !== $username;
+        return $user instanceof User && ! $this->user()?->is($user);
     }
 
     /**

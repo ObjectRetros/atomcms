@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
-    public function store(string $username, HomeMessageRequest $request): JsonResponse
+    public function store(User $user, HomeMessageRequest $request): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
         $authUser = Auth::user();
 
         if ($authUser->sentHomeMessages()->where('created_at', '>', now()->subMinute())->exists()) {

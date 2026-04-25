@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class RatingController extends Controller
 {
-    public function store(string $username, HomeRatingRequest $request): JsonResponse
+    public function store(User $user, HomeRatingRequest $request): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
-
         $user->homeRatings()->updateOrCreate(
             ['user_id' => Auth::id()],
             ['rating' => $request->validated('rating')],

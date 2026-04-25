@@ -14,17 +14,21 @@ class HomeService
     /**
      * @throws \Exception
      */
-    public function verifyPurchasePossibility(User $user, HomeItem $item, array $data, int $totalPrice): void
+    public function verifyPurchasePossibility(User $user, HomeItem $item, int $quantity, int $totalPrice): void
     {
         if ($user->online) {
             throw new \Exception(__('You must be offline to buy this item.'));
+        }
+
+        if (! $item->enabled) {
+            throw new \Exception(__('This item is not available for purchase.'));
         }
 
         if ($item->hasExceededPurchaseLimit()) {
             throw new \Exception(__('This item exceeded the purchase limit.'));
         }
 
-        if ($item->limit !== null && ($item->total_bought + $data['quantity']) > $item->limit) {
+        if ($item->limit !== null && ($item->total_bought + $quantity) > $item->limit) {
             throw new \Exception(__("You can't buy more than :max of this item.", [
                 'max' => $item->limit - $item->total_bought,
             ]));
@@ -41,16 +45,32 @@ class HomeService
             throw new \Exception(__('You already have this item in your inventory.'));
         }
 
-        if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget]) && $data['quantity'] > 1) {
+        if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget]) && $quantity > 1) {
             throw new \Exception(__('You can buy this item only once.'));
         }
     }
 
-    public function buyItem(HomeItem $item, User $user, array $data, int $totalPrice): void
+    public function buyItem(User $user, int $itemId, int $quantity): HomeItem
     {
-        DB::transaction(function () use ($user, $item, $data, $totalPrice): void {
-            $user->discountCurrency($item->currency_type, $totalPrice);
-            $user->giveHomeItem($item, $data['quantity']);
+        return DB::transaction(function () use ($user, $itemId, $quantity): HomeItem {
+            $lockedUser = User::query()
+                ->whereKey($user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $item = HomeItem::query()
+                ->whereKey($itemId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $totalPrice = $item->price * $quantity;
+
+            $this->verifyPurchasePossibility($lockedUser, $item, $quantity, $totalPrice);
+
+            $lockedUser->discountCurrency($item->currency_type, $totalPrice);
+            $lockedUser->giveHomeItem($item, $quantity);
+
+            return $item;
         });
     }
 

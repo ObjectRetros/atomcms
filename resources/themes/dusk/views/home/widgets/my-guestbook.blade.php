@@ -1,4 +1,23 @@
 <div class="flex flex-col gap-2 p-1">
+    @auth
+        @if(auth()->id() !== $user->id)
+            <form data-home-message-form class="flex flex-col gap-1 border-b border-gray-600 pb-2">
+                <textarea
+                    name="content"
+                    maxlength="500"
+                    rows="2"
+                    class="w-full rounded border border-gray-600 bg-[#21242e] p-2 text-xs text-gray-200"
+                    placeholder="{{ __('Leave a message') }}"
+                    data-no-drag
+                    required
+                ></textarea>
+                <button type="submit" class="self-end rounded bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-500" data-no-drag>
+                    {{ __('Post') }}
+                </button>
+            </form>
+        @endif
+    @endauth
+
     @forelse($user->receivedHomeMessages as $message)
         <div class="flex gap-2 border-b border-gray-600 pb-2">
             <img

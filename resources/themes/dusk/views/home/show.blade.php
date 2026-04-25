@@ -1,7 +1,7 @@
 <x-app-layout>
     @push('title', __('Home of :u', ['u' => $user->username]))
 
-    <div class="col-span-12 flex flex-col items-center gap-4" x-data="homeManager('{{ $user->username }}', {{ $isMe ? 'true' : 'false' }})">
+    <div class="col-span-12 flex flex-col items-center gap-4" x-data="homeManager(@js($user->username), @js($isMe))">
 
         @if($isMe)
             <div class="w-full max-w-[928px]">
@@ -63,7 +63,7 @@
                         <div class="p-3 min-w-[150px] min-h-[80px] bg-amber-50 border border-amber-200 rounded shadow text-xs text-gray-800 pointer-events-none" x-text="item.parsed_data || item.extra_data || ''"></div>
                     </template>
                     <template x-if="item.home_item?.type === 'w'">
-                        <div class="min-w-[270px] max-w-[300px] bg-[#2b303c] border border-gray-600 rounded-lg shadow overflow-hidden pointer-events-none">
+                            <div class="min-w-[270px] max-w-[300px] bg-[#2b303c] border border-gray-600 rounded-lg shadow overflow-hidden" :class="{ 'pointer-events-none': editing || previewing }">
                             <div class="bg-[#21242e] px-3 py-2 font-semibold text-sm text-gray-100" x-text="item.home_item.name"></div>
                             <div class="p-2 text-sm text-gray-200" x-html="item.content || ''"></div>
                         </div>
@@ -94,7 +94,7 @@
 
                     <div class="flex items-center bg-[#21242e] px-3 py-2 gap-1 shrink-0" :id="$id('bag-modal')">
                         <button class="px-4 py-1.5 rounded text-sm font-semibold transition" :class="bagTab === 'inventory' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'" @click="bagTab = 'inventory'; fetchInv()">{{ __('Inventory') }}</button>
-                        <button class="px-4 py-1.5 rounded text-sm font-semibold transition" :class="bagTab === 'shop' ? 'bg-[#eeb425] text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'" @click="bagTab = 'shop'; fetchShopCats()">{{ __('Shop') }}</button>
+                        <button class="px-4 py-1.5 rounded text-sm font-semibold transition" :class="bagTab === 'shop' ? 'bg-[#eeb425] text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'" @click="bagTab = 'shop'; fetchShopCats(); fetchBalance()">{{ __('Shop') }}</button>
                         <button class="ml-auto text-gray-500 hover:text-white text-lg leading-none px-2" @click="showBag = false">&times;</button>
                     </div>
 
