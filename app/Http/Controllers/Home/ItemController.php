@@ -7,7 +7,6 @@ use App\Http\Requests\Home\BuyHomeItemRequest;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
@@ -15,10 +14,9 @@ class ItemController extends Controller
         private readonly HomeService $homeService,
     ) {}
 
-    public function store(BuyHomeItemRequest $request): JsonResponse
+    public function store(User $user, BuyHomeItemRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $user = Auth::user();
 
         try {
             $item = $this->homeService->buyItem($user, $data['item_id'], $data['quantity']);

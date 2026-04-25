@@ -14,7 +14,7 @@ class HomeService
     /**
      * @throws \Exception
      */
-    public function verifyPurchasePossibility(User $user, HomeItem $item, int $quantity, int $totalPrice): void
+    private function ensurePurchaseIsAllowed(User $user, HomeItem $item, int $quantity, int $totalPrice): void
     {
         if ($user->online) {
             throw new \Exception(__('You must be offline to buy this item.'));
@@ -65,7 +65,7 @@ class HomeService
 
             $totalPrice = $item->price * $quantity;
 
-            $this->verifyPurchasePossibility($lockedUser, $item, $quantity, $totalPrice);
+            $this->ensurePurchaseIsAllowed($lockedUser, $item, $quantity, $totalPrice);
 
             $lockedUser->discountCurrency($item->currency_type, $totalPrice);
             $lockedUser->giveHomeItem($item, $quantity);

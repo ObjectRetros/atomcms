@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\Home;
 
-use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BuyHomeItemRequest extends FormRequest
+class BuyHomeItemRequest extends HomeRequest
 {
     /**
      * @return array<string, array<int, string>>
@@ -25,11 +23,6 @@ class BuyHomeItemRequest extends FormRequest
 
     public function authorize(): bool
     {
-        $routeUser = $this->route('user');
-        $user = $routeUser instanceof User
-            ? $routeUser
-            : User::where('username', $routeUser)->first();
-
-        return $user instanceof User && $this->user()?->is($user);
+        return $this->isHomeOwner();
     }
 }

@@ -48,10 +48,8 @@ class HomeController extends Controller
         ]);
     }
 
-    public function save(SaveHomeRequest $request): JsonResponse
+    public function save(User $user, SaveHomeRequest $request): JsonResponse
     {
-        $user = Auth::user();
-
         try {
             $this->homeService->saveItems($user, $request->validated());
         } catch (\Throwable) {
