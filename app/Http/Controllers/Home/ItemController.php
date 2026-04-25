@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Home;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Home\BuyHomeItemRequest;
-use App\Models\Home\HomeItem;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
@@ -16,16 +14,12 @@ class ItemController extends Controller
         private readonly HomeService $homeService,
     ) {}
 
-    public function store(BuyHomeItemRequest $request): JsonResponse
+    public function store(User $user, BuyHomeItemRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $item = HomeItem::with('homeCategory')->findOrFail($data['item_id']);
-        $user = Auth::user();
-        $totalPrice = $item->price * $data['quantity'];
 
         try {
-            $this->homeService->verifyPurchasePossibility($user, $item, $data, $totalPrice);
-            $this->homeService->buyItem($item, $user, $data, $totalPrice);
+            $item = $this->homeService->buyItem($user, $data['item_id'], $data['quantity']);
         } catch (\Throwable $exception) {
             return $this->jsonResponse([
                 'message' => $exception->getMessage(),
@@ -38,10 +32,8 @@ class ItemController extends Controller
         ]);
     }
 
-    public function getWidgetContent(string $username, int $itemId): JsonResponse
+    public function getWidgetContent(User $user, int $itemId): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
-
         $item = $user->homeItems()->defaultRelationships()->find($itemId);
 
         if (! $item) {

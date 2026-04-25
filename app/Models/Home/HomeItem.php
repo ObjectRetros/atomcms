@@ -4,6 +4,7 @@ namespace App\Models\Home;
 
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,6 +44,11 @@ class HomeItem extends Model
     public function userHomeItems(): HasMany
     {
         return $this->hasMany(UserHomeItem::class, 'home_item_id');
+    }
+
+    public function scopeEnabled(Builder $query): void
+    {
+        $query->where('enabled', true);
     }
 
     public function hasExceededPurchaseLimit(): bool

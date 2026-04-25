@@ -16,8 +16,6 @@ Homestead.json
 Homestead.yaml
 auth.json
 npm-debug.log
-yarn-error.log
-yarn.lock
 /.idea
 /.vscode
 /public/assets/images/generated-logos
@@ -28,7 +26,6 @@ AUDIT.md
 _ide_helper.php
 _ide_helper_models.php
 .phpunit.cache
-.yarn
 public/js
 public/css
 public/fonts
