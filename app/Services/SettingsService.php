@@ -39,6 +39,7 @@ class SettingsService
     public static function clearCache(): void
     {
         Cache::forget('website_settings');
+        app()->forgetInstance(self::class);
     }
 
     private function isInstallationIncomplete(): bool

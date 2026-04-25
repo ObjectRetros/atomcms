@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Badge;
 use App\Actions\SendCurrency;
 use App\Enums\CurrencyTypes;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Badge\BadgePurchaseRequest;
+use App\Models\User;
 use App\Models\WebsiteDrawBadge;
 use App\Services\SettingsService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BadgeController extends Controller
 {
@@ -41,34 +43,14 @@ class BadgeController extends Controller
         return view('draw-badge', compact('cost', 'currencyType', 'folderError', 'errorMessage'));
     }
 
-    public function buy(Request $request, SendCurrency $sendCurrency, SettingsService $settingsService)
+    public function buy(BadgePurchaseRequest $request, SendCurrency $sendCurrency, SettingsService $settingsService)
     {
         $user = Auth::user();
         $cost = (int) $settingsService->getOrDefault('drawbadge_currency_value', 150);
         $currencyType = $settingsService->getOrDefault('drawbadge_currency_type', 'credits');
 
-        $currentAmount = match ($currencyType) {
-            'credits' => $user->credits ?? 0,
-            'duckets' => $user->currencies()->where('type', CurrencyTypes::Duckets)->value('amount') ?? 0,
-            'diamonds' => $user->currencies()->where('type', CurrencyTypes::Diamonds)->value('amount') ?? 0,
-            'points' => $user->currencies()->where('type', CurrencyTypes::Points)->value('amount') ?? 0,
-            default => 0,
-        };
-
-        if ($currentAmount < $cost) {
-            return response()->json(['success' => false, 'message' => 'Insufficient ' . $currencyType . '.'], 400);
-        }
-
-        $result = $sendCurrency->execute($user, $currencyType, -$cost);
-
-        if ($result === false) {
-            return response()->json(['success' => false, 'message' => 'Failed to deduct ' . $currencyType . '.'], 500);
-        }
-
-        $badgeData = $request->input('badge_data');
-        if (! $badgeData) {
-            return response()->json(['success' => false, 'message' => 'No badge data provided.'], 400);
-        }
+        $data = $request->validated();
+        $badgeData = $data['badge_data'];
 
         $badgeData = preg_replace('#^data:image/\w+;base64,#i', '', $badgeData);
         $decoded = base64_decode($badgeData, true);
@@ -104,7 +86,14 @@ class BadgeController extends Controller
         $filename = $user->id . '_' . time() . '.gif';
         $fullPath = rtrim($badgesPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
 
+        if (! $this->chargeUser($user, $currencyType, $cost)) {
+            imagedestroy($image);
+
+            return response()->json(['success' => false, 'message' => 'Insufficient ' . $currencyType . '.'], 400);
+        }
+
         if (! imagegif($image, $fullPath)) {
+            $sendCurrency->execute($user, $currencyType, $cost);
             imagedestroy($image);
 
             return response()->json(['success' => false, 'message' => 'Failed to save badge file.'], 500);
@@ -119,10 +108,33 @@ class BadgeController extends Controller
             'user_id' => $user->id,
             'badge_path' => $fullPath,
             'badge_url' => $badgeUrl,
-            'badge_name' => $request->input('badge_name'),
-            'badge_desc' => $request->input('badge_description'),
+            'badge_name' => $data['badge_name'],
+            'badge_desc' => $data['badge_description'],
         ]);
 
         return response()->json(['success' => true, 'badge_path_filesystem' => $fullPath]);
+    }
+
+    private function chargeUser(User $user, string $currencyType, int $amount): bool
+    {
+        return DB::transaction(function () use ($user, $currencyType, $amount) {
+            if ($currencyType === 'credits') {
+                return $user->newQuery()
+                    ->whereKey($user->id)
+                    ->where('credits', '>=', $amount)
+                    ->decrement('credits', $amount) === 1;
+            }
+
+            $type = CurrencyTypes::fromCurrencyName($currencyType);
+
+            if (! $type) {
+                return false;
+            }
+
+            return $user->currencies()
+                ->where('type', $type->value)
+                ->where('amount', '>=', $amount)
+                ->decrement('amount', $amount) === 1;
+        });
     }
 }

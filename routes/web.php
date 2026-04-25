@@ -195,7 +195,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::put('/toggle-status/{ticket}', [TicketController::class, 'toggleTicketStatus'])->name('toggle-status');
 
                 Route::post('/reply/{ticket}/store', [TicketReplyController::class, 'store'])->name('reply.store');
-                Route::delete('/reply/{reply}/delete', [TicketController::class, 'destroy'])->name('reply.destroy');
+                Route::delete('/reply/{reply}/delete', [TicketReplyController::class, 'destroy'])->name('reply.destroy');
 
                 // All open tickets
                 Route::get('/all', [TicketController::class, 'index'])->name('index');
