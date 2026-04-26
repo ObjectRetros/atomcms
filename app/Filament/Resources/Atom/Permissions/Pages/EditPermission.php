@@ -16,4 +16,9 @@ class EditPermission extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return PermissionResource::normalizeFormData($data);
+    }
 }

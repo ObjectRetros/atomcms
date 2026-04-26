@@ -48,6 +48,39 @@ class PermissionResource extends Resource
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
+    public static function normalizeFormData(array $data): array
+    {
+        $data['log_commands'] = ($data['log_commands'] ?? '') === ''
+            ? '1'
+            : (string) $data['log_commands'];
+        $data['prefix'] ??= '';
+        $data['prefix_color'] ??= '';
+
+        foreach (['auto_credits_amount', 'auto_pixels_amount', 'auto_gotw_amount', 'auto_points_amount'] as $currencyColumn) {
+            $data[$currencyColumn] ??= 0;
+        }
+
+        foreach (Schema::getColumns('permissions') as $column) {
+            $columnName = $column['name'] ?? null;
+
+            if (! $columnName) {
+                continue;
+            }
+
+            if (
+                str_starts_with($columnName, 'cmd')
+                || str_starts_with($columnName, 'acc')
+                || str_ends_with($columnName, 'cmd')
+            ) {
+                $data[$columnName] = ($data[$columnName] ?? '') === ''
+                    ? '0'
+                    : (string) $data[$columnName];
+            }
+        }
+
+        return $data;
+    }
+
     public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         /**
