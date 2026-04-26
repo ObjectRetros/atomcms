@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Shop;
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Shop\ShopPurchaseRequest;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\Shop\WebsiteShopCategory;
 use App\Models\User;
 use App\Services\RconService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use JsonException;
 use Symfony\Component\HttpFoundation\Response;
 
 class ShopController extends Controller
@@ -38,11 +40,11 @@ class ShopController extends Controller
 
     private function giveBadges(User $user, string $badges)
     {
-        $badgeList = explode(';', $badges);
+        $badgeList = array_filter(array_map('trim', explode(';', $badges)));
         $ownedBadges = $user->badges()->pluck('badge_code')->toArray();
 
         foreach ($badgeList as $badge) {
-            if (in_array($badge, $ownedBadges)) {
+            if (in_array($badge, $ownedBadges, true)) {
                 continue;
             }
 
@@ -59,20 +61,21 @@ class ShopController extends Controller
         }
     }
 
-    public function purchase(WebsiteShopArticle $package, Request $request, SendCurrency $sendCurrency): Response
+    public function purchase(WebsiteShopArticle $package, ShopPurchaseRequest $request, SendCurrency $sendCurrency, SendFurniture $sendFurniture): Response
     {
-        $user = Auth::user();
+        $buyer = $request->user();
+        $recipient = $buyer;
 
-        if ($request->has('receiver')) {
+        if ($request->filled('receiver')) {
             if (! $package->is_giftable) {
                 return to_route('shop.index')->withErrors(
                     ['message' => __('This package is not giftable')],
                 );
             }
 
-            $user = User::where('username', $request->input('receiver'))->first();
+            $recipient = User::where('username', $request->input('receiver'))->first();
 
-            if (! $user) {
+            if (! $recipient) {
                 return to_route('shop.index')->withErrors(
                     ['message' => __('Recipient not found')],
                 );
@@ -80,10 +83,10 @@ class ShopController extends Controller
 
         }
 
-        if ($package->give_rank && $user->rank >= $package->give_rank) {
+        if ($package->give_rank && $recipient->rank >= $package->give_rank) {
             $message = __('You are already this or a higher rank');
 
-            if ($user->username !== Auth::user()->username) {
+            if ($recipient->isNot($buyer)) {
                 $message = __('The recipient is already this or a higher rank');
             }
 
@@ -92,56 +95,88 @@ class ShopController extends Controller
             );
         }
 
-        if (! $this->rconService->isConnected && $user->online) {
+        if (! $this->rconService->isConnected && $recipient->online) {
             return to_route('shop.index')->withErrors(
                 ['message' => __('Please logout before purchasing a package')],
             );
         }
 
-        if (Auth::user()->website_balance < $package->price()) {
+        try {
+            $furniture = $package->furniture
+                ? json_decode($package->furniture, true, 512, JSON_THROW_ON_ERROR)
+                : [];
+        } catch (JsonException) {
             return to_route('shop.index')->withErrors(
-                ['message' => __('You need to top-up your account with another $:amount to purchase this package', ['amount' => ($package->price() - Auth::user()->website_balance)])],
+                ['message' => __('This package is currently unavailable')],
             );
         }
 
-        Auth::user()?->decrement('website_balance', $package->price());
+        $price = $package->price();
 
-        $sendCurrency->execute($user, 'credits', $package->credits);
-        $sendCurrency->execute($user, 'duckets', $package->duckets);
-        $sendCurrency->execute($user, 'diamonds', $package->diamonds);
+        if ($buyer->website_balance < $price) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('You need to top-up your account with another $:amount to purchase this package', ['amount' => ($price - $buyer->website_balance)])],
+            );
+        }
 
-        if ($package->give_rank) {
-            if ($this->rconService->isConnected) {
-                $this->rconService->setRank($user, $package->give_rank);
-                $this->rconService->disconnectUser($user);
-            } else {
-                $user->update([
-                    'rank' => $package->give_rank,
-                ]);
+        $users = DB::transaction(function () use ($buyer, $recipient, $package, $price, $sendCurrency, $sendFurniture, $furniture) {
+            $users = $this->lockPurchaseUsers($buyer, $recipient);
+            $buyer = $users->get($buyer->id);
+            $recipient = $users->get($recipient->id);
+
+            if (! $buyer || ! $recipient || $buyer->website_balance < $price) {
+                return;
             }
-        }
 
-        if ($package->badges) {
-            $this->giveBadges($user, $package->badges);
-        }
+            $buyer->decrement('website_balance', $price);
 
-        if ($package->furniture) {
-            $this->handleFurniture(json_decode($package->furniture, true));
+            $sendCurrency->execute($recipient, 'credits', $package->credits);
+            $sendCurrency->execute($recipient, 'duckets', $package->duckets);
+            $sendCurrency->execute($recipient, 'diamonds', $package->diamonds);
+
+            if ($package->give_rank) {
+                if ($this->rconService->isConnected) {
+                    $this->rconService->setRank($recipient, $package->give_rank);
+                    $this->rconService->disconnectUser($recipient);
+                } else {
+                    $recipient->update([
+                        'rank' => $package->give_rank,
+                    ]);
+                }
+            }
+
+            if ($package->badges) {
+                $this->giveBadges($recipient, $package->badges);
+            }
+
+            if ($furniture) {
+                $sendFurniture->execute($recipient, $furniture);
+            }
+
+            return $users;
+        });
+
+        if (! $users) {
+            return to_route('shop.index')->withErrors(
+                ['message' => __('You need to top-up your account with another $:amount to purchase this package', ['amount' => ($price - $buyer->fresh()->website_balance)])],
+            );
         }
 
         $message = __('You have successfully purchased the package :name', ['name' => $package->name]);
 
-        if ($user->username !== Auth::user()->username) {
-            $message = __('You have successfully purchased the package :name for :username', ['name' => $package->name, 'username' => $user->username]);
+        if ($recipient->isNot($buyer)) {
+            $message = __('You have successfully purchased the package :name for :username', ['name' => $package->name, 'username' => $recipient->username]);
         }
 
         return to_route('shop.index')->with('success', $message);
     }
 
-    public function handleFurniture(array $furniture)
+    private function lockPurchaseUsers(User $buyer, User $recipient): Collection
     {
-        $sendFurniture = app(SendFurniture::class);
-
-        $sendFurniture->execute(Auth::user(), $furniture);
+        return User::whereKey([$buyer->id, $recipient->id])
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
     }
 }

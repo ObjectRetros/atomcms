@@ -23,7 +23,10 @@ class ShopController extends Controller
     public function itemsByCategory(HomeCategory $category): JsonResponse
     {
         $category->load([
-            'homeItems' => fn ($query) => $query->orderBy('order')->where('type', HomeItemType::Sticker),
+            'homeItems' => fn ($query) => $query
+                ->enabled()
+                ->orderBy('order')
+                ->where('type', HomeItemType::Sticker),
         ]);
 
         return $this->jsonResponse([
@@ -48,7 +51,7 @@ class ShopController extends Controller
         }
 
         return $this->jsonResponse([
-            'items' => HomeItem::where('type', $itemType)->orderBy('order')->get()->values(),
+            'items' => HomeItem::enabled()->where('type', $itemType)->orderBy('order')->get()->values(),
         ]);
     }
 
@@ -66,10 +69,8 @@ class ShopController extends Controller
         ]);
     }
 
-    public function inventory(string $username): JsonResponse
+    public function inventory(User $user): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
-
         abort_unless($user->id === Auth::id(), 403);
 
         $allInventoryItems = $user->groupedInventoryItems()->get();

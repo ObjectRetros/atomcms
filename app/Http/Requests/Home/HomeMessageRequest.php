@@ -3,15 +3,12 @@
 namespace App\Http\Requests\Home;
 
 use App\Rules\WebsiteWordfilterRule;
-use Illuminate\Foundation\Http\FormRequest;
 
-class HomeMessageRequest extends FormRequest
+class HomeMessageRequest extends HomeRequest
 {
     public function authorize(): bool
     {
-        $username = $this->route('username');
-
-        return $this->user()?->username !== $username;
+        return $this->isHomeVisitor();
     }
 
     /**

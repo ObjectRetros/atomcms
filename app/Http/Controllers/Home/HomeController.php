@@ -18,18 +18,16 @@ class HomeController extends Controller
         private readonly HomeService $homeService,
     ) {}
 
-    public function show(string $username): View
+    public function show(User $user): View
     {
         return view('home.show', [
-            'user' => User::select('id', 'username')->where('username', $username)->firstOrFail(),
-            'isMe' => $username === Auth::user()?->username,
+            'user' => $user,
+            'isMe' => Auth::id() === $user->id,
         ]);
     }
 
-    public function getPlacedItems(string $username): JsonResponse
+    public function getPlacedItems(User $user): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
-
         $allPlacedItems = $user->placedHomeItems()
             ->defaultRelationships(true)
             ->get();
@@ -50,10 +48,8 @@ class HomeController extends Controller
         ]);
     }
 
-    public function save(SaveHomeRequest $request): JsonResponse
+    public function save(User $user, SaveHomeRequest $request): JsonResponse
     {
-        $user = Auth::user();
-
         try {
             $this->homeService->saveItems($user, $request->validated());
         } catch (\Throwable) {

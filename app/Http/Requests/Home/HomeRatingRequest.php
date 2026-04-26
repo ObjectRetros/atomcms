@@ -2,18 +2,14 @@
 
 namespace App\Http\Requests\Home;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class HomeRatingRequest extends FormRequest
+class HomeRatingRequest extends HomeRequest
 {
     /**
      * @return array<string, array<int, string>>
      */
     public function authorize(): bool
     {
-        $username = $this->route('username');
-
-        return $this->user()?->username !== $username;
+        return $this->isHomeVisitor();
     }
 
     public function rules(): array

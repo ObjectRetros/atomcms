@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Miscellaneous;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LogoGeneratorRequest;
 use App\Models\Miscellaneous\WebsiteSetting;
-use Illuminate\Http\Request;
+use App\Services\SettingsService;
+use Illuminate\Support\Str;
 
 class LogoGeneratorController extends Controller
 {
@@ -19,22 +21,21 @@ class LogoGeneratorController extends Controller
         return view('logo-generator');
     }
 
-    public function store(Request $request)
+    public function store(LogoGeneratorRequest $request)
     {
-        $request->validate(['logo' => 'required|image']);
         $file = $request->file('logo');
-        $filename = $file->getClientOriginalName();
-        $path = '/assets/images/generated-logos';
+        $directory = 'assets/images/generated-logos';
+        $filename = Str::uuid() . '.' . ($file->guessExtension() ?: 'png');
 
-        $file->move(public_path($path), $filename);
+        $file->move(public_path($directory), $filename);
 
-        $setting = WebsiteSetting::where('key', 'cms_logo')->first();
-
-        $setting->update([
-            'value' => sprintf('%s/%s', $path, $filename),
+        WebsiteSetting::updateOrCreate(['key' => 'cms_logo'], [
+            'value' => sprintf('/%s/%s', $directory, $filename),
+            'comment' => 'CMS logo path',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Logo updated!']);
+        SettingsService::clearCache();
 
+        return response()->json(['success' => true, 'message' => 'Logo updated!']);
     }
 }

@@ -46,6 +46,7 @@ Alpine.data('homeManager', (username, isMe) => ({
     init() {
         this.fetchPlacedItems();
         this._bindDrag();
+        this._bindWidgetActions();
     },
 
     _showToast(msg, type = 'success') {
@@ -114,6 +115,33 @@ Alpine.data('homeManager', (username, isMe) => ({
         document.addEventListener('touchend', onEnd);
     },
 
+    _bindWidgetActions() {
+        if (this._widgetActionsBound) return;
+        this._widgetActionsBound = true;
+
+        document.addEventListener('click', (e) => {
+            if (!this.$root?.contains(e.target)) return;
+
+            const ratingButton = e.target.closest('[data-home-rating]');
+            if (!ratingButton || this.editing || this.previewing) return;
+
+            const rating = parseInt(ratingButton.dataset.homeRating, 10);
+            if (!Number.isInteger(rating)) return;
+
+            this.submitRating(rating);
+        });
+
+        document.addEventListener('submit', (e) => {
+            if (!this.$root?.contains(e.target)) return;
+
+            const form = e.target.closest('[data-home-message-form]');
+            if (!form || this.editing || this.previewing) return;
+
+            e.preventDefault();
+            this.submitMessage(form);
+        });
+    },
+
     _nextZ() {
         if (!this.placedItems.length) return 1;
         return Math.max(...this.placedItems.map(i => i.z || 0)) + 1;
@@ -143,6 +171,47 @@ Alpine.data('homeManager', (username, isMe) => ({
             item.content = res.content;
             item.widget_type = res.widget_type;
         } catch { /* noop */ }
+    },
+
+    async refreshWidgets(widgetType) {
+        const widgets = this.placedItems.filter((item) => {
+            if (item.widget_type === widgetType) return true;
+            if (widgetType === 'my-rating') return item.home_item?.name === 'My Rating';
+            if (widgetType === 'my-guestbook') return item.home_item?.name === 'My Guestbook';
+
+            return false;
+        });
+
+        await Promise.all(widgets.map((item) => this.fetchWidgetContent(item)));
+    },
+
+    async submitRating(rating) {
+        try {
+            const res = await this._api(`/home/${this.username}/rating`, 'POST', { rating });
+            this._showToast(res.message || 'Rating submitted successfully.');
+            await this.refreshWidgets('my-rating');
+        } catch (e) {
+            this._showToast(e.message || 'Failed to submit rating.', 'error');
+        }
+    },
+
+    async submitMessage(form) {
+        const content = String(new FormData(form).get('content') || '').trim();
+        if (!content) return;
+
+        const submit = form.querySelector('[type="submit"]');
+        if (submit) submit.disabled = true;
+
+        try {
+            const res = await this._api(`/home/${this.username}/message`, 'POST', { content });
+            form.reset();
+            this._showToast(res.message || 'Your message has been posted.');
+            await this.refreshWidgets('my-guestbook');
+        } catch (e) {
+            this._showToast(e.message || 'Failed to post message.', 'error');
+        } finally {
+            if (submit) submit.disabled = false;
+        }
     },
 
     img(path) {
@@ -217,11 +286,15 @@ Alpine.data('homeManager', (username, isMe) => ({
                 this.selectedItem = null;
                 this.showBag = false;
                 this._showToast(res.message || 'Home saved successfully.');
+                return true;
             }
         } catch (e) {
             this._showToast(e.message || 'Failed to save home.', 'error');
+            return false;
         }
         finally { this.saving = false; }
+
+        return false;
     },
 
     cancel() {
@@ -725,7 +798,10 @@ Alpine.data('homeManager', (username, isMe) => ({
         this.buying = false;
         this.endPreview();
         this.fetchBalance();
-        if (placed) this._showToast(`${placed} item${placed !== 1 ? 's' : ''} purchased & placed`);
+        if (placed) {
+            const saved = await this.save();
+            if (saved) this._showToast(`${placed} item${placed !== 1 ? 's' : ''} purchased & saved`);
+        }
     },
 
     currIcon(type) {
