@@ -46,7 +46,42 @@ class PermissionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'rank_name';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    public static function normalizeFormData(array $data): array
+    {
+        $data['log_commands'] = ($data['log_commands'] ?? '') === ''
+            ? '1'
+            : (string) $data['log_commands'];
+        $data['prefix'] ??= '';
+        $data['prefix_color'] ??= '';
+        $data['badge'] ??= '';
+        $data['room_effect'] ??= 0;
+
+        foreach (['auto_credits_amount', 'auto_pixels_amount', 'auto_gotw_amount', 'auto_points_amount'] as $currencyColumn) {
+            $data[$currencyColumn] ??= 0;
+        }
+
+        foreach (Schema::getColumns('permissions') as $column) {
+            $columnName = $column['name'] ?? null;
+
+            if (! $columnName) {
+                continue;
+            }
+
+            if (
+                str_starts_with($columnName, 'cmd')
+                || str_starts_with($columnName, 'acc')
+                || str_ends_with($columnName, 'cmd')
+            ) {
+                $data[$columnName] = ($data[$columnName] ?? '') === ''
+                    ? '0'
+                    : (string) $data[$columnName];
+            }
+        }
+
+        return $data;
+    }
 
     public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
@@ -79,6 +114,7 @@ class PermissionResource extends Resource
             })
             ->icons(['0' => 'heroicon-o-check', '1' => 'heroicon-o-x-mark', '2' => 'heroicon-o-sparkles'])
             ->colors(['0' => 'danger', '1' => 'success'])
+            ->default('0')
             ->grouped();
 
         return $schema
@@ -95,7 +131,7 @@ class PermissionResource extends Resource
                                 TextInput::make('badge')
                                     ->label(__('filament::resources.inputs.badge_code'))
                                     ->maxLength(12)
-                                    ->required(),
+                                    ->default(''),
 
                                 TextInput::make('level')
                                     ->label(__('filament::resources.inputs.level'))
@@ -103,6 +139,8 @@ class PermissionResource extends Resource
 
                                 TextInput::make('room_effect')
                                     ->label(__('filament::resources.inputs.room_effect'))
+                                    ->numeric()
+                                    ->default(0)
                                     ->required(),
                             ]),
 
@@ -153,16 +191,17 @@ class PermissionResource extends Resource
                                             ->options([
                                                 '0' => __('filament::resources.options.no'),
                                                 '1' => __('filament::resources.options.yes'),
-                                            ]),
+                                            ])
+                                            ->default('1'),
 
                                         TextInput::make('prefix')
                                             ->label(__('filament::resources.inputs.prefix'))
                                             ->maxLength(5)
-                                            ->required(),
+                                            ->default(''),
 
                                         ColorPicker::make('prefix_color')
                                             ->label(__('filament::resources.inputs.prefix_color'))
-                                            ->required(),
+                                            ->default(''),
 
                                         Toggle::make('hidden_rank')
                                             ->label(__('filament::resources.inputs.is_hidden'))
@@ -178,18 +217,26 @@ class PermissionResource extends Resource
                                                         TextInput::make('auto_credits_amount')
                                                             ->columnSpan(1)
                                                             ->label(__('filament::resources.inputs.auto_credits_amount'))
+                                                            ->numeric()
+                                                            ->default(0)
                                                             ->required(),
 
                                                         TextInput::make('auto_pixels_amount')
                                                             ->label(__('filament::resources.inputs.auto_pixels_amount'))
+                                                            ->numeric()
+                                                            ->default(0)
                                                             ->required(),
 
                                                         TextInput::make('auto_gotw_amount')
                                                             ->label(__('filament::resources.inputs.auto_gotw_amount'))
+                                                            ->numeric()
+                                                            ->default(0)
                                                             ->required(),
 
                                                         TextInput::make('auto_points_amount')
                                                             ->label(__('filament::resources.inputs.auto_points_amount'))
+                                                            ->numeric()
+                                                            ->default(0)
                                                             ->required(),
                                                     ]),
                                             ]),
