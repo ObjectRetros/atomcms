@@ -55,6 +55,8 @@ class PermissionResource extends Resource
             : (string) $data['log_commands'];
         $data['prefix'] ??= '';
         $data['prefix_color'] ??= '';
+        $data['badge'] ??= '';
+        $data['room_effect'] ??= 0;
 
         foreach (['auto_credits_amount', 'auto_pixels_amount', 'auto_gotw_amount', 'auto_points_amount'] as $currencyColumn) {
             $data[$currencyColumn] ??= 0;
@@ -129,7 +131,7 @@ class PermissionResource extends Resource
                                 TextInput::make('badge')
                                     ->label(__('filament::resources.inputs.badge_code'))
                                     ->maxLength(12)
-                                    ->required(),
+                                    ->default(''),
 
                                 TextInput::make('level')
                                     ->label(__('filament::resources.inputs.level'))
@@ -137,6 +139,8 @@ class PermissionResource extends Resource
 
                                 TextInput::make('room_effect')
                                     ->label(__('filament::resources.inputs.room_effect'))
+                                    ->numeric()
+                                    ->default(0)
                                     ->required(),
                             ]),
 
