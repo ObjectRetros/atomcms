@@ -1,5 +1,4 @@
 <x-filament-panels::page>
-    {{-- Header card --}}
     <div class="mb-4 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
         @if ($this->iconUrl)
             <img
@@ -22,7 +21,6 @@
         </div>
     </div>
 
-    {{-- Tabs --}}
     <div
         class="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
         x-data="{ tab: 'catalog' }"
@@ -69,7 +67,6 @@
             </button>
         </div>
 
-        {{-- Catalog item tab --}}
         <div x-show="tab === 'catalog'" class="p-5">
             <form wire:submit.prevent="saveCatalog" class="space-y-4">
                 {{ $this->catalogForm }}
@@ -79,7 +76,6 @@
             </form>
         </div>
 
-        {{-- Items base tab --}}
         <div x-show="tab === 'base'" x-cloak class="p-5">
             @if ($itemBase)
                 <form wire:submit.prevent="saveItemBase" class="space-y-4">
@@ -96,7 +92,6 @@
             @endif
         </div>
 
-        {{-- Rooms tab --}}
         <div x-show="tab === 'rooms'" x-cloak class="p-5">
             @if ($this->roomPlacements->isEmpty())
                 <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -137,7 +132,6 @@
             @endif
         </div>
 
-        {{-- Owners tab --}}
         <div x-show="tab === 'owners'" x-cloak class="p-5">
             @if ($this->ownerSummary->isEmpty())
                 <p class="text-sm text-gray-500 dark:text-gray-400">

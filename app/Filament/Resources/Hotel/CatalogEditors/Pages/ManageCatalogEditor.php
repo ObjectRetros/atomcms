@@ -18,11 +18,6 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 
-/**
- * Catalog editor page. Holds only the minimal Livewire state needed to drive
- * the UI - the heavy lifting (tree fetch, reordering, search, item moves)
- * lives in dedicated services so each piece is testable in isolation.
- */
 class ManageCatalogEditor extends Page implements HasTable
 {
     use InteractsWithTable;
@@ -35,11 +30,8 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public string $searchTerm = '';
 
-    /** Page IDs that should be open on initial render (the path to the
-     *  currently selected page, plus any matched search hits). After the
-     *  initial paint, expand/collapse is handled entirely client-side -
-     *  the server never re-renders the tree just to toggle a node, which
-     *  keeps drag-and-drop from being interrupted by Livewire morphs. */
+    /** Server-driven open state. Once rendered, expand/collapse runs client-side
+     *  so drag-and-drop isn't interrupted by Livewire morphs. */
     public array $initialOpenIds = [];
 
     public function mount(): void
@@ -51,8 +43,6 @@ class ManageCatalogEditor extends Page implements HasTable
     {
         return 'full';
     }
-
-    /* ----- Tree ---------------------------------------------------------- */
 
     protected function tree(): CatalogTreeService
     {
@@ -69,12 +59,8 @@ class ManageCatalogEditor extends Page implements HasTable
         return app(FurniIconService::class);
     }
 
-    /**
-     * Per-request memoization is critical: the recursive tree partial reads
-     * $this->pagesByParent on every node, and Cache::remember deserializes
-     * the whole collection on each call. Caching once per request brings the
-     * recursive render from thousands of cache fetches to one.
-     */
+    /** The recursive tree partial reads pagesByParent on every node; without
+     *  this the Cache::remember deserialize fires thousands of times per render. */
     private ?Collection $pagesByParentCache = null;
 
     public function getPagesByParentProperty(): Collection
@@ -84,15 +70,14 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public function getSelectedPageProperty(): ?CatalogPage
     {
-        if (! $this->selectedPageId) {
-            return null;
-        }
+        return $this->selectedPageId ? $this->findCachedPage($this->selectedPageId) : null;
+    }
 
-        // Read from the cached tree instead of issuing a fresh CatalogPage::find()
-        // every render. Selecting a page is the hottest path in this UI.
+    private function findCachedPage(int $id): ?CatalogPage
+    {
         foreach ($this->pagesByParent as $children) {
             foreach ($children as $page) {
-                if ($page->id === $this->selectedPageId) {
+                if ($page->id === $id) {
                     return $page;
                 }
             }
@@ -117,8 +102,6 @@ class ManageCatalogEditor extends Page implements HasTable
     {
         return in_array($pageId, $this->initialOpenIds, true);
     }
-
-    /* ----- Search -------------------------------------------------------- */
 
     public function updatedSearchTerm(): void
     {
@@ -151,8 +134,6 @@ class ManageCatalogEditor extends Page implements HasTable
         $this->searchTerm = '';
     }
 
-    /* ----- Page reorder (left tree) ------------------------------------- */
-
     public function reorderPages(int $parentId, array $orderedIds): void
     {
         $this->reorderService()->reorderPages($parentId, $orderedIds);
@@ -160,10 +141,6 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Menu order updated')->success()->send();
     }
 
-    /**
-     * Move a page across parents and to a specific index. Called from the
-     * Sortable.js onEnd handler in the tree partial.
-     */
     public function movePage(int $pageId, int $newParentId, int $insertAtIndex): void
     {
         $this->reorderService()->movePage($pageId, $newParentId, $insertAtIndex);
@@ -175,8 +152,6 @@ class ManageCatalogEditor extends Page implements HasTable
 
         Notification::make()->title('Page moved')->success()->send();
     }
-
-    /* ----- Item table --------------------------------------------------- */
 
     protected function getTableQuery()
     {
@@ -204,8 +179,6 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Items reordered')->success()->send();
     }
 
-    /* ----- Locked items panel ------------------------------------------- */
-
     public function getLockedItemsProperty(): Collection
     {
         if (! $this->selectedPageId) {
@@ -229,12 +202,6 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Item unlocked')->success()->send();
     }
 
-    /* ----- Page-level header actions ------------------------------------ */
-
-    /**
-     * Filament v4 picks public *Action() methods up automatically and renders
-     * them via {{ $this->editPageAction }} / etc. in the Blade view.
-     */
     public function editPageAction(): Action
     {
         return Action::make('editPage')

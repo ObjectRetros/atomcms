@@ -5,15 +5,9 @@ namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 use Filament\Forms;
 use Filament\Schemas\Components\Grid;
 
-/**
- * Full schema for editing every catalog_items column on the dedicated edit
- * page (vs CatalogItemForm which is the trimmed-down inline modal version).
- */
 class CatalogItemFullForm
 {
-    /**
-     * @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component>
-     */
+    /** @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component> */
     public static function schema(): array
     {
         return [
@@ -75,9 +69,6 @@ class CatalogItemFullForm
         ];
     }
 
-    /**
-     * Map a CatalogItem record into the form's primitives so toggles work.
-     */
     public static function fillFrom(\App\Models\Game\Furniture\CatalogItem $record): array
     {
         return [

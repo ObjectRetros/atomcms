@@ -16,18 +16,9 @@ use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-/**
- * Configures the items-of-page table: columns, row action (edit) and the
- * bulk-action group (mass edit / move to page / delete). Reordering is
- * delegated to Filament's native ->reorderable('order_number'), which handles
- * persistence + ARIA + animation for free.
- */
 class CatalogItemsTable
 {
-    /**
-     * @param  callable(): ?int  $selectedPageId  closure so the table reads the
-     *                                            current Livewire state lazily
-     */
+    /** @param  callable(): ?int  $selectedPageId  read lazily so the table sees fresh Livewire state */
     public static function configure(Table $table, callable $selectedPageId): Table
     {
         $icons = app(FurniIconService::class);
@@ -56,9 +47,7 @@ class CatalogItemsTable
             ->emptyStateIcon('heroicon-o-rectangle-stack');
     }
 
-    /**
-     * @return array<int, Tables\Columns\Column>
-     */
+    /** @return array<int, Tables\Columns\Column> */
     private static function columns(FurniIconService $icons): array
     {
         return [

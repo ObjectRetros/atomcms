@@ -1,11 +1,10 @@
 <x-filament-panels::page class="!max-w-full">
     <style>
-        /* Client-side expand/collapse - no Livewire round-trip per click. */
+        /* Expand/collapse driven by .is-open so it stays client-side. */
         .catalog-tree-list ul.catalog-tree-list { display: none; }
         .catalog-tree-item.is-open > ul.catalog-tree-list { display: block; }
         .catalog-tree-item.is-open > [data-tree-row] .catalog-tree-chevron { transform: rotate(90deg); }
 
-        /* Drop-target highlight while a drag is over a list */
         .catalog-tree-list.is-drop-target { background: rgb(245 158 11 / 0.06); border-radius: 0.5rem; }
         .catalog-tree-item.is-hover-target > [data-tree-row] {
             outline: 2px dashed rgb(245 158 11 / 0.6);
@@ -32,7 +31,6 @@
             destroy() { document.removeEventListener('keydown', this._key); },
         }"
     >
-        {{-- ============= LEFT: TREE ============= --}}
         <aside class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900">
             <x-filament::input.wrapper>
                 <x-filament::input
@@ -70,11 +68,9 @@
             @once
                 @push('scripts')
                 <script>
-                    // The whole tree is rendered server-side once. Expand / collapse,
-                    // drag-and-drop and hover-expand all run on the client so Livewire
-                    // never morphs the tree during interactions (which used to kill
-                    // the dragged element mid-flight). Only structural changes
-                    // (page moved, page selected -> reveal path) round-trip.
+                    // Tree is server-rendered once; everything after (toggle, drag,
+                    // hover-expand) is client-side so Livewire morphs can't kill
+                    // an in-flight drag. Only structural changes round-trip.
                     document.addEventListener('alpine:init', () => {
                         Alpine.data('catalogTree', () => ({
                             sortables: [],
@@ -83,27 +79,24 @@
                             isDragging: false,
 
                             init() {
-                                this._mountSortables();
+                                this._attachMissingSortables();
 
-                                // Livewire's morph.updated fires once per DOM node it
-                                // changes. With a recursive tree of thousands of nodes,
-                                // a naive `mount on every fire` ran _mountSortables
-                                // thousands of times per cycle and hung the page.
-                                // Coalesce to a single trailing call.
+                                // morph.updated fires per DOM node; on a deep tree that
+                                // ran the remount logic thousands of times per cycle.
+                                // Coalesce to a single trailing call per tick.
                                 this._remountScheduled = false;
                                 const scheduleRemount = () => {
                                     if (this._remountScheduled) return;
                                     this._remountScheduled = true;
                                     queueMicrotask(() => {
                                         this._remountScheduled = false;
-                                        this._mountSortables();
+                                        this._attachMissingSortables();
                                     });
                                 };
                                 Livewire.hook('morph.updated', ({ el }) => {
                                     if (this.$el.contains(el)) scheduleRemount();
                                 });
 
-                                // Toggle expand/collapse purely on the client.
                                 this.$el.addEventListener('click', (e) => {
                                     const btn = e.target.closest('.catalog-tree-toggle');
                                     if (!btn) return;
@@ -120,11 +113,9 @@
                                 this._cancelHoverExpand();
                             },
 
-                            // Idempotent: never touches an existing Sortable instance, only
-                            // attaches one to <ul>s that don't have one and prunes any whose
-                            // element is no longer in the DOM. This is critical during a drag -
-                            // tearing down the active Sortable kills the drag mid-flight.
-                            _mountSortables() {
+                            // Skips lists that already have a Sortable. Touching an
+                            // active Sortable during a drag kills the drag mid-flight.
+                            _attachMissingSortables() {
                                 if (typeof Sortable === 'undefined') return;
 
                                 this.sortables = this.sortables.filter((s) => {
@@ -178,14 +169,9 @@
 
                                 if (li.classList.contains('has-children') && ! li.classList.contains('is-open')) {
                                     this.hoverTimer = setTimeout(() => {
-                                        // Pure client-side toggle - no Livewire morph,
-                                        // so the dragged item keeps its DOM identity.
+                                        // Client-side toggle keeps the dragged DOM node alive.
                                         li.classList.add('is-open');
-                                        // Idempotent mount: attach Sortable to the freshly
-                                        // visible nested <ul> so it joins the 'catalog-pages'
-                                        // group and accepts drops, without touching the
-                                        // active in-flight Sortable instance.
-                                        this._mountSortables();
+                                        this._attachMissingSortables();
                                     }, 450);
                                 }
 
@@ -205,7 +191,6 @@
             @endonce
         </aside>
 
-        {{-- ============= RIGHT: ITEMS ============= --}}
         <section class="flex min-w-0 flex-col rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
             @if ($this->selectedPage)
                 <header class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">

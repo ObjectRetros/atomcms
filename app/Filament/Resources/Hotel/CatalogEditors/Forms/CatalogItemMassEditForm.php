@@ -5,15 +5,10 @@ namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 use Filament\Forms;
 use Filament\Schemas\Components\Grid;
 
-/**
- * Mass-edit schema. Every field is nullable — empty fields skip the update so
- * the same modal can patch credits without trampling other fields.
- */
+/** Empty fields are skipped on save so a patch-only edit doesn't trample other columns. */
 class CatalogItemMassEditForm
 {
-    /**
-     * @return array<int, Forms\Components\Component>
-     */
+    /** @return array<int, Forms\Components\Component> */
     public static function schema(): array
     {
         $note = 'Leave empty to keep unchanged';
@@ -40,12 +35,7 @@ class CatalogItemMassEditForm
         ];
     }
 
-    /**
-     * Reduces a submitted form payload to the columns that should actually be
-     * written. Centralised so the bulk action stays one-liner.
-     *
-     * @return array<string, int|string>
-     */
+    /** @return array<string, int|string>  only the non-empty fields, ready for ->update() */
     public static function pickUpdates(array $data): array
     {
         $updates = [];

@@ -6,15 +6,9 @@ use App\Services\Catalog\FurniIconService;
 use Filament\Forms;
 use Illuminate\Support\HtmlString;
 
-/**
- * Form schema for editing a catalog page (caption, tag, order, icon).
- * Pulled out of ManageCatalogEditor so the page class stays under 250 lines.
- */
 class CatalogPageForm
 {
-    /**
-     * @return array<int, Forms\Components\Component>
-     */
+    /** @return array<int, Forms\Components\Component> */
     public static function schema(): array
     {
         $icons = app(FurniIconService::class);

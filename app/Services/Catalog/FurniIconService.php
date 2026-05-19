@@ -4,11 +4,7 @@ namespace App\Services\Catalog;
 
 use App\Models\Miscellaneous\WebsiteSetting;
 
-/**
- * Resolves furniture and catalog-page icon URLs from the configured website
- * settings. Caches the base paths on the instance so repeated lookups during
- * a single request don't hammer the settings table.
- */
+/** Per-request instance cache of the website_settings base paths. */
 class FurniIconService
 {
     private ?string $furniBase = null;

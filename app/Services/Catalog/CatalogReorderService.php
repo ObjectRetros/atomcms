@@ -7,12 +7,8 @@ use App\Models\Game\Furniture\CatalogPage;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Mutates catalog page/item ordering. Every public method runs in a single
- * transaction, normalises spacing to (i+1)*10 so future inserts get clean room
- * to slot in, and busts the tree cache so the UI sees the change immediately.
- *
- * Locked items (order_number = -1) are intentionally excluded from any ordering
- * operation — the editor renders them in a separate "Locked" panel.
+ * Order numbers are written as (i+1)*10 so future drops have gaps to slot into.
+ * Items with order_number = -1 are "locked" and skipped by every reorder op.
  */
 class CatalogReorderService
 {
@@ -37,12 +33,8 @@ class CatalogReorderService
     }
 
     /**
-     * Move a page across parents (cross-tree drag). Sets the new parent and
-     * re-numbers all sibling pages under the destination so the dropped page
-     * lands at $insertAtIndex (0-based).
-     *
-     * @param  int|null  $newParentId  -1 for root, or any catalog_pages.id
-     * @param  int  $insertAtIndex  position in the new parent's child list
+     * @param  int  $newParentId  -1 for root, or any catalog_pages.id
+     * @param  int  $insertAtIndex  0-based position in the new parent's child list
      */
     public function movePage(int $pageId, int $newParentId, int $insertAtIndex): void
     {
@@ -52,7 +44,6 @@ class CatalogReorderService
         }
 
         DB::transaction(function () use ($page, $newParentId, $insertAtIndex) {
-            // Pull current siblings (excluding the moving page if same parent)
             $siblings = CatalogPage::query()
                 ->where('parent_id', $newParentId)
                 ->where('id', '!=', $page->id)
@@ -61,7 +52,6 @@ class CatalogReorderService
                 ->pluck('id')
                 ->all();
 
-            // Insert moving page at the requested index
             $insertAtIndex = max(0, min($insertAtIndex, count($siblings)));
             array_splice($siblings, $insertAtIndex, 0, [$page->id]);
 
@@ -92,9 +82,6 @@ class CatalogReorderService
         });
     }
 
-    /**
-     * Sorts the page's items A→Z by catalog_name and assigns 10, 20, 30…
-     */
     public function sortItemsAlphabetically(int $pageId): int
     {
         $items = CatalogItem::query()
@@ -117,10 +104,7 @@ class CatalogReorderService
         return $items->count();
     }
 
-    /**
-     * Re-spaces existing item order — preserves the relative order but resets
-     * the gaps to 10 so future drags have somewhere to land.
-     */
+    /** Preserves relative order, restores the (i+1)*10 spacing. */
     public function resetItemSpacing(int $pageId): int
     {
         $items = CatalogItem::query()
@@ -143,9 +127,7 @@ class CatalogReorderService
         return $items->count();
     }
 
-    /**
-     * Move N items to a different page; appends to the destination's tail.
-     */
+    /** Appends to the destination page's tail. */
     public function moveItemsToPage(int $targetPageId, array $itemIds): int
     {
         $clean = $this->cleanIds($itemIds);
@@ -166,9 +148,7 @@ class CatalogReorderService
         return count($clean);
     }
 
-    /**
-     * @return array<int, int>
-     */
+    /** @return array<int, int> */
     private function cleanIds(array $ids): array
     {
         return array_values(array_unique(array_filter(

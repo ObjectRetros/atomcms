@@ -76,7 +76,7 @@
                     </button>
                 </div>
 
-                {{-- Always render the children if any: client toggles visibility via .is-open --}}
+                {{-- Render unconditionally; .is-open toggles visibility client-side. --}}
                 @if ($hasChildren)
                     @include('filament.resources.hotel.catalog-editors.pages.partials.catalog-tree', [
                         'parentId' => $page->id,

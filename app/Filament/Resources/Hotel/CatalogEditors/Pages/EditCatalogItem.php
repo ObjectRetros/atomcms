@@ -19,21 +19,6 @@ use Filament\Resources\Pages\Page;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Collection;
 
-/**
- * Dedicated edit page for one catalog_items row.
- *
- * Renders four tabs:
- *   1. Catalog item     - every editable column on catalog_items
- *   2. Items base       - the underlying items_base row (the furniture
- *                         definition this catalog row points at)
- *   3. Placed in rooms  - distinct rooms that hold an instance of this
- *                         items_base id, with owner + count per room
- *   4. Owners           - users who own at least one instance, with their
- *                         total count
- *
- * All relations are eager-loaded server-side so production lazy-loading
- * prevention doesn't trip.
- */
 class EditCatalogItem extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -76,11 +61,7 @@ class EditCatalogItem extends Page implements HasForms
             : 'Edit catalog item';
     }
 
-    /* ----- Forms -------------------------------------------------------- */
-
-    /**
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
     protected function getForms(): array
     {
         return ['catalogForm', 'itemBaseForm'];
@@ -99,8 +80,6 @@ class EditCatalogItem extends Page implements HasForms
             ->components(ItemBaseForm::schema())
             ->statePath('itemBaseData');
     }
-
-    /* ----- Save actions -------------------------------------------------- */
 
     protected function getHeaderActions(): array
     {
@@ -151,16 +130,13 @@ class EditCatalogItem extends Page implements HasForms
             });
     }
 
-    /* ----- Tab data (rooms / owners) ------------------------------------ */
-
     public function getRoomPlacementsProperty(): Collection
     {
         if (! $this->itemBase) {
             return collect();
         }
 
-        // Items eager-load room.owner so the view can render owner + room
-        // info without a single lazy query.
+        // Eager-load room.owner because production disables lazy loading.
         return Item::query()
             ->where('item_id', $this->itemBase->id)
             ->whereNotNull('room_id')

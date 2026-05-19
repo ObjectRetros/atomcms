@@ -7,23 +7,13 @@ use App\Models\Game\Furniture\CatalogPage;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Read-side helpers for the catalog editor: tree fetching, breadcrumbs and
- * search. Mutating ops live in CatalogReorderService so this class stays
- * pure-read and the cache invariants are obvious.
- */
 class CatalogTreeService
 {
     private const CACHE_KEY = 'catalog-editor.tree.v1';
 
     private const CACHE_TTL = 60;
 
-    /**
-     * Catalog pages grouped by parent_id and ordered by order_num.
-     * Cached because the tree is rendered on every request.
-     *
-     * @return Collection<int, Collection<int, CatalogPage>>
-     */
+    /** @return Collection<int, Collection<int, CatalogPage>> */
     public function pagesGroupedByParent(): Collection
     {
         return Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function () {
@@ -40,12 +30,7 @@ class CatalogTreeService
         Cache::forget(self::CACHE_KEY);
     }
 
-    /**
-     * Walks parent_id up to the root, returning [root, …, page]. Uses a single
-     * SELECT and an in-memory map so deeply nested pages don't fan out queries.
-     *
-     * @return array<int, CatalogPage>
-     */
+    /** @return array<int, CatalogPage> ordered root → leaf */
     public function breadcrumb(?CatalogPage $page): array
     {
         if (! $page) {
@@ -65,10 +50,8 @@ class CatalogTreeService
     }
 
     /**
-     * Page IDs whose subtree should be expanded so a search hit is visible.
-     *
      * @param  Collection<int, int>  $hitIds
-     * @return array<int, int>
+     * @return array<int, int>  every ancestor page id, so the hit is visible
      */
     public function expandToReveal(Collection $hitIds): array
     {
@@ -86,9 +69,7 @@ class CatalogTreeService
         return array_values($reveal);
     }
 
-    /**
-     * @return Collection<int, CatalogPage>
-     */
+    /** @return Collection<int, CatalogPage> */
     public function searchPages(string $needle): Collection
     {
         $like = '%'.$this->escapeLike($needle).'%';
@@ -103,9 +84,7 @@ class CatalogTreeService
             ->get();
     }
 
-    /**
-     * @return Collection<int, CatalogItem>
-     */
+    /** @return Collection<int, CatalogItem> */
     public function searchItems(string $needle): Collection
     {
         $like = '%'.$this->escapeLike($needle).'%';

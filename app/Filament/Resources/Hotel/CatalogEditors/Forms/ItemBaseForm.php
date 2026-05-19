@@ -5,15 +5,9 @@ namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 use Filament\Forms;
 use Filament\Schemas\Components\Grid;
 
-/**
- * Full schema for editing items_base columns. Grouped by purpose so the form
- * stays scannable on the items_base tab of the catalog item edit page.
- */
 class ItemBaseForm
 {
-    /**
-     * @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component>
-     */
+    /** @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component> */
     public static function schema(): array
     {
         return [
