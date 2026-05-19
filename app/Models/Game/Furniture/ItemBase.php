@@ -87,4 +87,13 @@ class ItemBase extends Model
     {
         return $this->hasMany(CatalogItem::class, 'item_ids', 'id');
     }
+
+    /**
+     * Concrete furniture instances of this base item (joined on items.item_id).
+     * Each row is one piece of furniture owned by a user / placed in a room.
+     */
+    public function instances(): HasMany
+    {
+        return $this->hasMany(Item::class, 'item_id', 'id');
+    }
 }
