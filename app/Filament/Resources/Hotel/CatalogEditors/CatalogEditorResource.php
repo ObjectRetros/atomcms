@@ -43,6 +43,7 @@ class CatalogEditorResource extends Resource
     {
         return [
             'index' => Pages\ManageCatalogEditor::route('/'),
+            'edit-item' => Pages\EditCatalogItem::route('/items/{item}/edit'),
         ];
     }
 }

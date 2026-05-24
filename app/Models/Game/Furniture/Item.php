@@ -2,6 +2,7 @@
 
 namespace App\Models\Game\Furniture;
 
+use App\Models\Game\Room;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,5 +51,15 @@ class Item extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
+    }
+
+    public function itemBase(): BelongsTo
+    {
+        return $this->belongsTo(ItemBase::class, 'item_id');
     }
 }

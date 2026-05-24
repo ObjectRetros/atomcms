@@ -87,4 +87,10 @@ class ItemBase extends Model
     {
         return $this->hasMany(CatalogItem::class, 'item_ids', 'id');
     }
+
+    /** Rows in `items` — one record per placed/owned piece of this base item. */
+    public function instances(): HasMany
+    {
+        return $this->hasMany(Item::class, 'item_id', 'id');
+    }
 }

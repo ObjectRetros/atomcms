@@ -28,6 +28,7 @@ class AdminFilamentPanelProvider extends PanelProvider
             ->id('housekeeping')
             ->path('housekeeping')
             ->login()
+            ->viteTheme('resources/css/filament/housekeeping/theme.css')
             ->colors([
                 'primary' => Color::Amber,
             ])
