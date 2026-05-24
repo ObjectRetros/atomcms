@@ -12,6 +12,7 @@ export default defineConfig({
                 path.resolve(__dirname, "js/app.js"),
                 "resources/js/global.js",
                 "resources/css/global.css",
+                "resources/css/filament/housekeeping/theme.css",
             ],
         }),
 

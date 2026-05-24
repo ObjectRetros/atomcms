@@ -5,29 +5,17 @@ namespace App\Services\Catalog;
 use App\Models\Game\Furniture\CatalogItem;
 use App\Models\Game\Furniture\CatalogPage;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class CatalogTreeService
 {
-    private const CACHE_KEY = 'catalog-editor.tree.v1';
-
-    private const CACHE_TTL = 60;
-
     /** @return Collection<int, Collection<int, CatalogPage>> */
     public function pagesGroupedByParent(): Collection
     {
-        return Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function () {
-            return CatalogPage::query()
-                ->orderBy('order_num')
-                ->orderBy('id')
-                ->get()
-                ->groupBy('parent_id');
-        });
-    }
-
-    public function flushCache(): void
-    {
-        Cache::forget(self::CACHE_KEY);
+        return CatalogPage::query()
+            ->orderBy('order_num')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('parent_id');
     }
 
     /** @return array<int, CatalogPage> ordered root → leaf */

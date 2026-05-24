@@ -28,8 +28,6 @@ class CatalogReorderService
                     ->update(['order_num' => ($i + 1) * 10]);
             }
         });
-
-        $this->tree->flushCache();
     }
 
     /**
@@ -61,8 +59,6 @@ class CatalogReorderService
                 CatalogPage::whereKey($id)->update(['order_num' => ($i + 1) * 10]);
             }
         });
-
-        $this->tree->flushCache();
     }
 
     public function reorderItems(int $pageId, array $orderedIds): void

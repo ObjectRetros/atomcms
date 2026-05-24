@@ -224,7 +224,6 @@ class ManageCatalogEditor extends Page implements HasTable
                     'icon_image' => max(1, (int) ($data['icon_image'] ?: 1)),
                 ]);
 
-                $this->tree()->flushCache();
                 Notification::make()->title('Page updated')->success()->send();
             });
     }
