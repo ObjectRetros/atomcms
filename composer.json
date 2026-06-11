@@ -31,7 +31,6 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.9.1",
-        "filament/blueprint": "^2.1",
         "filament/upgrade": "^5.0",
         "fruitcake/laravel-debugbar": "*",
         "larastan/larastan": "^3.9",
@@ -86,6 +85,13 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        },
+        "policy": {
+            "advisories": {
+                "ignore-id": [
+                    "PKSA-5bdf-2x61-v43c"
+                ]
+            }
         }
     },
     "repositories": [
