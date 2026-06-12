@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountSettingsFormRequest;
 use App\Services\RconService;
 use App\Services\User\SessionService;
-use App\Services\User\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +13,7 @@ use Illuminate\View\View;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly UserService $userService, private readonly RconService $rconService) {}
+    public function __construct(private readonly SessionService $sessionService, private readonly RconService $rconService) {}
 
     public function edit(): View
     {
@@ -45,12 +44,12 @@ class AccountSettingsController extends Controller
         }
 
         if ($user->mail !== $request->input('mail')) {
-            $this->userService->updateField($user, 'mail', $request->input('mail'));
+            $user->update(['mail' => $request->input('mail')]);
         }
 
         if ($user->motto !== $request->input('motto')) {
             $this->rconService->setMotto($user, $request->input('motto'));
-            $this->userService->updateField($user, 'motto', $request->input('motto'));
+            $user->update(['motto' => $request->input('motto')]);
         }
 
         return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
