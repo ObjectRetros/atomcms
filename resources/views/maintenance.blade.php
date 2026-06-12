@@ -86,7 +86,7 @@
         <h2 class="text-4xl lg:text-5xl font-bold uppercase">Maintenance break!</h2>
 
         <article class="mt-4 text-lg lg:text-xl max-w-[600px] text-wrap">
-            <p>{!! setting('maintenance_message') !!}</p>
+            <p>{!! \Stevebauman\Purify\Facades\Purify::clean(setting('maintenance_message')) !!}</p>
         </article>
     </div>
 </div>

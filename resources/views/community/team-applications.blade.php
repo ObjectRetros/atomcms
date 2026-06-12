@@ -38,7 +38,7 @@
 
                     <div class="text-center dark:text-gray-400">
                         <div class="mb-4 text-sm">
-                            {!! $position->description !!}
+                            {!! nl2br(e($position->description)) !!}
                         </div>
                         <div class="mb-4 text-sm font-semibold">
                             {{ __('Application Deadline :date', ['date' => $position->apply_to ? $position->apply_to->format('F j, Y, g:i A') : __('No deadline set')]) }}

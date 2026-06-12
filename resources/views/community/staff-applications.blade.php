@@ -15,7 +15,7 @@
 
                     <div class="text-center dark:text-gray-400">
                         <div class="mb-4 text-sm">
-                            {!! $position->description !!}
+                            {!! nl2br(e($position->description)) !!}
                         </div>
                         <div class="mb-4 text-sm font-semibold">
                             {{ __('Application Deadline :date', [
