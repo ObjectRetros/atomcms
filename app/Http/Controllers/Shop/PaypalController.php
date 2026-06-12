@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountTopupFormRequest;
+use App\Models\Shop\WebsitePaypalTransaction;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +19,9 @@ class PaypalController extends Controller
 
     private const STATUS_COMPLETED = 'COMPLETED';
 
-    public function __construct(private PayPalClient $provider)
+    private PayPalClient $provider;
+
+    public function __construct()
     {
         $this->provider = new PayPalClient;
         $this->provider->setApiCredentials(config('habbo.paypal'));
@@ -85,43 +90,78 @@ class PaypalController extends Controller
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
         }
 
-        $response = $this->provider->capturePaymentOrder($request['token']);
-        $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
-
-        if (! isset($response['status'], $paymentDetails)) {
-            Log::error('Invalid response from PayPal', ['response' => $response]);
-
-            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
+        // Idempotency: never capture or credit an order that already completed.
+        if ($transaction->status === self::STATUS_COMPLETED) {
+            return to_route('shop.index')->with('success', __('Transaction successful'));
         }
 
-        if (! isset($response['status'])) {
-            $details = $response['error']['details'][0];
-            $transaction->update([
-                'status' => $response['name'],
-                'description' => sprintf('%s - %s', $details['issue'], $details['description']),
-                'amount' => 0,
-            ]);
+        $response = $this->provider->capturePaymentOrder($request['token']);
+        $capture = data_get($response, 'purchase_units.0.payments.captures.0');
+
+        if (! isset($response['status']) || $capture === null) {
+            $this->recordFailure($transaction, $response);
 
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
         }
 
-        $paymentDetails = $response['purchase_units'][0]['payments']['captures'][0];
-
-        $transaction->update([
-            'status' => $paymentDetails['status'],
-            'amount' => $paymentDetails['amount']['value'],
-            'currency' => $paymentDetails['amount']['currency_code'],
-        ]);
-
         if ($response['status'] !== self::STATUS_COMPLETED) {
-            return to_route('shop.index')->withErrors(
-                ['message' => $response['message'] ?? __('Something went wrong')],
-            );
+            $transaction->update(['status' => $capture['status'] ?? $response['status'], 'amount' => 0]);
+
+            return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
         }
 
-        $user->increment('website_balance', $paymentDetails['amount']['value']);
+        if (data_get($capture, 'amount.currency_code') !== config('habbo.paypal.currency')) {
+            Log::error('PayPal currency mismatch', ['response' => $response]);
+
+            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
+        }
+
+        $this->creditCompletedOrder($user, $transaction->getKey(), $capture);
 
         return to_route('shop.index')->with('success', __('Transaction successful'));
+    }
+
+    /**
+     * Mark the order completed and credit the balance exactly once, even under
+     * concurrent return-url requests, by locking the transaction row first.
+     *
+     * @param  array<string, mixed>  $capture
+     */
+    private function creditCompletedOrder(User $user, int|string $transactionKey, array $capture): void
+    {
+        DB::transaction(function () use ($user, $transactionKey, $capture) {
+            $transaction = $user->transactions()->whereKey($transactionKey)->lockForUpdate()->first();
+
+            if ($transaction === null || $transaction->status === self::STATUS_COMPLETED) {
+                return;
+            }
+
+            $transaction->update([
+                'status' => $capture['status'],
+                'amount' => $capture['amount']['value'],
+                'currency' => $capture['amount']['currency_code'],
+            ]);
+
+            $user->increment('website_balance', (int) $capture['amount']['value']);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     */
+    private function recordFailure(WebsitePaypalTransaction $transaction, array $response): void
+    {
+        $details = data_get($response, 'details.0', data_get($response, 'error.details.0'));
+
+        $transaction->update([
+            'status' => $response['name'] ?? 'FAILED',
+            'description' => $details
+                ? sprintf('%s - %s', $details['issue'] ?? '', $details['description'] ?? '')
+                : ($response['message'] ?? 'Unknown PayPal error'),
+            'amount' => 0,
+        ]);
+
+        Log::error('PayPal capture failed', ['response' => $response]);
     }
 
     public function cancelled(Request $request): Response

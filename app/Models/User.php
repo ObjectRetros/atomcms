@@ -320,6 +320,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsiteArticleComment::class);
     }
 
+    /**
+     * @return HasMany<WebsitePaypalTransaction, $this>
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(WebsitePaypalTransaction::class);
