@@ -56,6 +56,6 @@ class StaffApplicationsController extends Controller
 
         return redirect()
             ->route('staff-applications.index')
-            ->with('status', __('Your application has been submitted!'));
+            ->with('success', __('Your application has been submitted!'));
     }
 }
