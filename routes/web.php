@@ -81,9 +81,9 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Password
         Route::get('forgot-password', ForgotPasswordController::class)->name('forgot.password.get');
-        Route::post('forgot-password', [ForgotPasswordController::class, 'submitForgetPassword'])->name('forgot.password.post');
-        Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPassword'])->name('reset.password.get');
-        Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->name('reset.password.post');
+        Route::post('forgot-password', [ForgotPasswordController::class, 'submitForgetPassword'])->middleware('throttle:6,1')->name('forgot.password.post');
+        Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPassword'])->middleware('throttle:6,1')->name('reset.password.get');
+        Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->middleware('throttle:6,1')->name('reset.password.post');
     });
 
     // Can only be accessed if logged in
