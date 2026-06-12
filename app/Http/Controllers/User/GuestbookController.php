@@ -12,7 +12,9 @@ class GuestbookController extends Controller
 {
     public function store(User $user, GuestbookFormRequest $request)
     {
-        $this->validateGuestbookPost($user, $request);
+        if ($response = $this->validateGuestbookPost($user, $request)) {
+            return $response;
+        }
 
         $user->profileGuestbook()->create([
             'user_id' => Auth::id(),
@@ -24,7 +26,12 @@ class GuestbookController extends Controller
 
     public function destroy(User $user, WebsiteUserGuestbook $guestbook)
     {
-        if ($guestbook->user_id !== Auth::id() && $guestbook->profile_id !== $user->id && Auth::user()->rank < (int) setting('min_staff_rank')) {
+        // Authorize against the authenticated user, never the route parameter.
+        $canDelete = $guestbook->user_id === Auth::id()
+            || $guestbook->profile_id === Auth::id()
+            || Auth::user()->rank >= (int) setting('min_staff_rank');
+
+        if (! $canDelete) {
             return redirect()->back()->withErrors([
                 'message' => __('Do do not have permission to delete this message'),
             ]);
