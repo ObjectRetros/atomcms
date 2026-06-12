@@ -14,6 +14,15 @@ return [
         'site_environment' => env('APP_ENV'),
     ],
 
+    /*
+    | Proxies allowed to set X-Forwarded-* headers so request()->ip() reflects
+    | the real client (used for bans, rate limits and per-IP registration caps).
+    | Leave empty for a directly exposed server. Behind Cloudflare/nginx set a
+    | comma-separated list of proxy IPs/CIDRs, or "*" when the origin only
+    | accepts connections from that proxy.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     'reactions' => [
         'bad', 'crying', 'good', 'happy', 'taut', 'impatient', 'inlove', 'laugh', 'proud', 'wow',
         'shameful', 'shameless', 'sleeping', 'smile', 'tongue', 'wink', 'disgusted', 'angry', 'lgbt', 'heart2', 'bobba', 'poop',
