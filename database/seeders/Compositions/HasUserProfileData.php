@@ -3,7 +3,6 @@
 namespace Database\Seeders\Compositions;
 
 use App\Models\Home\HomeCategory;
-use Illuminate\Support\Str;
 use Database\Seeders\Compositions\Home\HasAlhambraCategoryData;
 use Database\Seeders\Compositions\Home\HasArtistsCategoryData;
 use Database\Seeders\Compositions\Home\HasBackgroundsCategoryData;
@@ -27,6 +26,7 @@ use Database\Seeders\Compositions\Home\HasValentineCategoryData;
 use Database\Seeders\Compositions\Home\HasWidgetsCategoryData;
 use Database\Seeders\Compositions\Home\HasWoodenAlphabetCategoryData;
 use Database\Seeders\Compositions\Home\HasWWECategoryData;
+use Illuminate\Support\Str;
 
 trait HasUserProfileData
 {

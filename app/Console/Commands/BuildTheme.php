@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 class BuildTheme extends Command
@@ -34,7 +35,7 @@ class BuildTheme extends Command
         return Command::SUCCESS;
     }
 
-    private function getAvailableThemes(): \Illuminate\Support\Collection
+    private function getAvailableThemes(): Collection
     {
         $themesPath = resource_path('themes');
 

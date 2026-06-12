@@ -3,11 +3,12 @@
 namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 
 use Filament\Forms;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 
 class ItemBaseForm
 {
-    /** @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component> */
+    /** @return array<int, Component|Forms\Components\Component> */
     public static function schema(): array
     {
         return [

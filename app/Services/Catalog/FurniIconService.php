@@ -16,7 +16,7 @@ class FurniIconService
         $base = $this->furniBase ??= $this->setting('furniture_icons_path', '/images/furniture');
         $safe = str_replace('*', '_', $catalogName);
 
-        return $this->absolutise($base.'/'.$safe.'_icon.png');
+        return $this->absolutise($base . '/' . $safe . '_icon.png');
     }
 
     public function pageIcon(int $iconImage): string
@@ -24,7 +24,7 @@ class FurniIconService
         $base = $this->catalogBase ??= $this->setting('catalog_icons_path', '/gamedata/c_images/catalogue');
         $id = max(1, $iconImage);
 
-        return $this->absolutise($base.'/icon_'.$id.'.png');
+        return $this->absolutise($base . '/icon_' . $id . '.png');
     }
 
     private function setting(string $key, string $default): string

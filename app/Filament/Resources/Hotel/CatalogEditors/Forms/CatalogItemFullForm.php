@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 
+use App\Models\Game\Furniture\CatalogItem;
 use Filament\Forms;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 
 class CatalogItemFullForm
 {
-    /** @return array<int, \Filament\Schemas\Components\Component|Forms\Components\Component> */
+    /** @return array<int, Component|Forms\Components\Component> */
     public static function schema(): array
     {
         return [
@@ -69,7 +71,7 @@ class CatalogItemFullForm
         ];
     }
 
-    public static function fillFrom(\App\Models\Game\Furniture\CatalogItem $record): array
+    public static function fillFrom(CatalogItem $record): array
     {
         return [
             'catalog_name' => $record->catalog_name,
