@@ -3,28 +3,33 @@
 namespace App\Services\User;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class UserApiService
 {
-    public function fetchUser(string $username, array $columns): User
+    public function fetchUser(string $username, array $columns): ?User
     {
-        return User::select($columns)->where('username', '=', $username)->first();
+        return User::select($columns)->where('username', $username)->first();
     }
 
-    public function onlineUsers($columns = ['username', 'motto', 'look'], bool $randomOrder = true): Builder
+    /**
+     * @param  array<int, string>  $columns
+     *
+     * @return Collection<int, User>
+     */
+    public function onlineUsers(array $columns = ['username', 'motto', 'look'], int $limit = 50): Collection
     {
-        $query = User::select($columns)->where('online', '=', '1');
-
-        if ($randomOrder) {
-            $query = $query->inRandomOrder();
-        }
-
-        return $query;
+        return Cache::remember('api_online_users', now()->addSeconds(30), fn () => User::query()
+            ->select($columns)
+            ->where('online', '1')
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get());
     }
 
     public function onlineUserCount(): int
     {
-        return User::where('online', '=', '1')->count();
+        return User::where('online', '1')->count();
     }
 }

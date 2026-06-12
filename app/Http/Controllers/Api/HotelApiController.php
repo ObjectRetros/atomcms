@@ -17,9 +17,9 @@ class HotelApiController extends Controller
         return new UserResource($this->userApiService->fetchUser($username, $columns));
     }
 
-    public function onlineUsers($columns = ['username', 'motto', 'look'], bool $randomOrder = true): OnlineUsersResource
+    public function onlineUsers(): OnlineUsersResource
     {
-        return new OnlineUsersResource($this->userApiService->onlineUsers($columns, $randomOrder));
+        return new OnlineUsersResource($this->userApiService->onlineUsers());
     }
 
     public function onlineUserCount(): OnlineUserCountResource
