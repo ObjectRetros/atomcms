@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
-class WebsiteTeamPolicy extends HousekeepingPolicy
+class UserBadgePolicy extends HousekeepingPolicy
 {
     protected function permission(): string
     {
-        return 'manage_teams';
+        return 'edit_user';
     }
 }

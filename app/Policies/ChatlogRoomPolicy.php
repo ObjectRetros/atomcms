@@ -2,15 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class ChatlogRoomPolicy
+class ChatlogRoomPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user): bool
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_room_chatlogs');
+        return 'manage_room_chatlogs';
     }
 }

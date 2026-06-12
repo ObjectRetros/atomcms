@@ -96,7 +96,7 @@ class StaffApplicationResource extends Resource
                     ->label('Approve to Team')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (WebsiteStaffApplications $r) => filled($r->team_id) && ($r->status === 'pending' || is_null($r->status)))
+                    ->visible(fn (WebsiteStaffApplications $r) => hasHousekeepingPermission('manage_staff_applications') && filled($r->team_id) && ($r->status === 'pending' || is_null($r->status)))
                     ->requiresConfirmation()
                     ->modalHeading('Approve to Team')
                     ->modalDescription(function (WebsiteStaffApplications $r): string {
@@ -145,7 +145,7 @@ class StaffApplicationResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (WebsiteStaffApplications $r) => filled($r->team_id) && in_array($r->status, ['pending', 'approved', null], true))
+                    ->visible(fn (WebsiteStaffApplications $r) => hasHousekeepingPermission('manage_staff_applications') && filled($r->team_id) && in_array($r->status, ['pending', 'approved', null], true))
                     ->requiresConfirmation()
                     ->modalHeading('Reject Application')
                     ->modalDescription(function (WebsiteStaffApplications $r): string {
@@ -193,7 +193,7 @@ class StaffApplicationResource extends Resource
                     ->label('Re-open')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
-                    ->visible(fn (WebsiteStaffApplications $r) => $r->status === 'rejected')
+                    ->visible(fn (WebsiteStaffApplications $r) => hasHousekeepingPermission('manage_staff_applications') && $r->status === 'rejected')
                     ->requiresConfirmation()
                     ->modalHeading('Re-open Application')
                     ->modalDescription('This will set the application status back to pending.')

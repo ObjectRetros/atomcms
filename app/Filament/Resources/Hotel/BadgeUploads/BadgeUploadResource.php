@@ -19,6 +19,11 @@ class BadgeUploadResource extends Resource
 
     protected static ?string $label = 'Badge Upload';
 
+    public static function canViewAny(): bool
+    {
+        return hasHousekeepingPermission('manage_badges');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema

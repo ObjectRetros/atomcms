@@ -2,31 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
-
-class BanPolicy
+class BanPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @return Response|bool
-     */
-    public function viewAny(User $user)
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_bans');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @return Response|bool
-     */
-    public function delete(User $user)
-    {
-        return hasHousekeepingPermission('manage_bans');
+        return 'manage_bans';
     }
 }

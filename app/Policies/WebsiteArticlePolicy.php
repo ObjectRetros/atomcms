@@ -3,34 +3,21 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
-class WebsiteArticlePolicy
+class WebsiteArticlePolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user)
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('write_article');
+        return 'write_article';
     }
 
-    public function view(User $user)
+    protected function deletePermission(): string
     {
-        return hasHousekeepingPermission('write_article');
+        return 'delete_article';
     }
 
-    public function create(User $user)
-    {
-        return hasHousekeepingPermission('write_article');
-    }
-
-    public function update(User $user)
+    public function update(User $user): bool
     {
         return hasHousekeepingPermission('edit_article');
-    }
-
-    public function delete(User $user)
-    {
-        return hasHousekeepingPermission('delete_article');
     }
 }

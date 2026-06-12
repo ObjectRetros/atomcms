@@ -2,29 +2,10 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class AchievementPolicy
+class AchievementPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny()
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_achievements');
-    }
-
-    public function view()
-    {
-        return hasHousekeepingPermission('manage_achievements');
-    }
-
-    public function create()
-    {
-        return hasHousekeepingPermission('manage_achievements');
-    }
-
-    public function update()
-    {
-        return hasHousekeepingPermission('manage_achievements');
+        return 'manage_achievements';
     }
 }

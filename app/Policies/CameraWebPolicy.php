@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
-class WebsiteTeamPolicy extends HousekeepingPolicy
+class CameraWebPolicy extends HousekeepingPolicy
 {
     protected function permission(): string
     {
-        return 'manage_teams';
+        return 'manage_camera_web';
     }
 }
