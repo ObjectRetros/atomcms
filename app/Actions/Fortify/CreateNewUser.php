@@ -5,7 +5,6 @@ namespace App\Actions\Fortify;
 use App\Actions\Fortify\Rules\PasswordValidationRules;
 use App\Models\Miscellaneous\WebsiteBetaCode;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use App\Rules\BetaCodeRule;
 use App\Rules\GoogleRecaptchaRule;
 use App\Rules\WebsiteWordfilterRule;
@@ -25,35 +24,53 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * Validate and create a newly registered user.
+     *
+     * @param  array<string, mixed>  $input
      */
-    public function create(array $input)
+    public function create(array $input): User
     {
-        if ((setting('disable_registration') ?: '0') == '1') {
-            throw ValidationException::withMessages([
-                'registration' => __('Registration is disabled.'),
-            ]);
+        $ip = request()->ip();
+
+        $this->ensureRegistrationAllowed($ip);
+        $this->validate($input);
+
+        $user = $this->createUser($input, $ip);
+
+        $this->applyBetaCode($input['beta_code'] ?? null, $user);
+        $this->recordReferral($input['referral_code'] ?? null, $user, $ip);
+
+        if (setting('enable_discord_webhook') === '1') {
+            $this->sendDiscordWebhook($user->username, $user->ip_register, $user->mail);
         }
 
-        $ip = request()->ip();
+        return $user;
+    }
+
+    private function ensureRegistrationAllowed(?string $ip): void
+    {
+        if ((setting('disable_registration') ?: '0') == '1') {
+            throw ValidationException::withMessages(['registration' => __('Registration is disabled.')]);
+        }
+
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
-            throw ValidationException::withMessages([
-                'registration' => __('Your IP address seems to be invalid'),
-            ]);
+            throw ValidationException::withMessages(['registration' => __('Your IP address seems to be invalid')]);
         }
 
         $matchingIpCount = User::query()
-            ->where('ip_current', '=', $ip)
-            ->orWhere('ip_register', '=', $ip)
+            ->where('ip_current', $ip)
+            ->orWhere('ip_register', $ip)
             ->count();
 
         if ($matchingIpCount >= (int) (setting('max_accounts_per_ip') ?: 99)) {
-            throw ValidationException::withMessages([
-                'registration' => __('You have reached the max amount of allowed account'),
-            ]);
+            throw ValidationException::withMessages(['registration' => __('You have reached the max amount of allowed account')]);
         }
+    }
 
-        $this->validate($input);
-
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function createUser(array $input, string $ip): User
+    {
         $user = User::create([
             'username' => $input['username'],
             'mail' => $input['mail'],
@@ -69,46 +86,46 @@ class CreateNewUser implements CreatesNewUsers
             'home_room' => (int) (setting('hotel_home_room') ?: 0),
         ]);
 
-        $user->update([
-            'referral_code' => sprintf('%s%s', $user->id, Str::random(8)),
-        ]);
-
-        if (setting('requires_beta_code')) {
-            WebsiteBetaCode::where('code', '=', $input['beta_code'])->update([
-                'user_id' => $user->id,
-            ]);
-        }
-
-        // Referral
-        if (isset($input['referral_code'])) {
-            $referralUser = User::query()
-                ->where('referral_code', '=', $input['referral_code'])
-                ->first();
-
-            if (is_null($referralUser)) {
-                return redirect(RouteServiceProvider::HOME);
-            }
-
-            // If same IP skip referral incrementation
-            if ($referralUser->ip_current == $user->ip_current || $referralUser->ip_register == $user->ip_register) {
-                return redirect(RouteServiceProvider::HOME);
-            }
-
-            $referralUser->referrals()->updateOrCreate(['user_id' => $referralUser->id], [
-                'referrals_total' => $referralUser->referrals != null ? $referralUser->referrals->referrals_total += 1 : 1,
-            ]);
-
-            $referralUser->userReferrals()->create([
-                'referred_user_id' => $user->id,
-                'referred_user_ip' => $ip,
-            ]);
-        }
-
-        if (setting('enable_discord_webhook') === '1') {
-            $this->sendDiscordWebhook($user->username, $user->ip_register, $user->mail);
-        }
+        $user->update(['referral_code' => sprintf('%s%s', $user->id, Str::random(8))]);
 
         return $user;
+    }
+
+    private function applyBetaCode(?string $betaCode, User $user): void
+    {
+        if (! setting('requires_beta_code') || $betaCode === null) {
+            return;
+        }
+
+        WebsiteBetaCode::where('code', $betaCode)->update(['user_id' => $user->id]);
+    }
+
+    /**
+     * Award the referrer, unless the code is unknown or the two accounts share
+     * an IP (referral farming). A bad code never aborts the registration.
+     */
+    private function recordReferral(?string $referralCode, User $user, string $ip): void
+    {
+        if ($referralCode === null) {
+            return;
+        }
+
+        $referralUser = User::where('referral_code', $referralCode)->first();
+
+        if ($referralUser === null
+            || $referralUser->ip_current === $user->ip_current
+            || $referralUser->ip_register === $user->ip_register) {
+            return;
+        }
+
+        $referralUser->referrals()->updateOrCreate(['user_id' => $referralUser->id], [
+            'referrals_total' => ($referralUser->referrals->referrals_total ?? 0) + 1,
+        ]);
+
+        $referralUser->userReferrals()->create([
+            'referred_user_id' => $user->id,
+            'referred_user_ip' => $ip,
+        ]);
     }
 
     private function validate(array $inputs): array

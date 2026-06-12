@@ -10,10 +10,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
 
     ignoreErrors:
-        # Fortify contract requires User return, but referral logic redirects - intentional
-        - identifier: return.type
-          path: app/Actions/Fortify/CreateNewUser.php
-
         # Fortify internals - overridden from vendor
         - identifier: nullsafe.neverNull
           path: app/Actions/Fortify/RedirectIfTwoFactorAuthenticatable.php
