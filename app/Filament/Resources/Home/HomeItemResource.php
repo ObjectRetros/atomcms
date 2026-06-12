@@ -81,6 +81,8 @@ class HomeItemResource extends Resource
                 ->required()
                 ->columnSpanFull()
                 ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                ->maxSize(2048)
                 ->disk('public')
                 ->directory('home-items')
                 ->visibility('public')

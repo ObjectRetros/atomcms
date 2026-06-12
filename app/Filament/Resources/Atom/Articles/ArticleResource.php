@@ -80,6 +80,9 @@ class ArticleResource extends Resource
                             FileUpload::make('image')
                                 ->label(__('filament::resources.inputs.image'))
                                 ->directory('website_news_images')
+                                ->image()
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                                ->maxSize(2048)
                                 ->visibility('public'),
 
                             RichEditor::make('full_story')
