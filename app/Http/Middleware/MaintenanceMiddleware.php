@@ -11,34 +11,18 @@ class MaintenanceMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $maintenanceEnabled = (bool) setting('maintenance_enabled');
         $isPostRequest = $request->method() === 'POST';
         $isMaintenanceRequest = $request->is('maintenance');
-        $maintenanceEnabled = setting('maintenance_enabled');
 
-        $fortify2faRoutes = [
-            'two-factor.login',
-            'two-factor.confirm',
-        ];
-
-        if ($maintenanceEnabled && $isPostRequest && ! Auth::check()) {
+        // Let guests POST (to log in) and finish the 2FA challenge during maintenance.
+        if ($maintenanceEnabled && (($isPostRequest && ! Auth::check()) || $this->isTwoFactorRoute($request))) {
             return $next($request);
         }
 
-        $isFortify2faRoute = in_array($request->route()?->getName(), $fortify2faRoutes, true);
-        if ($maintenanceEnabled && $isFortify2faRoute) {
-            return $next($request);
-        }
-
-        if (Auth::check() && Auth::user()->rank >= setting('min_maintenance_login_rank')) {
-            if ($isMaintenanceRequest) {
-                return to_route('me.show');
-            }
-
-            return $next($request);
-        }
-
-        if (Auth::check() && Auth::user()->rank >= setting('min_maintenance_login_rank') && $isMaintenanceRequest) {
-            return to_route('me.show');
+        // Staff above the threshold bypass maintenance; keep them off the notice page.
+        if ($this->canBypassMaintenance()) {
+            return $isMaintenanceRequest ? to_route('me.show') : $next($request);
         }
 
         if ($maintenanceEnabled && ! $isMaintenanceRequest && ! $isPostRequest) {
@@ -49,10 +33,20 @@ class MaintenanceMiddleware
             return to_route('welcome');
         }
 
-        if ($maintenanceEnabled && ! $isMaintenanceRequest && Auth::check() && Auth::user()->rank < setting('min_maintenance_login_rank')) {
+        if ($maintenanceEnabled && ! $isMaintenanceRequest && Auth::check()) {
             return to_route('maintenance.show');
         }
 
         return $next($request);
+    }
+
+    private function canBypassMaintenance(): bool
+    {
+        return Auth::check() && Auth::user()->rank >= setting('min_maintenance_login_rank');
+    }
+
+    private function isTwoFactorRoute(Request $request): bool
+    {
+        return in_array($request->route()?->getName(), ['two-factor.login', 'two-factor.confirm'], true);
     }
 }
