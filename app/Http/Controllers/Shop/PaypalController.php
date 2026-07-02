@@ -30,8 +30,28 @@ class PaypalController extends Controller
 
     public function process(AccountTopupFormRequest $request): Response|RedirectResponse
     {
-        $amount = $request->integer('amount');
-        $orderData = [
+        $response = $this->provider->createOrder($this->buildOrderData($request->integer('amount')));
+
+        $approvalUrl = isset($response['id']) ? $this->approvalUrl($response['links'] ?? []) : null;
+
+        if ($approvalUrl === null) {
+            return $this->orderCreationFailed($response);
+        }
+
+        $request->user()->transactions()->create([
+            'transaction_id' => $response['id'],
+            'amount' => 0,
+        ]);
+
+        return redirect()->away($approvalUrl);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildOrderData(int $amount): array
+    {
+        return [
             'intent' => 'CAPTURE',
             'application_context' => [
                 'return_url' => route('paypal.successful-transaction'),
@@ -42,7 +62,7 @@ class PaypalController extends Controller
                 'user_action' => 'CONTINUE',
             ],
             'purchase_units' => [
-                0 => [
+                [
                     'amount' => [
                         'currency_code' => config('habbo.paypal.currency'),
                         'value' => (string) $amount,
@@ -50,31 +70,30 @@ class PaypalController extends Controller
                 ],
             ],
         ];
+    }
 
-        $response = $this->provider->createOrder($orderData);
-
-        if (isset($response['id']) === false) {
-            Log::error('Error creating order', ['response' => $response]);
-
-            return to_route('shop.index')->withErrors(
-                ['message' => $response['message'] ?? __('Something went wrong')],
-            );
-        }
-
-        foreach ($response['links'] as $links) {
-            if ($links['rel'] === 'approve') {
-                $request->user()->transactions()->create([
-                    'transaction_id' => $response['id'],
-                    'amount' => 0,
-                ]);
-
-                return redirect()->away($links['href']);
+    /**
+     * @param  array<int, array{rel?: string, href?: string}>  $links
+     */
+    private function approvalUrl(array $links): ?string
+    {
+        foreach ($links as $link) {
+            if (($link['rel'] ?? null) === 'approve') {
+                return $link['href'] ?? null;
             }
         }
 
-        return to_route('shop.index')->withErrors(
-            ['message' => $response['message'] ?? __('Something went wrong')],
-        );
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     */
+    private function orderCreationFailed(array $response): RedirectResponse
+    {
+        Log::error('Error creating PayPal order', ['response' => $response]);
+
+        return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
     }
 
     public function successful(Request $request): Response
