@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\DB;
  */
 class CatalogReorderService
 {
-    public function __construct(private readonly CatalogTreeService $tree) {}
-
     public function reorderPages(int $parentId, array $orderedIds): void
     {
         $clean = $this->cleanIds($orderedIds);

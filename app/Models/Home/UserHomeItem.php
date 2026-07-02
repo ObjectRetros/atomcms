@@ -10,6 +10,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Transient, view-only attributes built at render time. They are set on the
+ * model so they serialise to the home page JSON, but are never persisted as
+ * columns:
+ *
+ * @property string|null $parsed_data
+ * @property string|null $content
+ * @property string|null $widget_type
+ */
 class UserHomeItem extends Model
 {
     use HasFactory;
@@ -25,11 +34,17 @@ class UserHomeItem extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<HomeItem, $this>
+     */
     public function homeItem(): BelongsTo
     {
         return $this->belongsTo(HomeItem::class);

@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class CatalogTreeService
 {
-    /** @return Collection<int, Collection<int, CatalogPage>> */
+    /** @return Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, CatalogPage>> */
     public function pagesGroupedByParent(): Collection
     {
         return CatalogPage::query()

@@ -101,7 +101,7 @@ class StaffApplicationResource extends Resource
                     ->modalHeading('Approve to Team')
                     ->modalDescription(function (WebsiteStaffApplications $r): string {
                         $user = $r->user;
-                        $targetTeam = optional($r->team)->rank_name ?? '—';
+                        $targetTeam = optional($r->team)->rank_name ?? '-';
                         $currentTeam = optional($user?->team)->rank_name;
 
                         if ($currentTeam && $user?->team_id !== $r->team_id) {
@@ -150,7 +150,7 @@ class StaffApplicationResource extends Resource
                     ->modalHeading('Reject Application')
                     ->modalDescription(function (WebsiteStaffApplications $r): string {
                         $user = $r->user;
-                        $teamName = optional($r->team)->rank_name ?? '—';
+                        $teamName = optional($r->team)->rank_name ?? '-';
 
                         if ($r->status === 'approved') {
                             return "This will mark the application as rejected and remove {$user->username} from '{$teamName}' (if still on it). Continue?";

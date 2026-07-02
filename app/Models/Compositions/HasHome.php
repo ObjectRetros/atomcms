@@ -13,11 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 trait HasHome
 {
+    // Transient aggregate built by loadRatingsForHome() for the profile view.
+    public ?UserHomeRating $homeRatingStats = null;
+
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function homeItems(): HasMany
     {
         return $this->hasMany(UserHomeItem::class);
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function inventoryHomeItems(): HasMany
     {
         return $this->homeItems()
@@ -25,6 +34,9 @@ trait HasHome
             ->where('placed', false);
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function groupedInventoryItems(): HasMany
     {
         return $this->inventoryHomeItems()
@@ -32,6 +44,9 @@ trait HasHome
             ->groupBy('home_item_id');
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function placedHomeItems(): HasMany
     {
         return $this->homeItems()
@@ -39,16 +54,25 @@ trait HasHome
             ->where('placed', true);
     }
 
+    /**
+     * @return HasMany<UserHomeRating, $this>
+     */
     public function homeRatings(): HasMany
     {
         return $this->hasMany(UserHomeRating::class, 'rated_user_id');
     }
 
+    /**
+     * @return HasMany<UserHomeMessage, $this>
+     */
     public function receivedHomeMessages(): HasMany
     {
         return $this->hasMany(UserHomeMessage::class, 'recipient_user_id');
     }
 
+    /**
+     * @return HasMany<UserHomeMessage, $this>
+     */
     public function sentHomeMessages(): HasMany
     {
         return $this->hasMany(UserHomeMessage::class, 'user_id');
@@ -166,7 +190,7 @@ trait HasHome
     public function loadGuestbookForHome(): self
     {
         return $this->load([
-            'receivedHomeMessages' => fn (HasMany $query) => $query->latest()->defaultUserData(),
+            'receivedHomeMessages' => fn ($query) => $query->latest()->defaultUserData(),
         ]);
     }
 }

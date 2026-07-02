@@ -28,7 +28,7 @@ class CatalogItemMassEditForm
                 ->helperText($note),
             Forms\Components\Select::make('club_only')
                 ->label('Club only')
-                ->options(['' => '— No change —', '1' => 'Yes', '0' => 'No'])
+                ->options(['' => '- No change -', '1' => 'Yes', '0' => 'No'])
                 ->native(false)
                 ->nullable()
                 ->default(''),
