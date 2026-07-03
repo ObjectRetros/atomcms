@@ -2,13 +2,13 @@
 
 namespace App\Actions;
 
+use App\Contracts\Rcon;
 use App\Enums\CurrencyTypes;
 use App\Models\User;
-use App\Services\RconService;
 
 class SendCurrency
 {
-    public function __construct(protected RconService $rcon) {}
+    public function __construct(protected Rcon $rcon) {}
 
     public function execute(User $user, string $type, ?int $amount): bool
     {
@@ -16,7 +16,7 @@ class SendCurrency
             return false;
         }
 
-        if ($this->rcon->isConnected) {
+        if ($this->rcon->isConnected()) {
             if (! in_array($type, ['credits', 'duckets', 'diamonds', 'points'], true)) {
                 return false;
             }

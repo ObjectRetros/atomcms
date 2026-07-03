@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\Rcon;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
 use App\Services\InstallationService;
@@ -45,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(
-            RconService::class,
+            Rcon::class,
             fn () => new RconService,
         );
     }

@@ -5,10 +5,10 @@ namespace App\Actions\Shop;
 use App\Actions\SendBadges;
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
+use App\Contracts\Rcon;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\User;
-use App\Services\RconService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use JsonException;
@@ -16,7 +16,7 @@ use JsonException;
 class PurchasePackage
 {
     public function __construct(
-        private readonly RconService $rcon,
+        private readonly Rcon $rcon,
         private readonly SendCurrency $sendCurrency,
         private readonly SendFurniture $sendFurniture,
         private readonly SendBadges $sendBadges,
@@ -60,7 +60,7 @@ class PurchasePackage
                 : __('The recipient is already this or a higher rank'));
         }
 
-        if (! $this->rcon->isConnected && $recipient->online) {
+        if (! $this->rcon->isConnected() && $recipient->online) {
             throw new ShopPurchaseException(__('Please logout before purchasing a package'));
         }
 
@@ -136,7 +136,7 @@ class PurchasePackage
 
     private function grantRank(User $recipient, int $rank): void
     {
-        if (! $this->rcon->isConnected) {
+        if (! $this->rcon->isConnected()) {
             $recipient->update(['rank' => $rank]);
 
             return;

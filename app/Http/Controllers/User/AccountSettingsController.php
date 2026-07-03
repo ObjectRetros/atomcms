@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Contracts\Rcon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountSettingsFormRequest;
-use App\Services\RconService;
 use App\Services\User\SessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\View\View;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly RconService $rconService) {}
+    public function __construct(private readonly SessionService $sessionService, private readonly Rcon $rconService) {}
 
     public function edit(): View
     {

@@ -2,12 +2,12 @@
 
 namespace App\Actions;
 
+use App\Contracts\Rcon;
 use App\Models\User;
-use App\Services\RconService;
 
 class SendBadges
 {
-    public function __construct(private readonly RconService $rcon) {}
+    public function __construct(private readonly Rcon $rcon) {}
 
     /**
      * Grant a semicolon-separated list of badge codes, skipping owned ones.
@@ -35,7 +35,7 @@ class SendBadges
 
     private function grant(User $user, string $badge): void
     {
-        if ($this->rcon->isConnected) {
+        if ($this->rcon->isConnected()) {
             $this->rcon->giveBadge($user, $badge);
 
             return;

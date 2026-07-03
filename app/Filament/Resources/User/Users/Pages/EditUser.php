@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\User\Users\Pages;
 
 use App\Actions\SendCurrency;
+use App\Contracts\Rcon;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
 use App\Models\Game\Player\UserCurrency;
-use App\Services\RconService;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -57,7 +57,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        $rcon = app(RconService::class);
+        $rcon = app(Rcon::class);
 
         if (! $user->online) {
             DB::transaction(function () use ($user, $data) {
@@ -117,7 +117,7 @@ class EditUser extends EditRecord
         $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
     }
 
-    private function checkUsernameChangedPermission(Model $user, array $data, RconService $rcon): void
+    private function checkUsernameChangedPermission(Model $user, array $data, Rcon $rcon): void
     {
         if ($data['allow_change_username'] == $user->settings->can_change_name) {
             return;
@@ -137,7 +137,7 @@ class EditUser extends EditRecord
         $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
     }
 
-    private function treatChangedCurrencies(Model $user, array $data, RconService $rcon): void
+    private function treatChangedCurrencies(Model $user, array $data, Rcon $rcon): void
     {
         $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
             $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
@@ -155,7 +155,7 @@ class EditUser extends EditRecord
         });
     }
 
-    private function treatChangedUserRank(Model $user, array $data, RconService $rcon): void
+    private function treatChangedUserRank(Model $user, array $data, Rcon $rcon): void
     {
         if ($data['rank'] == $user->rank) {
             return;
@@ -187,7 +187,7 @@ class EditUser extends EditRecord
         $rcon->setRank($user, $data['rank']);
     }
 
-    private function treatChangedUserMotto(Model $user, array $data, RconService $rcon): void
+    private function treatChangedUserMotto(Model $user, array $data, Rcon $rcon): void
     {
         if ($data['motto'] == $user->motto) {
             return;

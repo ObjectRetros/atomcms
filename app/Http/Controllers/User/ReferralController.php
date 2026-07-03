@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Contracts\Rcon;
 use App\Http\Controllers\Controller;
-use App\Services\RconService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ReferralController extends Controller
 {
-    public function __invoke(RconService $rcon): RedirectResponse
+    public function __invoke(Rcon $rcon): RedirectResponse
     {
         $user = Auth::user();
         if (! $user->referrals || $user->referrals->referrals_total < setting('referrals_needed')) {

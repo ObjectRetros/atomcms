@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
+use App\Contracts\Rcon;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
 use App\Filament\Traits\TranslatableResource;
-use App\Services\RconService;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -83,7 +83,7 @@ class BadgesRelationManager extends RelationManager
                                 ->persistent()
                                 ->send();
                         } else {
-                            $rcon = app(RconService::class);
+                            $rcon = app(Rcon::class);
                             $data = $action->getFormData();
 
                             $rcon->sendSafelyFromDashboard('sendBadge', [$user, $data['badge_code']], 'RCON: Failed to send the badge');
@@ -119,7 +119,7 @@ class BadgesRelationManager extends RelationManager
                 ->persistent()
                 ->send();
         } else {
-            $rcon = app(RconService::class);
+            $rcon = app(Rcon::class);
             $badge = $action instanceof DeleteAction
                 ? $action->getRecord()?->badge_code
                 : $action->getRecords()->map(fn ($record) => $record->badge_code)->join(';');
