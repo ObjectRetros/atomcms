@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use App\Contracts\Rcon;
+use App\Services\FakeRcon;
 use Database\Seeders\TestingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -10,6 +12,18 @@ use Illuminate\Support\Facades\DB;
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication, RefreshDatabase;
+
+    protected FakeRcon $rcon;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Never open the emulator socket in tests; disconnected by default so
+        // services take their database path.
+        $this->rcon = new FakeRcon;
+        $this->app->instance(Rcon::class, $this->rcon);
+    }
 
     protected function refreshTestDatabase()
     {
