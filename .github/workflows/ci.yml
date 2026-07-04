@@ -28,9 +28,12 @@ jobs:
       - run: cp .env.example .env
 
       - name: Install dependencies
+        # All packages (Filament included) resolve from public GitHub, so no
+        # Filament licence is needed; the built-in token just lifts GitHub's
+        # unauthenticated API rate limit for the download.
         run: composer install --no-interaction --prefer-dist --no-progress
         env:
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ github.token }}"}}'
 
       - name: Check code style (Pint)
         run: vendor/bin/pint --test
@@ -76,9 +79,12 @@ jobs:
       - run: cp .env.example .env
 
       - name: Install dependencies
+        # All packages (Filament included) resolve from public GitHub, so no
+        # Filament licence is needed; the built-in token just lifts GitHub's
+        # unauthenticated API rate limit for the download.
         run: composer install --no-interaction --prefer-dist --no-progress
         env:
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ github.token }}"}}'
 
       - name: Run tests
         run: vendor/bin/pest
