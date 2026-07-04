@@ -1,7 +1,7 @@
 <?php
 
 use App\Emulator\Contracts\CurrencyRepository;
-use App\Emulator\Data\Currency;
+use App\Enums\CurrencyTypes;
 use App\Models\User;
 
 /**
@@ -15,29 +15,38 @@ beforeEach(function () {
 
 test('credits are read and written', function () {
     $user = User::factory()->create();
-    $start = $this->currencies->balance($user, Currency::Credits);
+    $start = $this->currencies->balance($user, CurrencyTypes::Credits);
 
-    $this->currencies->give($user, Currency::Credits, 100);
+    $this->currencies->give($user, CurrencyTypes::Credits, 100);
 
-    expect($this->currencies->balance($user->fresh(), Currency::Credits))->toBe($start + 100);
+    expect($this->currencies->balance($user->fresh(), CurrencyTypes::Credits))->toBe($start + 100);
 });
 
 test('non-credit currencies are tracked independently', function () {
     $user = User::factory()->create();
 
-    $this->currencies->give($user, Currency::Duckets, 50);
-    $this->currencies->give($user, Currency::Diamonds, 5);
+    $this->currencies->give($user, CurrencyTypes::Duckets, 50);
+    $this->currencies->give($user, CurrencyTypes::Diamonds, 5);
 
-    expect($this->currencies->balance($user->fresh(), Currency::Duckets))->toBe(50)
-        ->and($this->currencies->balance($user->fresh(), Currency::Diamonds))->toBe(5);
+    expect($this->currencies->balance($user->fresh(), CurrencyTypes::Duckets))->toBe(50)
+        ->and($this->currencies->balance($user->fresh(), CurrencyTypes::Diamonds))->toBe(5);
+});
+
+test('a negative give removes currency', function () {
+    $user = User::factory()->create();
+    $this->currencies->give($user, CurrencyTypes::Duckets, 50);
+
+    $this->currencies->give($user->fresh(), CurrencyTypes::Duckets, -20);
+
+    expect($this->currencies->balance($user->fresh(), CurrencyTypes::Duckets))->toBe(30);
 });
 
 test('deduct is atomic and refuses to overdraw', function () {
     $user = User::factory()->create();
-    $this->currencies->give($user, Currency::Duckets, 30);
+    $this->currencies->give($user, CurrencyTypes::Duckets, 30);
 
-    expect($this->currencies->deduct($user->fresh(), Currency::Duckets, 40))->toBeFalse()
-        ->and($this->currencies->balance($user->fresh(), Currency::Duckets))->toBe(30)
-        ->and($this->currencies->deduct($user->fresh(), Currency::Duckets, 20))->toBeTrue()
-        ->and($this->currencies->balance($user->fresh(), Currency::Duckets))->toBe(10);
+    expect($this->currencies->deduct($user->fresh(), CurrencyTypes::Duckets, 40))->toBeFalse()
+        ->and($this->currencies->balance($user->fresh(), CurrencyTypes::Duckets))->toBe(30)
+        ->and($this->currencies->deduct($user->fresh(), CurrencyTypes::Duckets, 20))->toBeTrue()
+        ->and($this->currencies->balance($user->fresh(), CurrencyTypes::Duckets))->toBe(10);
 });

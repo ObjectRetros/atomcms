@@ -79,11 +79,11 @@ class EditUser extends EditRecord
 
         DB::transaction(function () use ($user, $data, $rcon) {
             if ($data['credits'] != $user->credits) {
-                $rcon->giveCredits($user, -$user->credits + $data['credits']);
+                app(SendCurrency::class)->execute($user, CurrencyTypes::Credits, -$user->credits + $data['credits']);
             }
 
             $this->checkUsernameChangedPermission($user, $data, $rcon);
-            $this->treatChangedCurrencies($user, $data, $rcon);
+            $this->treatChangedCurrencies($user, $data);
             $this->treatChangedUserRank($user, $data, $rcon);
             $this->treatChangedUserMotto($user, $data, $rcon);
         });
@@ -137,21 +137,17 @@ class EditUser extends EditRecord
         $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
     }
 
-    private function treatChangedCurrencies(Model $user, array $data, Rcon $rcon): void
+    private function treatChangedCurrencies(Model $user, array $data): void
     {
         $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
-            $currencyType = match ($currency->type) {
-                CurrencyTypes::Duckets => 'duckets',
-                CurrencyTypes::Diamonds => 'diamonds',
-                CurrencyTypes::Points => 'points',
-            };
+            $updatedAmount = (int) ($data["currency_{$currency->type}"] ?? $currency->amount);
+            $type = CurrencyTypes::tryFrom((int) $currency->type);
 
-            if ($updatedCurrencyAmount == $currency->amount) {
+            if ($type === null || $updatedAmount === (int) $currency->amount) {
                 return;
             }
 
-            app(SendCurrency::class)->execute($user, $currencyType, -$currency->amount + $updatedCurrencyAmount);
+            app(SendCurrency::class)->execute($user, $type, $updatedAmount - (int) $currency->amount);
         });
     }
 

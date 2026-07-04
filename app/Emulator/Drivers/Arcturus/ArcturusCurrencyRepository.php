@@ -3,59 +3,59 @@
 namespace App\Emulator\Drivers\Arcturus;
 
 use App\Emulator\Contracts\CurrencyRepository;
-use App\Emulator\Data\Currency;
+use App\Enums\CurrencyTypes;
 use App\Models\User;
-use LogicException;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * Arcturus keeps credits on the users table and every other currency as a
- * typed row in users_currency.
+ * Arcturus keeps credits on the users table and every other currency as a typed
+ * row in users_currency (users_currency.type matches the CurrencyTypes value).
  */
 class ArcturusCurrencyRepository implements CurrencyRepository
 {
-    public function balance(User $user, Currency $currency): int
+    public function balance(User $user, CurrencyTypes $currency): int
     {
-        if ($currency === Currency::Credits) {
+        if ($currency === CurrencyTypes::Credits) {
             return (int) $user->credits;
         }
 
-        return (int) ($user->currencies()->where('type', $this->type($currency))->value('amount') ?? 0);
+        return (int) ($user->currencies()->where('type', $currency->value)->value('amount') ?? 0);
     }
 
-    public function give(User $user, Currency $currency, int $amount): void
+    public function give(User $user, CurrencyTypes $currency, int $amount): void
     {
-        if ($currency === Currency::Credits) {
-            $user->increment('credits', $amount);
+        if ($amount === 0) {
+            return;
+        }
+
+        if ($currency === CurrencyTypes::Credits) {
+            $this->adjust($user, 'credits', $amount);
 
             return;
         }
 
-        $user->currencies()
-            ->firstOrCreate(['type' => $this->type($currency)], ['amount' => 0])
-            ->increment('amount', $amount);
+        $row = $user->currencies()->firstOrCreate(['type' => $currency->value], ['amount' => 0]);
+        $this->adjust($row, 'amount', $amount);
     }
 
-    public function deduct(User $user, Currency $currency, int $amount): bool
+    public function deduct(User $user, CurrencyTypes $currency, int $amount): bool
     {
-        if ($currency === Currency::Credits) {
+        if ($currency === CurrencyTypes::Credits) {
             return User::whereKey($user->id)
                 ->where('credits', '>=', $amount)
                 ->decrement('credits', $amount) === 1;
         }
 
         return $user->currencies()
-            ->where('type', $this->type($currency))
+            ->where('type', $currency->value)
             ->where('amount', '>=', $amount)
             ->decrement('amount', $amount) === 1;
     }
 
-    private function type(Currency $currency): int
+    private function adjust(Model $model, string $column, int $amount): void
     {
-        return match ($currency) {
-            Currency::Duckets => 0,
-            Currency::Diamonds => 5,
-            Currency::Points => 101,
-            Currency::Credits => throw new LogicException('Credits live on the users table, not users_currency.'),
-        };
+        $amount > 0
+            ? $model->increment($column, $amount)
+            : $model->decrement($column, abs($amount));
     }
 }

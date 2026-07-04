@@ -20,7 +20,10 @@ interface Rcon
 
     public function sendGift(User $user, int $itemId, string $message = 'Here is a gift.'): void;
 
-    public function giveCredits(User $user, int $credits): void;
+    /**
+     * Adjust a currency by a signed amount on the live emulator.
+     */
+    public function giveCurrency(User $user, CurrencyTypes $currency, int $amount): void;
 
     public function giveBadge(User $user, string $badge): void;
 
@@ -29,14 +32,6 @@ interface Rcon
     public function updateWordFilter(): void;
 
     public function disconnectUser(User $user): void;
-
-    public function givePoints(User $user, CurrencyTypes $type, int $amount): void;
-
-    public function giveGotw(User $user, int $amount): void;
-
-    public function giveDiamonds(User $user, int $amount): void;
-
-    public function giveDuckets(User $user, int $amount): void;
 
     public function setRank(User $user, int $rank): void;
 

@@ -2,7 +2,8 @@
 
 namespace App\Actions\Badge;
 
-use App\Actions\DeductCurrency;
+use App\Emulator\Contracts\CurrencyRepository;
+use App\Enums\CurrencyTypes;
 use App\Exceptions\BadgePurchaseException;
 use App\Models\User;
 use App\Models\WebsiteDrawBadge;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class CreateDrawnBadge
 {
     public function __construct(
-        private readonly DeductCurrency $deductCurrency,
+        private readonly CurrencyRepository $currencies,
         private readonly SettingsService $settings,
     ) {}
 
@@ -29,8 +30,9 @@ class CreateDrawnBadge
         return DB::transaction(function () use ($user, $data, $path): WebsiteDrawBadge {
             $cost = (int) $this->settings->getOrDefault('drawbadge_currency_value', 150);
             $currencyType = (string) $this->settings->getOrDefault('drawbadge_currency_type', 'credits');
+            $currency = CurrencyTypes::fromCurrencyName($currencyType);
 
-            if (! $this->deductCurrency->execute($user, $currencyType, $cost)) {
+            if ($currency === null || ! $this->currencies->deduct($user, $currency, $cost)) {
                 @unlink($path);
 
                 throw BadgePurchaseException::insufficientFunds($currencyType);
