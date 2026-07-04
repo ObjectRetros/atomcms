@@ -225,6 +225,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
+    /**
+     * @return HasMany<UserCurrency, $this>
+     */
     public function currencies(): HasMany
     {
         return $this->hasMany(UserCurrency::class, 'user_id');
