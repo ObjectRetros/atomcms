@@ -2,6 +2,7 @@
 
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Emulator\Drivers\Arcturus\ArcturusCurrencyRepository;
+use App\Emulator\Drivers\Plus\PlusCurrencyRepository;
 
 return [
 
@@ -35,9 +36,9 @@ return [
             CurrencyRepository::class => ArcturusCurrencyRepository::class,
         ],
 
-        // 'plus' => [
-        //     CurrencyRepository::class => \App\Emulator\Drivers\Plus\PlusCurrencyRepository::class,
-        // ],
+        'plus' => [
+            CurrencyRepository::class => PlusCurrencyRepository::class,
+        ],
 
     ],
 
