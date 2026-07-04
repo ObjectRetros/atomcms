@@ -1,6 +1,7 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use App\Providers\EmulatorServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\Filament\AdminFilamentPanelProvider;
 use App\Providers\FortifyServiceProvider;
@@ -219,7 +220,7 @@ return [
          * Application Service Providers...
          */
         AppServiceProvider::class,
-        App\Providers\EmulatorServiceProvider::class,
+        EmulatorServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         EventServiceProvider::class,
