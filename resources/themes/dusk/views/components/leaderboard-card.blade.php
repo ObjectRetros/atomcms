@@ -2,9 +2,7 @@
     'title',
     'icon',
     'data',
-    'valueKey',
     'valueType',
-    'relationship' => null,
     'formatValue' => null,
 ])
 
@@ -22,16 +20,16 @@
            <div class="flex gap-2 items-center">
               <div class="w-12 h-12 rounded-full overflow-hidden relative leaderboard-background">
                   <img class="absolute -top-2 left-0"
-                       src="{{ setting('avatar_imager') }}{{ $relationship ? $entry->{$relationship}?->look : $entry->look }}&head_direction=3&gesture=sml"
+                       src="{{ setting('avatar_imager') }}{{ $entry->user->look }}&head_direction=3&gesture=sml"
                        alt=""/>
               </div>
 
                <div class="flex flex-col">
                    <p class="font-bold text-gray-100">
-                       {{ $relationship ? $entry->{$relationship}?->username : $entry->username }}
+                       {{ $entry->user->username }}
                    </p>
                    <p class="text-gray-200 text-sm">
-                       {{ $formatValue ? $formatValue($entry->{$valueKey}) : $entry->{$valueKey} }} {{ $valueType }}
+                       {{ $formatValue ? $formatValue($entry->value) : $entry->value }} {{ $valueType }}
                    </p>
                </div>
            </div>

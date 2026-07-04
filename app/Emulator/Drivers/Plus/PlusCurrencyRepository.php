@@ -3,8 +3,10 @@
 namespace App\Emulator\Drivers\Plus;
 
 use App\Emulator\Contracts\CurrencyRepository;
+use App\Emulator\Data\LeaderboardEntry;
 use App\Enums\CurrencyTypes;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 /**
  * Plus EMU keeps every currency as a column on the users table:
@@ -38,6 +40,18 @@ class PlusCurrencyRepository implements CurrencyRepository
         return User::whereKey($user->id)
             ->where($column, '>=', $amount)
             ->decrement($column, $amount) === 1;
+    }
+
+    public function topBy(CurrencyTypes $currency, int $limit, array $excludeUserIds = []): Collection
+    {
+        $column = $this->column($currency);
+
+        return User::query()
+            ->whereNotIn('id', $excludeUserIds)
+            ->orderByDesc($column)
+            ->limit($limit)
+            ->get(['id', 'username', 'look', $column])
+            ->map(fn (User $user) => new LeaderboardEntry($user, (int) $user->getAttribute($column)));
     }
 
     private function column(CurrencyTypes $currency): string

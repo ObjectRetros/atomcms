@@ -2,8 +2,10 @@
 
 namespace App\Emulator\Contracts;
 
+use App\Emulator\Data\LeaderboardEntry;
 use App\Enums\CurrencyTypes;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 /**
  * Reads and writes a player's currency balances on the emulator database.
@@ -26,4 +28,13 @@ interface CurrencyRepository
      * Atomically remove the amount, returning false if the balance is short.
      */
     public function deduct(User $user, CurrencyTypes $currency, int $amount): bool;
+
+    /**
+     * The richest players in a currency, highest first (for the leaderboard).
+     *
+     * @param  array<int, int>  $excludeUserIds
+     *
+     * @return Collection<int, LeaderboardEntry>
+     */
+    public function topBy(CurrencyTypes $currency, int $limit, array $excludeUserIds = []): Collection;
 }
