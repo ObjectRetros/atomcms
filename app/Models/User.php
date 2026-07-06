@@ -194,6 +194,8 @@ class User extends Authenticatable implements FilamentUser, HasName
         'pixels',
         'points',
         'vip_points',
+        'activity_points',
+        'gotw_points',
         'machine_id',
         'pincode',
         'secret_key',
@@ -271,6 +273,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(ClaimedReferralLog::class);
     }
 
+    /**
+     * @return HasMany<UserBadge, $this>
+     */
     public function badges(): HasMany
     {
         return $this->hasMany(UserBadge::class);

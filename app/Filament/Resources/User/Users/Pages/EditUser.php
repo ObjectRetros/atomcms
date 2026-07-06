@@ -4,9 +4,9 @@ namespace App\Filament\Resources\User\Users\Pages;
 
 use App\Actions\SendCurrency;
 use App\Contracts\Rcon;
+use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
-use App\Models\Game\Player\UserCurrency;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -36,7 +36,7 @@ class EditUser extends EditRecord
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query()->with(['currencies', 'settings']);
+        return static::getModel()::query()->with(['settings']);
     }
 
     /**
@@ -91,30 +91,47 @@ class EditUser extends EditRecord
 
     private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
-            if ($updatedCurrencyAmount == $currency->amount) {
-                return;
-            }
+        $currencies = app(CurrencyRepository::class);
 
-            $updated = $user->currencies()->where('type', $currency->type)->update(['amount' => $updatedCurrencyAmount]);
+        foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
+            $currencies->give($user, $type, $updated - $current);
 
-            if ($updated) {
-                activity()
-                    ->performedOn($currency)
-                    ->withProperties(['old_amount' => $currency->amount, 'new_amount' => $updatedCurrencyAmount, 'user_id' => $user->id, 'type' => $currency->type])
-                    ->event('updated')
-                    ->log("Currency updated for user {$user->username}");
-
-            } else {
-                activity()
-                    ->withProperties(['user_id' => $user->id, 'type' => $currency->type])
-                    ->event('failed_update')
-                    ->log("Failed to update currency for user {$user->username}");
-            }
-        });
+            activity()
+                ->performedOn($user)
+                ->withProperties(['old_amount' => $current, 'new_amount' => $updated, 'user_id' => $user->id, 'type' => $type->value])
+                ->event('updated')
+                ->log("Currency updated for user {$user->username}");
+        }
 
         $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+    }
+
+    /**
+     * Non-credit currencies whose form value differs from the stored balance.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @return list<array{CurrencyTypes, int, int}>
+     */
+    private function changedCurrencies(Model $user, array $data): array
+    {
+        $currencies = app(CurrencyRepository::class);
+        $changes = [];
+
+        foreach (CurrencyTypes::cases() as $type) {
+            if ($type === CurrencyTypes::Credits) {
+                continue;
+            }
+
+            $current = $currencies->balance($user, $type);
+            $updated = (int) ($data["currency_{$type->value}"] ?? $current);
+
+            if ($updated !== $current) {
+                $changes[] = [$type, $current, $updated];
+            }
+        }
+
+        return $changes;
     }
 
     private function checkUsernameChangedPermission(Model $user, array $data, Rcon $rcon): void
@@ -139,16 +156,9 @@ class EditUser extends EditRecord
 
     private function treatChangedCurrencies(Model $user, array $data): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-            $updatedAmount = (int) ($data["currency_{$currency->type}"] ?? $currency->amount);
-            $type = CurrencyTypes::tryFrom((int) $currency->type);
-
-            if ($type === null || $updatedAmount === (int) $currency->amount) {
-                return;
-            }
-
-            app(SendCurrency::class)->execute($user, $type, $updatedAmount - (int) $currency->amount);
-        });
+        foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
+            app(SendCurrency::class)->execute($user, $type, $updated - $current);
+        }
     }
 
     private function treatChangedUserRank(Model $user, array $data, Rcon $rcon): void
