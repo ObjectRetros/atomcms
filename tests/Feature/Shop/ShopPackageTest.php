@@ -25,6 +25,19 @@ function makePackage(array $attributes = []): WebsiteShopPackage
     return $package;
 }
 
+test('the shop lists packages alongside articles', function () {
+    installHotel();
+
+    $user = User::factory()->create();
+    $package = makePackage();
+
+    $this->actingAs($user)
+        ->get(route('shop.index'))
+        ->assertOk()
+        ->assertViewHas('shopPackages', fn ($packages) => $packages->contains($package))
+        ->assertSee($package->name);
+});
+
 test('a package purchase charges the buyer and delivers its items', function () {
     installHotel();
 
