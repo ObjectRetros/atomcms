@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Mail\ResetPasswordMail;
 use App\Models\PasswordResetToken;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -31,9 +32,7 @@ class ForgotPasswordController extends Controller
                 'token' => PasswordResetToken::hashToken($token),
             ]);
 
-            Mail::send('email.forgetPassword', ['token' => $token], function ($message) use ($request) {
-                $message->to($request->mail)->subject('Reset Password');
-            });
+            Mail::to($request->mail)->queue(new ResetPasswordMail($token));
         }
 
         return back()->with('success', __('We have e-mailed your password reset link!'));
