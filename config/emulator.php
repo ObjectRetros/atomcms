@@ -1,9 +1,12 @@
 <?php
 
+use App\Emulator\Contracts\BadgeRepository;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Emulator\Contracts\PlayerStatsRepository;
+use App\Emulator\Drivers\Arcturus\ArcturusBadgeRepository;
 use App\Emulator\Drivers\Arcturus\ArcturusCurrencyRepository;
 use App\Emulator\Drivers\Arcturus\ArcturusPlayerStatsRepository;
+use App\Emulator\Drivers\Plus\PlusBadgeRepository;
 use App\Emulator\Drivers\Plus\PlusCurrencyRepository;
 use App\Emulator\Drivers\Plus\PlusPlayerStatsRepository;
 
@@ -36,11 +39,13 @@ return [
     'drivers' => [
 
         'arcturus' => [
+            BadgeRepository::class => ArcturusBadgeRepository::class,
             CurrencyRepository::class => ArcturusCurrencyRepository::class,
             PlayerStatsRepository::class => ArcturusPlayerStatsRepository::class,
         ],
 
         'plus' => [
+            BadgeRepository::class => PlusBadgeRepository::class,
             CurrencyRepository::class => PlusCurrencyRepository::class,
             PlayerStatsRepository::class => PlusPlayerStatsRepository::class,
         ],

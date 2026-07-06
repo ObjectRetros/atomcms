@@ -3,18 +3,22 @@
 namespace App\Actions;
 
 use App\Contracts\Rcon;
+use App\Emulator\Contracts\BadgeRepository;
 use App\Models\User;
 
 class SendBadges
 {
-    public function __construct(private readonly Rcon $rcon) {}
+    public function __construct(
+        private readonly Rcon $rcon,
+        private readonly BadgeRepository $badges,
+    ) {}
 
     /**
      * Grant a semicolon-separated list of badge codes, skipping owned ones.
      */
     public function execute(User $user, string $badges): void
     {
-        $owned = $user->badges()->pluck('badge_code')->all();
+        $owned = $this->badges->codes($user);
 
         foreach ($this->parse($badges) as $badge) {
             if (in_array($badge, $owned, true)) {
@@ -41,9 +45,6 @@ class SendBadges
             return;
         }
 
-        $user->badges()->updateOrCreate([
-            'user_id' => $user->id,
-            'badge_code' => $badge,
-        ]);
+        $this->badges->grant($user, $badge);
     }
 }

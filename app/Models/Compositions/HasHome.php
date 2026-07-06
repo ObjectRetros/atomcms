@@ -2,6 +2,7 @@
 
 namespace App\Models\Compositions;
 
+use App\Emulator\Contracts\BadgeRepository;
 use App\Enums\HomeItemType;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
@@ -136,9 +137,8 @@ trait HasHome
     public function loadBadgesForHome(string $routeName): self
     {
         $this->setRelation('badges',
-            $this->badges()
-                ->orderByDesc('id')
-                ->paginate(16, ['*'], 'badges_page')
+            app(BadgeRepository::class)
+                ->paginate($this, 16, 'badges_page')
                 ->withPath(route($routeName, $this->username)),
         );
 

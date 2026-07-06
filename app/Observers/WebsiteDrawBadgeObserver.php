@@ -2,11 +2,18 @@
 
 namespace App\Observers;
 
+use App\Emulator\Contracts\BadgeRepository;
+use App\Models\User;
 use App\Models\WebsiteDrawBadge;
-use Illuminate\Support\Facades\DB;
+use App\Services\Badge\NitroExternalTexts;
 
 class WebsiteDrawBadgeObserver
 {
+    public function __construct(
+        private readonly BadgeRepository $badges,
+        private readonly NitroExternalTexts $externalTexts,
+    ) {}
+
     public function updated(WebsiteDrawBadge $websiteDrawBadge): void
     {
         if (! $websiteDrawBadge->wasChanged() || ! $websiteDrawBadge->badge_path) {
@@ -14,56 +21,22 @@ class WebsiteDrawBadgeObserver
         }
 
         $badgeCode = pathinfo($websiteDrawBadge->badge_path, PATHINFO_FILENAME);
+        $owner = User::find($websiteDrawBadge->user_id);
 
         if (! $websiteDrawBadge->published) {
-            DB::table('users_badges')
-                ->where('user_id', $websiteDrawBadge->user_id)
-                ->where('badge_code', $badgeCode)
-                ->delete();
+            if ($owner !== null) {
+                $this->badges->revoke($owner, $badgeCode);
+            }
 
-            // Remove from JSON
-            $this->updateExternalTexts(false, $badgeCode);
+            $this->externalTexts->remove($badgeCode);
 
             return;
         }
 
-        $exists = DB::table('users_badges')
-            ->where('user_id', $websiteDrawBadge->user_id)
-            ->where('badge_code', $badgeCode)
-            ->exists();
-
-        if (! $exists) {
-            DB::table('users_badges')->insert([
-                'user_id' => $websiteDrawBadge->user_id,
-                'slot_id' => 0,
-                'badge_code' => $badgeCode,
-            ]);
+        if ($owner !== null) {
+            $this->badges->grant($owner, $badgeCode);
         }
 
-        // Add to JSON
-        $this->updateExternalTexts(true, $badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
-    }
-
-    protected function updateExternalTexts(bool $add, string $badgeCode, ?string $name = null, ?string $desc = null): void
-    {
-        $filePath = DB::table('website_settings')->where('key', 'nitro_external_texts_file')->value('value');
-
-        if (! $filePath || ! file_exists($filePath) || ! is_writable($filePath)) {
-            return;
-        }
-
-        $json = json_decode(file_get_contents($filePath), true);
-
-        if ($add) {
-            $json = array_merge($json, [
-                "badge_name_{$badgeCode}" => $name,
-                "badge_desc_{$badgeCode}" => $desc,
-            ]);
-        } else {
-            unset($json["badge_name_{$badgeCode}"]);
-            unset($json["badge_desc_{$badgeCode}"]);
-        }
-
-        file_put_contents($filePath, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $this->externalTexts->add($badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
     }
 }
