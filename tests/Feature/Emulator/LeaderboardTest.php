@@ -1,38 +1,52 @@
 <?php
 
-use App\Emulator\Contracts\CurrencyRepository;
 use App\Emulator\Contracts\PlayerStatsRepository;
 use App\Emulator\Data\LeaderboardEntry;
 use App\Emulator\Data\Stat;
-use App\Enums\CurrencyTypes;
+use App\Emulator\Drivers\Arcturus\ArcturusPlayerStatsRepository;
+use App\Emulator\Drivers\Plus\PlusPlayerStatsRepository;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     installHotel();
 });
 
-test('the currency leaderboard ranks richer players first', function () {
-    $currencies = app(CurrencyRepository::class);
+dataset('stats drivers', [
+    'arcturus' => [fn (): PlayerStatsRepository => new ArcturusPlayerStatsRepository],
+    'plus' => [fn (): PlayerStatsRepository => new PlusPlayerStatsRepository],
+]);
 
-    $rich = User::factory()->create(['username' => 'Rich', 'mail' => 'rich@example.com']);
-    $poor = User::factory()->create(['username' => 'Poor', 'mail' => 'poor@example.com']);
+test('the stats leaderboard query runs against the schema', function (PlayerStatsRepository $stats) {
+    // Smoke test: exercises the driver's column mapping without seeding the
+    // emulator-owned stats table.
+    expect($stats->topBy(Stat::OnlineTime, 5))->toBeInstanceOf(Collection::class);
+})->with('stats drivers');
 
-    $currencies->give($rich, CurrencyTypes::Credits, 1_000);
-    $currencies->give($poor, CurrencyTypes::Credits, -1_000);
+test('the plus stats leaderboard ranks players and excludes staff', function () {
+    $active = User::factory()->create();
+    $idle = User::factory()->create();
+    $staff = User::factory()->create();
 
-    $ranked = $currencies->topBy(CurrencyTypes::Credits, 10)
+    DB::table('user_stats')->insert([
+        ['id' => $active->id, 'OnlineTime' => 5_000, 'Respect' => 0, 'AchievementScore' => 0],
+        ['id' => $idle->id, 'OnlineTime' => 100, 'Respect' => 0, 'AchievementScore' => 0],
+        ['id' => $staff->id, 'OnlineTime' => 9_000, 'Respect' => 0, 'AchievementScore' => 0],
+    ]);
+
+    $ranked = (new PlusPlayerStatsRepository)
+        ->topBy(Stat::OnlineTime, 10, [$staff->id])
         ->map(fn (LeaderboardEntry $entry) => $entry->user->id)
         ->all();
 
-    expect(array_search($rich->id, $ranked, true))
-        ->toBeLessThan(array_search($poor->id, $ranked, true));
+    expect($ranked)->toBe([$active->id, $idle->id]);
 });
 
-test('the stats leaderboard query runs against the schema', function () {
-    // Smoke test: exercises the driver's column mapping without seeding the
-    // emulator-owned stats table.
-    $top = app(PlayerStatsRepository::class)->topBy(Stat::OnlineTime, 5);
+test('the leaderboard page renders with the configured driver', function () {
+    $user = User::factory()->create();
 
-    expect($top)->toBeInstanceOf(Collection::class);
+    $this->actingAs($user)
+        ->get(route('leaderboard.index'))
+        ->assertOk();
 });

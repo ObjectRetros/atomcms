@@ -47,13 +47,9 @@ expect()->extend('toBeOne', function () {
 
 function installHotel(): void
 {
-    WebsiteInstallation::query()->insert(['completed' => true, 'installation_key' => 'key']);
+    WebsiteInstallation::query()->firstOrCreate(['installation_key' => 'key'], ['completed' => true]);
 
-    WebsiteSetting::query()->insert([
-        'key' => 'max_accounts_per_ip',
-        'value' => 10,
-        'comment' => '',
-    ]);
+    setSetting('max_accounts_per_ip', '10');
 }
 
 /**
