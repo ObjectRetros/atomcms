@@ -72,11 +72,21 @@
             </div>
 
             <div class="col-span-12 md:col-span-9 space-y-3">
-                <div class="grid grid-cols-1 lg:grid-cols-{{$articles->count() > 1 ? '2' : '1'}} gap-4">
-                    @foreach ($articles as $article)
-                        <x-shop.packages :article="$article"/>
-                    @endforeach
-                </div>
+                @if($shopPackages->isNotEmpty())
+                    <div class="grid grid-cols-1 lg:grid-cols-{{ $shopPackages->count() > 1 ? '2' : '1' }} gap-4">
+                        @foreach ($shopPackages as $shopPackage)
+                            <x-shop.package-card :package="$shopPackage"/>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if($articles->isNotEmpty())
+                    <div class="grid grid-cols-1 lg:grid-cols-{{ $articles->count() > 1 ? '2' : '1' }} gap-4">
+                        @foreach ($articles as $article)
+                            <x-shop.packages :article="$article"/>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
 
