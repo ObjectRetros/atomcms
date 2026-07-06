@@ -19,14 +19,7 @@ class PaypalController extends Controller
 
     private const STATUS_COMPLETED = 'COMPLETED';
 
-    private PayPalClient $provider;
-
-    public function __construct()
-    {
-        $this->provider = new PayPalClient;
-        $this->provider->setApiCredentials(config('habbo.paypal'));
-        $this->provider->getAccessToken();
-    }
+    public function __construct(private readonly PayPalClient $provider) {}
 
     public function process(AccountTopupFormRequest $request): Response|RedirectResponse
     {

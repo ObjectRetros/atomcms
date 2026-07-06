@@ -19,6 +19,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Tests must not depend on compiled frontend assets (CI never builds them).
+        $this->withoutVite();
+
         // Never open the emulator socket in tests; disconnected by default so
         // services take their database path.
         $this->rcon = new FakeRcon;

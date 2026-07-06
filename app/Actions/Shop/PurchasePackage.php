@@ -108,7 +108,7 @@ class PurchasePackage
         });
 
         if (! $delivered) {
-            throw new ShopPurchaseException($this->insufficientMessage($buyer->fresh(), $price));
+            throw new ShopPurchaseException($this->insufficientMessage($buyer->refresh(), $price));
         }
     }
 

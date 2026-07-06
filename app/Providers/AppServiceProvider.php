@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,16 @@ class AppServiceProvider extends ServiceProvider
             Rcon::class,
             fn () => new RconService,
         );
+
+        // Resolve the PayPal client pre-authenticated so consumers can inject
+        // it and tests can swap it for a fake.
+        $this->app->bind(PayPalClient::class, function (): PayPalClient {
+            $client = new PayPalClient;
+            $client->setApiCredentials(config('habbo.paypal'));
+            $client->getAccessToken();
+
+            return $client;
+        });
     }
 
     /**

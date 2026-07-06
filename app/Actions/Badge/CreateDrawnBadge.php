@@ -9,6 +9,8 @@ use App\Models\WebsiteDrawBadge;
 use App\Rules\ValidGifBadge;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Throwable;
 
 class CreateDrawnBadge
 {
@@ -26,18 +28,23 @@ class CreateDrawnBadge
     {
         $path = $this->storeImage($user, ValidGifBadge::decode($data['badge_data']));
 
-        return DB::transaction(function () use ($user, $data, $path): WebsiteDrawBadge {
-            $cost = (int) $this->settings->getOrDefault('drawbadge_currency_value', 150);
-            $currencyType = (string) $this->settings->getOrDefault('drawbadge_currency_type', 'credits');
+        try {
+            return DB::transaction(function () use ($user, $data, $path): WebsiteDrawBadge {
+                $cost = (int) $this->settings->getOrDefault('drawbadge_currency_value', 150);
+                $currencyType = (string) $this->settings->getOrDefault('drawbadge_currency_type', 'credits');
 
-            if (! $this->deductCurrency->execute($user, $currencyType, $cost)) {
-                @unlink($path);
+                if (! $this->deductCurrency->execute($user, $currencyType, $cost)) {
+                    throw BadgePurchaseException::insufficientFunds($currencyType);
+                }
 
-                throw BadgePurchaseException::insufficientFunds($currencyType);
-            }
+                return $this->persist($user, $data, $path);
+            });
+        } catch (Throwable $exception) {
+            // The charge or record rolled back; do not leave the file behind.
+            @unlink($path);
 
-            return $this->persist($user, $data, $path);
-        });
+            throw $exception;
+        }
     }
 
     private function storeImage(User $user, ?string $bytes): string
@@ -54,7 +61,7 @@ class CreateDrawnBadge
             throw BadgePurchaseException::saveFailed();
         }
 
-        $path = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $user->id . '_' . time() . '.gif';
+        $path = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $user->id . '_' . Str::ulid() . '.gif';
         $saved = imagegif($image, $path);
         imagedestroy($image);
 

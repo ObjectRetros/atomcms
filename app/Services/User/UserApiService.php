@@ -20,7 +20,9 @@ class UserApiService
      */
     public function onlineUsers(array $columns = ['username', 'motto', 'look'], int $limit = 50): Collection
     {
-        return Cache::remember('api_online_users', now()->addSeconds(30), fn () => User::query()
+        $cacheKey = sprintf('api_online_users:%s:%d', implode(',', $columns), $limit);
+
+        return Cache::remember($cacheKey, now()->addSeconds(30), fn () => User::query()
             ->select($columns)
             ->where('online', '1')
             ->inRandomOrder()

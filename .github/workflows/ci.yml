@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Supersede in-flight runs when a branch is force-pushed or updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   # Test app key (also set in phpunit.xml); lets artisan boot during install.
   APP_KEY: base64:dGVzdGluZy10ZXN0aW5nLXRlc3RpbmctdGVzdGluZy0=
@@ -26,6 +31,17 @@ jobs:
           coverage: none
 
       - run: cp .env.example .env
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - name: Install dependencies
         # All packages (Filament included) resolve from public GitHub, so no
@@ -77,6 +93,17 @@ jobs:
           coverage: none
 
       - run: cp .env.example .env
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - name: Install dependencies
         # All packages (Filament included) resolve from public GitHub, so no
