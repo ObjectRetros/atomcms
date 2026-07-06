@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\BannedMiddleware;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EnsureEmulatorFeature;
 use App\Http\Middleware\FindRetrosMiddleware;
 use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
 use App\Http\Middleware\InstallationMiddleware;
@@ -104,5 +105,6 @@ class Kernel extends HttpKernel
         'vpn.checker' => VPNCheckerMiddleware::class,
         'log.viewer' => LogViewerMiddleware::class,
         'force.staff.2fa' => ForceStaffTwoFactorMiddleware::class,
+        'emulator.feature' => EnsureEmulatorFeature::class,
     ];
 }

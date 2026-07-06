@@ -5,6 +5,8 @@ namespace App\Filament\Resources\User\Users\Pages;
 use App\Actions\SendCurrency;
 use App\Contracts\Rcon;
 use App\Emulator\Contracts\CurrencyRepository;
+use App\Emulator\Data\Feature;
+use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
 use Filament\Actions\DeleteAction;
@@ -36,7 +38,9 @@ class EditUser extends EditRecord
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query()->with(['settings']);
+        return Emulator::supports(Feature::EmulatorUserSettings)
+            ? static::getModel()::query()->with(['settings'])
+            : static::getModel()::query();
     }
 
     /**
@@ -103,7 +107,7 @@ class EditUser extends EditRecord
                 ->log("Currency updated for user {$user->username}");
         }
 
-        $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+        $this->updateNameChangePermission($user, $data);
     }
 
     /**
@@ -136,6 +140,10 @@ class EditUser extends EditRecord
 
     private function checkUsernameChangedPermission(Model $user, array $data, Rcon $rcon): void
     {
+        if (! Emulator::supports(Feature::NameChangePermission)) {
+            return;
+        }
+
         if ($data['allow_change_username'] == $user->settings->can_change_name) {
             return;
         }
@@ -151,7 +159,16 @@ class EditUser extends EditRecord
         }
 
         $rcon->disconnectUser($user);
-        $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+        $this->updateNameChangePermission($user, $data);
+    }
+
+    private function updateNameChangePermission(Model $user, array $data): void
+    {
+        if (! Emulator::supports(Feature::NameChangePermission) || $user->settings === null) {
+            return;
+        }
+
+        $user->settings->update(['can_change_name' => ($data['allow_change_username'] ?? false) ? '1' : '0']);
     }
 
     private function treatChangedCurrencies(Model $user, array $data): void

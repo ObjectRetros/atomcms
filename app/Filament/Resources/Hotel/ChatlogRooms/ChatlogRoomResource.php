@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\ChatlogRooms;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\Hotel\ChatlogRooms\Pages\ManageChatlogRooms;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogRoom;
@@ -16,6 +18,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChatlogRoomResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::RoomChatlogs;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = ChatlogRoom::class;

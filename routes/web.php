@@ -213,11 +213,14 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');
         });
 
-        // Rare values routes
-        Route::get('/values', [WebsiteRareValuesController::class, 'index'])->name('values.index');
-        Route::post('/values/search', [WebsiteRareValuesController::class, 'search'])->name('values.search');
-        Route::get('/values/category/{category}', [WebsiteRareValuesController::class, 'category'])->name('values.category');
-        Route::get('/values/{value}', [WebsiteRareValuesController::class, 'value'])->name('values.value');
+        // Rare values routes - reads the emulator's furniture schema, so only
+        // available on drivers that support it.
+        Route::middleware('emulator.feature:rare-values')->group(function () {
+            Route::get('/values', [WebsiteRareValuesController::class, 'index'])->name('values.index');
+            Route::post('/values/search', [WebsiteRareValuesController::class, 'search'])->name('values.search');
+            Route::get('/values/category/{category}', [WebsiteRareValuesController::class, 'category'])->name('values.category');
+            Route::get('/values/{value}', [WebsiteRareValuesController::class, 'value'])->name('values.value');
+        });
 
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {

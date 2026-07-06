@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\User\Bans;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\User\Bans\Pages\ManageBans;
 use App\Filament\Tables\Columns\UserAvatarColumn;
 use App\Filament\Traits\TranslatableResource;
@@ -20,6 +22,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class BanResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::BanManagement;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = Ban::class;

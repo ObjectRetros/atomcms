@@ -15,7 +15,7 @@ class EmulatorServiceProvider extends ServiceProvider
         $driver = config('emulator.driver');
 
         /** @var array<class-string, class-string> $bindings */
-        $bindings = config("emulator.drivers.{$driver}", []);
+        $bindings = config("emulator.drivers.{$driver}.bindings", []);
 
         foreach ($bindings as $contract => $implementation) {
             $this->app->bind($contract, $implementation);
