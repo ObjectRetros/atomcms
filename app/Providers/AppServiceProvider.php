@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\Rcon;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
+use App\Services\AfterCommitRcon;
 use App\Services\InstallationService;
 use App\Services\PermissionsService;
 use App\Services\RconService;
@@ -46,9 +47,11 @@ class AppServiceProvider extends ServiceProvider
             fn () => new PermissionsService,
         );
 
+        // Wrapped so RCON sends inside a DB transaction only fire once it
+        // commits - a rolled-back purchase never grants items in the emulator.
         $this->app->singleton(
             Rcon::class,
-            fn () => new RconService,
+            fn () => new AfterCommitRcon(new RconService),
         );
 
         // Resolve the PayPal client pre-authenticated so consumers can inject
