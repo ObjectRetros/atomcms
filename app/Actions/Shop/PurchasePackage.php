@@ -6,6 +6,7 @@ use App\Actions\SendBadges;
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
 use App\Contracts\Rcon;
+use App\Enums\CurrencyTypes;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopArticle;
 use App\Models\User;
@@ -117,9 +118,9 @@ class PurchasePackage
      */
     private function deliver(User $recipient, WebsiteShopArticle $package, array $furniture): void
     {
-        $this->sendCurrency->execute($recipient, 'credits', $package->credits);
-        $this->sendCurrency->execute($recipient, 'duckets', $package->duckets);
-        $this->sendCurrency->execute($recipient, 'diamonds', $package->diamonds);
+        $this->sendCurrency->execute($recipient, CurrencyTypes::Credits, (int) $package->credits);
+        $this->sendCurrency->execute($recipient, CurrencyTypes::Duckets, (int) $package->duckets);
+        $this->sendCurrency->execute($recipient, CurrencyTypes::Diamonds, (int) $package->diamonds);
 
         if ($package->give_rank) {
             $this->grantRank($recipient, $package->give_rank);

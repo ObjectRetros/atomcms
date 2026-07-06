@@ -101,11 +101,21 @@ class RconService implements Rcon
         ]);
     }
 
-    public function giveCredits(User $user, int $credits): void
+    public function giveCurrency(User $user, CurrencyTypes $currency, int $amount): void
     {
-        $this->sendCommand('givecredits', [
+        if ($currency === CurrencyTypes::Credits) {
+            $this->sendCommand('givecredits', [
+                'user_id' => $user->id,
+                'credits' => $amount,
+            ]);
+
+            return;
+        }
+
+        $this->sendCommand('givepoints', [
             'user_id' => $user->id,
-            'credits' => $credits,
+            'points' => $amount,
+            'type' => $currency,
         ]);
     }
 
@@ -136,30 +146,6 @@ class RconService implements Rcon
             'user_id' => $user->id,
             'username' => $user->username,
         ]);
-    }
-
-    public function givePoints(User $user, CurrencyTypes $type, int $amount): void
-    {
-        $this->sendCommand('givepoints', [
-            'user_id' => $user->id,
-            'points' => $amount,
-            'type' => $type,
-        ]);
-    }
-
-    public function giveGotw(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Points, $amount);
-    }
-
-    public function giveDiamonds(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Diamonds, $amount);
-    }
-
-    public function giveDuckets(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     public function setRank(User $user, int $rank): void

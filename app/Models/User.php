@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
@@ -225,6 +226,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
+    /**
+     * @return HasMany<UserCurrency, $this>
+     */
     public function currencies(): HasMany
     {
         return $this->hasMany(UserCurrency::class, 'user_id');
@@ -237,17 +241,9 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function currency(string $currency): int
     {
-        if (! $this->relationLoaded('currencies')) {
-            $this->load('currencies');
-        }
-
         $type = CurrencyTypes::fromCurrencyName($currency);
 
-        if ($type === null) {
-            return 0;
-        }
-
-        return $this->currencies->where('type', $type->value)->first()?->amount ?? 0;
+        return $type === null ? 0 : app(CurrencyRepository::class)->balance($this, $type);
     }
 
     public function permission(): HasOne

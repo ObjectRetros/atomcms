@@ -39,9 +39,9 @@ class AfterCommitRcon implements Rcon
         $this->defer(fn () => $this->inner->sendGift($user, $itemId, $message));
     }
 
-    public function giveCredits(User $user, int $credits): void
+    public function giveCurrency(User $user, CurrencyTypes $currency, int $amount): void
     {
-        $this->defer(fn () => $this->inner->giveCredits($user, $credits));
+        $this->defer(fn () => $this->inner->giveCurrency($user, $currency, $amount));
     }
 
     public function giveBadge(User $user, string $badge): void
@@ -62,26 +62,6 @@ class AfterCommitRcon implements Rcon
     public function disconnectUser(User $user): void
     {
         $this->defer(fn () => $this->inner->disconnectUser($user));
-    }
-
-    public function givePoints(User $user, CurrencyTypes $type, int $amount): void
-    {
-        $this->defer(fn () => $this->inner->givePoints($user, $type, $amount));
-    }
-
-    public function giveGotw(User $user, int $amount): void
-    {
-        $this->defer(fn () => $this->inner->giveGotw($user, $amount));
-    }
-
-    public function giveDiamonds(User $user, int $amount): void
-    {
-        $this->defer(fn () => $this->inner->giveDiamonds($user, $amount));
-    }
-
-    public function giveDuckets(User $user, int $amount): void
-    {
-        $this->defer(fn () => $this->inner->giveDuckets($user, $amount));
     }
 
     public function setRank(User $user, int $rank): void

@@ -6,6 +6,7 @@ use App\Actions\SendBadges;
 use App\Actions\SendCurrency;
 use App\Actions\SendFurniture;
 use App\Contracts\Rcon;
+use App\Enums\CurrencyTypes;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
@@ -51,11 +52,14 @@ class FulfillPackage
             throw self::misconfigured($item);
         }
 
-        [$currencyType, $amount] = explode(':', $item->type_value, 2);
+        [$currencyName, $amount] = explode(':', $item->type_value, 2);
+        $currency = CurrencyTypes::fromCurrencyName($currencyName);
 
-        if (! $this->sendCurrency->execute($user, $currencyType, (int) $amount * $quantity)) {
+        if ($currency === null || (int) $amount <= 0) {
             throw self::misconfigured($item);
         }
+
+        $this->sendCurrency->execute($user, $currency, (int) $amount * $quantity);
     }
 
     private function giveFurniture(User $user, WebsiteShopItem $item, int $quantity): void

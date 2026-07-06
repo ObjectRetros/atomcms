@@ -2,9 +2,7 @@
     'title',
     'icon',
     'data',
-    'valueKey',
     'valueType',
-    'relationship' => null,
     'formatValue' => null,
 ])
 
@@ -32,15 +30,15 @@
                 <img @class([
                     'mt-8' => !Str::contains(setting('avatar_imager'), 'www.habbo.com'),
                 ])
-                     src="{{ setting('avatar_imager') }}{{ $relationship ? $entry->{$relationship}?->look : $entry->look }}&size=b&head_direction=2&gesture=sml&headonly=1"
+                     src="{{ setting('avatar_imager') }}{{ $entry->user->look }}&size=b&head_direction=2&gesture=sml&headonly=1"
                      alt="" />
 
                 <div class="flex flex-col">
                     <p class="font-bold text-gray-700 dark:text-gray-100">
-                        {{ $relationship ? $entry->{$relationship}?->username : $entry->username }}
+                        {{ $entry->user->username }}
                     </p>
                     <p class="text-gray-600 dark:text-gray-300">
-                        {{ $formatValue ? $formatValue($entry->{$valueKey}) : $entry->{$valueKey} }} {{ $valueType }}
+                        {{ $formatValue ? $formatValue($entry->value) : $entry->value }} {{ $valueType }}
                     </p>
                 </div>
             </div>

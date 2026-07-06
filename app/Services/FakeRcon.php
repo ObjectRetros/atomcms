@@ -45,9 +45,9 @@ class FakeRcon implements Rcon
         $this->record(__FUNCTION__, ['user' => $user->id, 'itemId' => $itemId, 'message' => $message]);
     }
 
-    public function giveCredits(User $user, int $credits): void
+    public function giveCurrency(User $user, CurrencyTypes $currency, int $amount): void
     {
-        $this->record(__FUNCTION__, ['user' => $user->id, 'credits' => $credits]);
+        $this->record(__FUNCTION__, ['user' => $user->id, 'currency' => $currency->name, 'amount' => $amount]);
     }
 
     public function giveBadge(User $user, string $badge): void
@@ -68,26 +68,6 @@ class FakeRcon implements Rcon
     public function disconnectUser(User $user): void
     {
         $this->record(__FUNCTION__, ['user' => $user->id]);
-    }
-
-    public function givePoints(User $user, CurrencyTypes $type, int $amount): void
-    {
-        $this->record(__FUNCTION__, ['user' => $user->id, 'type' => $type->value, 'amount' => $amount]);
-    }
-
-    public function giveGotw(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Points, $amount);
-    }
-
-    public function giveDiamonds(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Diamonds, $amount);
-    }
-
-    public function giveDuckets(User $user, int $amount): void
-    {
-        $this->givePoints($user, CurrencyTypes::Duckets, $amount);
     }
 
     public function setRank(User $user, int $rank): void
