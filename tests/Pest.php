@@ -13,6 +13,7 @@
 
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -53,4 +54,14 @@ function installHotel(): void
         'value' => 10,
         'comment' => '',
     ]);
+}
+
+/**
+ * Override a website setting for the current test and reset the settings cache.
+ */
+function setSetting(string $key, string $value): void
+{
+    WebsiteSetting::query()->updateOrCreate(['key' => $key], ['value' => $value, 'comment' => '']);
+
+    SettingsService::clearCache();
 }
