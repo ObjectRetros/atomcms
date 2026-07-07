@@ -73,7 +73,6 @@
     </div>
 
     {{-- TODO: Selfhost --}}
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
     <script>
         function logoGenerator() {
@@ -140,19 +139,13 @@
                         }).then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    Toast.fire({
-                                        icon: 'success',
-                                        title: data.message
-                                    })
+                                    window.toast(data.message);
 
                                     setTimeout(() => {
                                         window.location.href = "{{ url()->current() }}";
                                     }, 1000);
                                 } else {
-                                    Toast.fire({
-                                        icon: 'error',
-                                        title: 'Something went wrong'
-                                    })
+                                    window.toast('{{ __('Something went wrong') }}', 'error');
                                 }
                             });
                     }, 'image/png');

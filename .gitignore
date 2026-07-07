@@ -40,3 +40,4 @@ opencode.json
 .mcp.json
 boost.json
 RELEASE.md
+.env.preview
