@@ -68,16 +68,15 @@ class InstallationMiddleware
                 return $installation;
             }
 
-            $installation = WebsiteInstallation::query()->first();
-
-            if (! $installation) {
-                $installation = WebsiteInstallation::create([
-                    'step' => 0,
-                    'completed' => false,
-                    'installation_key' => Str::uuid(),
-                    'user_ip' => request()->ip(),
-                ]);
-            }
+            // firstOrCreate narrows (but cannot fully close) the race where
+            // concurrent first-ever requests each create a row; completion and
+            // isComplete() tolerate stray rows either way.
+            $installation = WebsiteInstallation::query()->firstOrCreate([], [
+                'step' => 0,
+                'completed' => false,
+                'installation_key' => Str::uuid(),
+                'user_ip' => request()->ip(),
+            ]);
 
             if ($installation->completed) {
                 Cache::rememberForever($cacheKey, function () use ($installation) {

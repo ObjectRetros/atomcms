@@ -30,9 +30,9 @@ class InstallationService
                 return false;
             }
 
-            $installation = DB::table('website_installation')->first();
-
-            $isComplete = $installation && $installation->completed;
+            // Any completed row counts: the first-visit race can leave
+            // duplicate rows, and completion must not hinge on row order.
+            $isComplete = DB::table('website_installation')->where('completed', true)->exists();
 
             if ($isComplete) {
                 Cache::rememberForever('app_installed', fn () => true);
