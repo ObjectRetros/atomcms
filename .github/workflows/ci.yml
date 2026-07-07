@@ -2,16 +2,20 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # Validate every merge landing on the integration and release branches,
+    # so dev is known-good before it is promoted to main. PRs targeting any
+    # branch are covered by the unfiltered pull_request trigger below.
+    branches: [main, dev]
   pull_request:
 
 permissions:
   contents: read
 
-# Supersede in-flight runs when a branch is force-pushed or updated.
+# Supersede in-flight runs when a branch is force-pushed or updated; on main
+# and dev every push keeps its own run so each merge gets a status.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
 
 env:
   # Test app key (also set in phpunit.xml); lets artisan boot during install.
