@@ -67,7 +67,10 @@ return [
                 FurnitureRepository::class => PlusFurnitureRepository::class,
                 PlayerStatsRepository::class => PlusPlayerStatsRepository::class,
             ],
-            'features' => [],
+            'features' => [
+                Feature::BanManagement,
+                Feature::RoomChatlogs,
+            ],
         ],
 
     ],

@@ -264,13 +264,15 @@ class UserResource extends Resource
 
     public static function getRelations(): array
     {
-        // Relation managers that read emulator-specific tables only appear on
-        // drivers that support them.
+        // These relation managers read Arcturus tables directly, so they only
+        // appear on that driver regardless of what other drivers support.
+        $isArcturus = Emulator::driver() === 'arcturus';
+
         return array_values(array_filter([
             Emulator::supports(Feature::EmulatorUserSettings) ? SettingsRelationManager::class : null,
             Emulator::supports(Feature::UserBadgeManagement) ? BadgesRelationManager::class : null,
-            Emulator::supports(Feature::RoomChatlogs) ? ChatLogRelationManager::class : null,
-            Emulator::supports(Feature::PrivateChatlogs) ? ChatLogPrivateRelationManager::class : null,
+            $isArcturus ? ChatLogRelationManager::class : null,
+            $isArcturus ? ChatLogPrivateRelationManager::class : null,
         ]));
     }
 

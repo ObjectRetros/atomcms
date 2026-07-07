@@ -13,7 +13,9 @@ test('feature support follows the configured driver', function () {
     config(['emulator.driver' => 'plus']);
 
     expect(Emulator::supports(Feature::RareValues))->toBeFalse()
-        ->and(Emulator::supports(Feature::RoomChatlogs))->toBeFalse();
+        ->and(Emulator::supports(Feature::RoomChatlogs))->toBeTrue()
+        ->and(Emulator::supports(Feature::BanManagement))->toBeTrue()
+        ->and(Emulator::supports(Feature::Wordfilter))->toBeFalse();
 });
 
 test('gated routes early-return on drivers without the feature', function () {
