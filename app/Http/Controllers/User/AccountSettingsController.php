@@ -47,9 +47,12 @@ class AccountSettingsController extends Controller
             $user->update(['mail' => $request->input('mail')]);
         }
 
-        if ($user->motto !== $request->input('motto')) {
-            $this->rconService->setMotto($user, $request->input('motto'));
-            $user->update(['motto' => $request->input('motto')]);
+        // The motto is nullable in validation; clearing it means an empty string.
+        $motto = (string) $request->input('motto');
+
+        if ($user->motto !== $motto) {
+            $this->rconService->setMotto($user, $motto);
+            $user->update(['motto' => $motto]);
         }
 
         return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
