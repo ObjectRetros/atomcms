@@ -40,7 +40,12 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="toast-card pointer-events-auto relative flex items-start gap-3 overflow-hidden rounded-lg border border-gray-200 bg-white p-3 pr-9 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            @class([
+                'toast-card pointer-events-auto relative flex items-start gap-3 overflow-hidden p-3 pr-9 shadow-lg',
+                // Match each theme's card anatomy.
+                'rounded-lg bg-[#2b303c]' => setting('theme') === 'dusk',
+                'rounded border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800' => setting('theme') !== 'dusk',
+            ])
         >
             <template x-if="toast.icon === 'success'">
                 <svg class="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
