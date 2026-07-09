@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
+use App\Services\InstallationService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -78,10 +79,15 @@ class InstallationController extends Controller
         Cache::forget('website_permissions');
         Cache::forget('website_settings');
 
-        // Mark installation as complete
-        WebsiteInstallation::latest()->first()->update([
+        // Concurrent first-ever requests can each have created an installation
+        // row; the wizard progressed on the oldest while completion previously
+        // marked only the newest, leaving the row every check reads incomplete
+        // forever. Mark them all so every reader agrees.
+        WebsiteInstallation::query()->update([
             'completed' => true,
         ]);
+
+        InstallationService::setComplete();
 
         return to_route('welcome');
     }

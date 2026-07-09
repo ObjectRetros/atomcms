@@ -36,7 +36,7 @@ return new class extends Migration
                 ADD CONSTRAINT wsa_team_id_fk
                 FOREIGN KEY (team_id) REFERENCES website_teams(id)
                 ON DELETE SET NULL');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
 
         try {
@@ -44,7 +44,7 @@ return new class extends Migration
                 ADD CONSTRAINT wsa_approved_by_fk
                 FOREIGN KEY (approved_by) REFERENCES users(id)
                 ON DELETE SET NULL');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
 
         try {
@@ -52,13 +52,13 @@ return new class extends Migration
                 ADD CONSTRAINT wsa_rejected_by_fk
                 FOREIGN KEY (rejected_by) REFERENCES users(id)
                 ON DELETE SET NULL');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
 
         try {
             DB::statement('CREATE UNIQUE INDEX wsa_user_team_unique
                 ON website_staff_applications (user_id, team_id)');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
     }
 
@@ -66,13 +66,13 @@ return new class extends Migration
     {
         try {
             DB::statement('DROP INDEX wsa_user_team_unique ON website_staff_applications');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
 
         foreach (['wsa_team_id_fk', 'wsa_approved_by_fk', 'wsa_rejected_by_fk'] as $fk) {
             try {
                 DB::statement("ALTER TABLE website_staff_applications DROP FOREIGN KEY {$fk}");
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
             }
         }
 

@@ -30,7 +30,7 @@
 
         <template x-if="previewing">
             <div class="w-full max-w-[928px] flex items-center justify-between bg-cyan-50 dark:bg-cyan-900/30 border border-cyan-300 dark:border-cyan-700 rounded-lg px-4 py-2">
-                <span class="text-sm text-cyan-700 dark:text-cyan-200">{{ __('Preview mode — drag items to arrange, then purchase') }}</span>
+                <span class="text-sm text-cyan-700 dark:text-cyan-200">{{ __('Preview mode - drag items to arrange, then purchase') }}</span>
                 <div class="flex gap-2">
                     <button class="border border-gray-300 dark:border-gray-500 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-semibold px-4 py-1 rounded transition" @click="endPreview()">{{ __('Cancel') }}</button>
                     <button class="border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-1 rounded transition" @click="openConfirmModal()">{{ __('Buy & Save') }}</button>

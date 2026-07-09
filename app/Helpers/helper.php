@@ -3,9 +3,6 @@
 use App\Services\HousekeepingPermissionsService;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
-use Illuminate\Support\Str;
-
-// IP resolution is handled by TrustProxies middleware — do not override $_SERVER directly.
 
 if (! function_exists('setting')) {
     function setting(string $key, mixed $default = null): mixed
@@ -25,13 +22,6 @@ if (! function_exists('hasHousekeepingPermission')) {
     function hasHousekeepingPermission(string $permission): bool
     {
         return app(HousekeepingPermissionsService::class)->getOrDefault($permission);
-    }
-}
-
-if (! function_exists('strLimit')) {
-    function strLimit(string $string, int $limit, string $replacement = '...'): string
-    {
-        return Str::limit($string, $limit, $replacement);
     }
 }
 

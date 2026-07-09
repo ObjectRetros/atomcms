@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class Password implements Rule
@@ -65,67 +66,20 @@ class Password implements Rule
             return $this->message;
         }
 
-        return match (true) {
-            $this->requireUppercase
-            && ! $this->requireNumeric
-            && ! $this->requireSpecialCharacter => __(
-                'The :attribute must be at least :length characters and contain at least one uppercase character.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireNumeric
-            && ! $this->requireUppercase
-            && ! $this->requireSpecialCharacter => __(
-                'The :attribute must be at least :length characters and contain at least one number.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireSpecialCharacter
-            && ! $this->requireUppercase
-            && ! $this->requireNumeric => __(
-                'The :attribute must be at least :length characters and contain at least one special character.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireUppercase
-            && $this->requireNumeric
-            && ! $this->requireSpecialCharacter => __(
-                'The :attribute must be at least :length characters and contain at least one uppercase character and one number.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireUppercase
-            && $this->requireSpecialCharacter
-            && ! $this->requireNumeric => __(
-                'The :attribute must be at least :length characters and contain at least one uppercase character and one special character.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireUppercase
-            && $this->requireNumeric
-            && $this->requireSpecialCharacter => __(
-                'The :attribute must be at least :length characters and contain at least one uppercase character, one number, and one special character.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            $this->requireNumeric
-            && $this->requireSpecialCharacter
-            && ! $this->requireUppercase => __(
-                'The :attribute must be at least :length characters and contain at least one special character and one number.',
-                [
-                    'length' => $this->length,
-                ],
-            ),
-            default => __('The :attribute must be at least :length characters.', [
-                'length' => $this->length,
-            ]),
-        };
+        $requirements = array_filter([
+            $this->requireUppercase ? __('one uppercase character') : null,
+            $this->requireNumeric ? __('one number') : null,
+            $this->requireSpecialCharacter ? __('one special character') : null,
+        ]);
+
+        if ($requirements === []) {
+            return __('The :attribute must be at least :length characters.', ['length' => $this->length]);
+        }
+
+        return __('The :attribute must be at least :length characters and contain at least :requirements.', [
+            'length' => $this->length,
+            'requirements' => Arr::join($requirements, ', ', ' and '),
+        ]);
     }
 
     /**

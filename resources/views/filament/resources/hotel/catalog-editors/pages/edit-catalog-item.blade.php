@@ -116,10 +116,10 @@
                                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ Str::limit($row['room']?->description, 60) }}</p>
                                     </td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-200">
-                                        {{ $row['room']?->owner?->username ?? $row['room']?->owner_name ?? '—' }}
+                                        {{ $row['room']?->owner?->username ?? $row['room']?->owner_name ?? '-' }}
                                     </td>
                                     <td class="px-3 py-2 text-gray-500 dark:text-gray-400">
-                                        {{ $row['room']?->state ?? '—' }}
+                                        {{ $row['room']?->state ?? '-' }}
                                     </td>
                                     <td class="px-3 py-2 text-right font-semibold tabular-nums text-gray-900 dark:text-white">
                                         {{ $row['count'] }}

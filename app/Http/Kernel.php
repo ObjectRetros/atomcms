@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\BannedMiddleware;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EnsureEmulatorFeature;
 use App\Http\Middleware\FindRetrosMiddleware;
 use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
 use App\Http\Middleware\InstallationMiddleware;
@@ -12,7 +13,6 @@ use App\Http\Middleware\LocalizationMiddleware;
 use App\Http\Middleware\LogViewerMiddleware;
 use App\Http\Middleware\MaintenanceMiddleware;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
-use App\Http\Middleware\RealClientIpMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SetThemeMiddleware;
 use App\Http\Middleware\TrimStrings;
@@ -48,7 +48,6 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
-        RealClientIpMiddleware::class,
         TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
@@ -106,5 +105,6 @@ class Kernel extends HttpKernel
         'vpn.checker' => VPNCheckerMiddleware::class,
         'log.viewer' => LogViewerMiddleware::class,
         'force.staff.2fa' => ForceStaffTwoFactorMiddleware::class,
+        'emulator.feature' => EnsureEmulatorFeature::class,
     ];
 }

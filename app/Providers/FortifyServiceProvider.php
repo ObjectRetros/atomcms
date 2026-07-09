@@ -8,6 +8,7 @@ use App\Actions\Fortify\RedirectIfTwoFactorConfirmed;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Miscellaneous\CameraWeb;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -37,58 +38,47 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::createUsersUsing(CreateNewUser::class);
 
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->input('username') . $request->ip());
-        });
+        $this->configureRateLimiting();
+        $this->configureViews();
+        $this->authenticate();
+    }
 
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
+    private function configureRateLimiting(): void
+    {
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->input('username') . $request->ip()));
+        RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->session()->get('login.id')));
+    }
 
-        Fortify::loginView(function () {
-            return view('auth.login', [
-                'articles' => WebsiteArticle::latest('id')
-                    ->take(4)
-                    ->has('user')
-                    ->with('user:id,username,look')
-                    ->get(),
-                'photos' => CameraWeb::latest('id')
-                    ->take(4)
-                    ->with('user:id,username,look')
-                    ->get(),
-            ]);
-        });
+    private function configureViews(): void
+    {
+        Fortify::loginView(fn () => view('auth.login', $this->authPageData(4, 4)));
 
         Fortify::registerView(function (Request $request) {
             if (setting('disable_registration') === '1') {
-                return to_route('welcome')->withErrors([
-                    'register' => __('Registration is currently disabled.'),
-                ]);
+                return to_route('welcome')->withErrors(['register' => __('Registration is currently disabled.')]);
             }
 
             return view('auth.register', [
                 'referral_code' => $request->route('referral_code'),
-                'articles' => WebsiteArticle::latest('id')
-                    ->take(4)
-                    ->has('user')
-                    ->with('user:id,username,look')
-                    ->get(),
-                'photos' => CameraWeb::latest('id')
-                    ->take(2)
-                    ->with('user:id,username,look')
-                    ->get(),
+                ...$this->authPageData(4, 2),
             ]);
         });
 
-        Fortify::confirmPasswordView(function () {
-            return view('auth.passwords.confirm');
-        });
+        Fortify::confirmPasswordView(fn () => view('auth.passwords.confirm'));
+        Fortify::twoFactorChallengeView(fn () => view('auth.two-factor-challenge'));
+    }
 
-        Fortify::twoFactorChallengeView(function () {
-            return view('auth.two-factor-challenge');
-        });
-
-        $this->authenticate();
+    /**
+     * Latest articles and camera photos shown alongside the auth forms.
+     *
+     * @return array{articles: Collection<int, WebsiteArticle>, photos: Collection<int, CameraWeb>}
+     */
+    private function authPageData(int $articles, int $photos): array
+    {
+        return [
+            'articles' => WebsiteArticle::latest('id')->take($articles)->has('user')->with('user:id,username,look')->get(),
+            'photos' => CameraWeb::latest('id')->take($photos)->with('user:id,username,look')->get(),
+        ];
     }
 
     private function authenticate()

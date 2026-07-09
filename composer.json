@@ -11,9 +11,7 @@
         "filament/filament": "^5.0",
         "flowframe/laravel-trend": "^0.4.0",
         "guzzlehttp/guzzle": "^7.2",
-        "itsgoingd/clockwork": "^5.3",
         "jenssegers/agent": "^2.6",
-        "laravel/boost": "^2.4",
         "laravel/fortify": "^1.16",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
@@ -31,9 +29,10 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.9.1",
-        "filament/blueprint": "^2.1",
         "filament/upgrade": "^5.0",
         "fruitcake/laravel-debugbar": "*",
+        "itsgoingd/clockwork": "^5.3",
+        "laravel/boost": "^2.4",
         "larastan/larastan": "^3.9",
         "laravel/pint": "^v1.14",
         "laravel/sail": "*",
@@ -73,7 +72,11 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "test": "pest",
+        "lint": "pint --test",
+        "fix": "pint",
+        "analyse": "phpstan analyse --memory-limit=1G"
     },
     "extra": {
         "laravel": {

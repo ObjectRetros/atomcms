@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property HomeItemType $type
+ * @property CurrencyTypes $currency_type
+ */
 class HomeItem extends Model
 {
     use HasFactory;

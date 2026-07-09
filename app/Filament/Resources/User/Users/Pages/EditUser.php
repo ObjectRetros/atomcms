@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\User\Users\Pages;
 
 use App\Actions\SendCurrency;
+use App\Contracts\Rcon;
+use App\Emulator\Contracts\CurrencyRepository;
+use App\Emulator\Data\Feature;
+use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
-use App\Models\Game\Player\UserCurrency;
-use App\Services\RconService;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -36,7 +38,9 @@ class EditUser extends EditRecord
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query()->with(['currencies', 'settings']);
+        return Emulator::supports(Feature::EmulatorUserSettings)
+            ? static::getModel()::query()->with(['settings'])
+            : static::getModel()::query();
     }
 
     /**
@@ -57,7 +61,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        $rcon = app(RconService::class);
+        $rcon = app(Rcon::class);
 
         if (! $user->online) {
             DB::transaction(function () use ($user, $data) {
@@ -79,11 +83,11 @@ class EditUser extends EditRecord
 
         DB::transaction(function () use ($user, $data, $rcon) {
             if ($data['credits'] != $user->credits) {
-                $rcon->giveCredits($user, -$user->credits + $data['credits']);
+                app(SendCurrency::class)->execute($user, CurrencyTypes::Credits, -$user->credits + $data['credits']);
             }
 
             $this->checkUsernameChangedPermission($user, $data, $rcon);
-            $this->treatChangedCurrencies($user, $data, $rcon);
+            $this->treatChangedCurrencies($user, $data);
             $this->treatChangedUserRank($user, $data, $rcon);
             $this->treatChangedUserMotto($user, $data, $rcon);
         });
@@ -91,34 +95,55 @@ class EditUser extends EditRecord
 
     private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
-            if ($updatedCurrencyAmount == $currency->amount) {
-                return;
-            }
+        $currencies = app(CurrencyRepository::class);
 
-            $updated = $user->currencies()->where('type', $currency->type)->update(['amount' => $updatedCurrencyAmount]);
+        foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
+            $currencies->give($user, $type, $updated - $current);
 
-            if ($updated) {
-                activity()
-                    ->performedOn($currency)
-                    ->withProperties(['old_amount' => $currency->amount, 'new_amount' => $updatedCurrencyAmount, 'user_id' => $user->id, 'type' => $currency->type])
-                    ->event('updated')
-                    ->log("Currency updated for user {$user->username}");
+            activity()
+                ->performedOn($user)
+                ->withProperties(['old_amount' => $current, 'new_amount' => $updated, 'user_id' => $user->id, 'type' => $type->value])
+                ->event('updated')
+                ->log("Currency updated for user {$user->username}");
+        }
 
-            } else {
-                activity()
-                    ->withProperties(['user_id' => $user->id, 'type' => $currency->type])
-                    ->event('failed_update')
-                    ->log("Failed to update currency for user {$user->username}");
-            }
-        });
-
-        $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+        $this->updateNameChangePermission($user, $data);
     }
 
-    private function checkUsernameChangedPermission(Model $user, array $data, RconService $rcon): void
+    /**
+     * Non-credit currencies whose form value differs from the stored balance.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @return list<array{CurrencyTypes, int, int}>
+     */
+    private function changedCurrencies(Model $user, array $data): array
     {
+        $currencies = app(CurrencyRepository::class);
+        $changes = [];
+
+        foreach (CurrencyTypes::cases() as $type) {
+            if ($type === CurrencyTypes::Credits) {
+                continue;
+            }
+
+            $current = $currencies->balance($user, $type);
+            $updated = (int) ($data["currency_{$type->value}"] ?? $current);
+
+            if ($updated !== $current) {
+                $changes[] = [$type, $current, $updated];
+            }
+        }
+
+        return $changes;
+    }
+
+    private function checkUsernameChangedPermission(Model $user, array $data, Rcon $rcon): void
+    {
+        if (! Emulator::supports(Feature::NameChangePermission)) {
+            return;
+        }
+
         if ($data['allow_change_username'] == $user->settings->can_change_name) {
             return;
         }
@@ -134,28 +159,26 @@ class EditUser extends EditRecord
         }
 
         $rcon->disconnectUser($user);
-        $user->settings->update(['can_change_name' => $data['allow_change_username'] ? '1' : '0']);
+        $this->updateNameChangePermission($user, $data);
     }
 
-    private function treatChangedCurrencies(Model $user, array $data, RconService $rcon): void
+    private function updateNameChangePermission(Model $user, array $data): void
     {
-        $user->currencies->each(function (UserCurrency $currency) use ($data, $user) {
-            $updatedCurrencyAmount = $data["currency_{$currency->type}"] ?? $currency->amount;
-            $currencyType = match ($currency->type) {
-                CurrencyTypes::Duckets => 'duckets',
-                CurrencyTypes::Diamonds => 'diamonds',
-                CurrencyTypes::Points => 'points',
-            };
+        if (! Emulator::supports(Feature::NameChangePermission) || $user->settings === null) {
+            return;
+        }
 
-            if ($updatedCurrencyAmount == $currency->amount) {
-                return;
-            }
-
-            app(SendCurrency::class)->execute($user, $currencyType, -$currency->amount + $updatedCurrencyAmount);
-        });
+        $user->settings->update(['can_change_name' => ($data['allow_change_username'] ?? false) ? '1' : '0']);
     }
 
-    private function treatChangedUserRank(Model $user, array $data, RconService $rcon): void
+    private function treatChangedCurrencies(Model $user, array $data): void
+    {
+        foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
+            app(SendCurrency::class)->execute($user, $type, $updated - $current);
+        }
+    }
+
+    private function treatChangedUserRank(Model $user, array $data, Rcon $rcon): void
     {
         if ($data['rank'] == $user->rank) {
             return;
@@ -187,7 +210,7 @@ class EditUser extends EditRecord
         $rcon->setRank($user, $data['rank']);
     }
 
-    private function treatChangedUserMotto(Model $user, array $data, RconService $rcon): void
+    private function treatChangedUserMotto(Model $user, array $data, Rcon $rcon): void
     {
         if ($data['motto'] == $user->motto) {
             return;

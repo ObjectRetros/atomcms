@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Atom\WebsiteDrawBadges;
 
+use App\Actions\Badge\PurgeDrawnBadge;
 use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\EditWebsiteDrawBadge;
 use App\Filament\Resources\Atom\WebsiteDrawBadges\Pages\ListWebsiteDrawBadge;
 use App\Models\WebsiteDrawBadge;
@@ -16,7 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class WebsiteDrawBadgeResource extends Resource
 {
@@ -94,63 +95,13 @@ class WebsiteDrawBadgeResource extends Resource
             ])
             ->recordActions([
                 DeleteAction::make()
-                    ->before(function (DeleteAction $action, WebsiteDrawBadge $record) {
-                        $badgeCode = pathinfo($record->badge_path, PATHINFO_FILENAME);
-
-                        // Remove the badge from any user before deleting it.
-                        if ($record->published) {
-                            DB::table('users_badges')
-                                ->where('user_id', $record->user_id)
-                                ->where('badge_code', $badgeCode)
-                                ->delete();
-                        }
-
-                        // Remove from JSON
-                        $filePath = DB::table('website_settings')->where('key', 'nitro_external_texts_file')->value('value');
-
-                        if ($filePath && file_exists($filePath) && is_writable($filePath)) {
-                            $json = json_decode(file_get_contents($filePath), true);
-                            unset($json["badge_name_{$badgeCode}"]);
-                            unset($json["badge_desc_{$badgeCode}"]);
-                            file_put_contents($filePath, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                        }
-
-                        // Delete the badge file from the filesystem
-                        $badgePath = $record->badge_path;
-                        if ($badgePath && file_exists($badgePath)) {
-                            unlink($badgePath);
-                        }
-                    }),
+                    ->before(fn (WebsiteDrawBadge $record) => app(PurgeDrawnBadge::class)->execute($record)),
             ])
             ->toolbarActions([
                 DeleteBulkAction::make()
-                    ->before(function (DeleteBulkAction $action, $records) {
-                        foreach ($records as $record) {
-                            $badgeCode = pathinfo($record->badge_path, PATHINFO_FILENAME);
-
-                            // Remove the badge from any user before deleting it.
-                            if ($record->published) {
-                                DB::table('users_badges')
-                                    ->where('user_id', $record->user_id)
-                                    ->where('badge_code', $badgeCode)
-                                    ->delete();
-                            }
-
-                            $filePath = DB::table('website_settings')->where('key', 'nitro_external_texts_file')->value('value');
-
-                            if ($filePath && file_exists($filePath) && is_writable($filePath)) {
-                                $json = json_decode(file_get_contents($filePath), true);
-                                unset($json["badge_name_{$badgeCode}"]);
-                                unset($json["badge_desc_{$badgeCode}"]);
-                                file_put_contents($filePath, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                            }
-
-                            $badgePath = $record->badge_path;
-                            if ($badgePath && file_exists($badgePath)) {
-                                unlink($badgePath);
-                            }
-                        }
-                    }),
+                    ->before(fn (Collection $records) => $records->each(
+                        fn (WebsiteDrawBadge $record) => app(PurgeDrawnBadge::class)->execute($record),
+                    )),
             ]);
     }
 

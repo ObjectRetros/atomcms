@@ -14,6 +14,17 @@ class TrustProxies extends Middleware
      */
     protected $proxies;
 
+    public function __construct()
+    {
+        $proxies = config('habbo.trusted_proxies');
+
+        $this->proxies = match (true) {
+            $proxies === '*' => '*',
+            is_string($proxies) && $proxies !== '' => array_map('trim', explode(',', $proxies)),
+            default => null,
+        };
+    }
+
     /**
      * The headers that should be used to detect proxies.
      *

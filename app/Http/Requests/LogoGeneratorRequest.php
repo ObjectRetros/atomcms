@@ -14,7 +14,7 @@ class LogoGeneratorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'logo' => ['required', 'image', 'max:1024'],
+            'logo' => ['required', 'image', 'mimes:png,jpg,jpeg,gif,webp', 'max:1024'],
         ];
     }
 }

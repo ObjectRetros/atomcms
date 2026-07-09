@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Actions\SendCurrency;
+use App\Enums\CurrencyTypes;
 use App\Http\Controllers\Controller;
-use App\Services\RconService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ReferralController extends Controller
 {
-    public function __invoke(RconService $rcon): RedirectResponse
+    public function __invoke(SendCurrency $sendCurrency): RedirectResponse
     {
         $user = Auth::user();
         if (! $user->referrals || $user->referrals->referrals_total < setting('referrals_needed')) {
@@ -21,7 +22,7 @@ class ReferralController extends Controller
         // Decrease the total amount of referrals with the amount needed to claim reward
         $user->referrals->decrement('referrals_total', setting('referrals_needed'));
 
-        $rcon->giveDiamonds($user, setting('referral_reward_amount'));
+        $sendCurrency->execute($user, CurrencyTypes::Diamonds, (int) setting('referral_reward_amount'));
 
         // Log the claim
         $user->claimedReferralLog()->create([

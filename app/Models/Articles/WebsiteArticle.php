@@ -2,6 +2,7 @@
 
 namespace App\Models\Articles;
 
+use App\Casts\PurifiedHtml;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -58,6 +59,13 @@ class WebsiteArticle extends Model
     use HasSlug, SoftDeletes;
 
     protected $guarded = ['id'];
+
+    protected function casts(): array
+    {
+        return [
+            'full_story' => PurifiedHtml::class,
+        ];
+    }
 
     public function getSlugOptions(): SlugOptions
     {

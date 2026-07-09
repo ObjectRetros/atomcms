@@ -66,7 +66,7 @@ class CoreSqlFile extends Migration
                             $progressBar->setMessage('Processing...');
                         }
 
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $progressBar->setMessage('Error: ' . substr($e->getMessage(), 0, 50) . '...');
                         // Continue on non-critical errors
                     }

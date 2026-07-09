@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorSettings;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\CreateEmulatorSetting;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\EditEmulatorSetting;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\ListEmulatorSettings;
@@ -18,6 +20,13 @@ use Filament\Tables\Table;
 
 class EmulatorSettingResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::EmulatorSettings;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = EmulatorSetting::class;

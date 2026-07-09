@@ -74,6 +74,10 @@
 
     <div class="col-span-12 md:col-span-6">
         <div class="flex flex-col gap-y-2 dark:text-gray-300">
+            @foreach ($shopPackages as $shopPackage)
+                <x-shop.package-card :package="$shopPackage" />
+            @endforeach
+
             @foreach ($articles as $article)
                 <x-shop.packages :article="$article" />
             @endforeach

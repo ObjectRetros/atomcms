@@ -2,35 +2,15 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class CatalogPagePolicy
+class CatalogPagePolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user)
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_catalog_pages');
+        return 'manage_catalog_pages';
     }
 
-    public function view(User $user)
+    protected function deletePermission(): string
     {
-        return hasHousekeepingPermission('manage_catalog_pages');
-    }
-
-    public function create(User $user)
-    {
-        return hasHousekeepingPermission('manage_catalog_pages');
-    }
-
-    public function update(User $user)
-    {
-        return hasHousekeepingPermission('manage_catalog_pages');
-    }
-
-    public function delete(User $user)
-    {
-        return hasHousekeepingPermission('delete_catalog_pages');
+        return 'delete_catalog_pages';
     }
 }

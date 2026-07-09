@@ -2,15 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class CommandLogPolicy
+class CommandLogPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user): bool
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_commandlogs');
+        return 'manage_commandlogs';
     }
 }
