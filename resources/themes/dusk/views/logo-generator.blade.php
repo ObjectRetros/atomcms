@@ -60,7 +60,7 @@
 
                    <div class="mt-4">
                        <label for="text" class="font-bold"> {{ __('Logo text') }} </label>
-                       <input x-model="text" class="mt-2 focus:ring-0 border-4  rounded bg-gray-800 border-gray-700 text-gray-200 focus:border-[#eeb425] w-full" id="text" type="text" name="text" placeholder="Type here...">
+                       <input x-model="text" class="mt-2 focus:ring-0 border-4  rounded bg-gray-800 border-gray-700 text-gray-200 focus:border-[#eeb425] w-full" id="text" type="text" name="text" placeholder="{{ __('Type here...') }}">
                        <div id="logoContainer" class="flex mt-4" :class="text !== '' ? 'mb-4' : ''" style="gap: 2px;" x-html="generateLogoHtml"></div>
                        <div class="flex gap-4 justify-between">
                            <button @click="generateCanvas('download')" class="w-full rounded bg-[#eeb425] text-white p-2 border-2 border-yellow-400 transition ease-in-out duration-200 hover:bg-[#d49f1c] font-semibold"> {{ __('Download logo') }} </button>

@@ -1,5 +1,6 @@
 <x-app-layout>
     @push('title', $user->username)
+    @push('meta_description', __(":username's profile on :hotel. Check out their badges, rooms and friends!", ['username' => $user->username, 'hotel' => setting('hotel_name')]))
 
     <div class="col-span-12">
         <div class="grid grid-cols-1! gap-y-14">

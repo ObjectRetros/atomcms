@@ -26,7 +26,7 @@
             <div class="px-2 text-sm dark:text-gray-200">
                 @if ($folderError)
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <strong class="font-bold">Error:</strong>
+                        <strong class="font-bold">{{ __('Error:') }}</strong>
                         <span class="block sm:inline">{{ $errorMessage }}</span>
                     </div>
                 @endif
@@ -119,7 +119,7 @@
                             style="float: left;background: url('{{ setting('avatar_imager') }}{{ auth()->user()->look}}&direction=4&head_direction=3') no-repeat;width: 60px;height: 120px;margin-left: 15px;margin-top: 10px;">
                         </div>
                         <div class="preview" style='float: left;margin-left: 15px;margin-top: 7px;'>
-                            <canvas width="40" height="40" x-ref="previewCanvas" style="image-rendering: pixelated; background: transparent; role="img" aria-label="Badge preview""></canvas>
+                            <canvas width="40" height="40" x-ref="previewCanvas" style="image-rendering: pixelated; background: transparent; role="img" aria-label="{{ __('Badge preview') }}""></canvas>
                         </div>
                     </div>
                     <div class="">
@@ -355,7 +355,7 @@
                         return;
                     }
 
-                    if (!confirm('Import image and overwrite the canvas?')) {
+                    if (!confirm(@js(__('Import image and overwrite the canvas?')))) {
                         e.target.value = '';
                         return;
                     }
@@ -364,7 +364,7 @@
                     reader.onload = (event) => {
                         const img = new Image();
                         img.onerror = () => {
-                            alert('Invalid image format. Please upload a valid PNG or GIF file.');
+                            alert(@js(__('Invalid image format. Please upload a valid PNG or GIF file.')));
                             e.target.value = '';
                         };
                         img.onload = () => {
@@ -450,7 +450,7 @@
                 },
 
                 clearBoard() {
-                    if (!confirm('Clear the entire board?')) return;
+                    if (!confirm(@js(__('Clear the entire board?')))) return;
                     this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     this.colorHistory = {};
                     this.recentColors = []; // Clear recent colors as well

@@ -40,13 +40,13 @@
             </x-navigation.dropdown>
 
             <a href="{{ route('leaderboard.index') }}" class="flex flex-col gap-1 items-center transition ease-in-out hover:text-[#ac93da]">
-                <img class="icon" src="{{ asset('/assets/images/dusk/leaderboard_icon.png') }}" alt="community icon">
-                Leaderboards
+                <img class="icon" src="{{ asset('/assets/images/dusk/leaderboard_icon.png') }}" alt="">
+                {{ __('Leaderboard') }}
             </a>
 
             <a href="{{ route('article.index') }}" class="flex flex-col gap-1 items-center transition ease-in-out hover:text-[#ac93da]">
-                <img class="icon" src="{{ asset('/assets/images/dusk/news_icon.png') }}" alt="community icon">
-                News
+                <img class="icon" src="{{ asset('/assets/images/dusk/news_icon.png') }}" alt="">
+                {{ __('News') }}
             </a>
 
             {{--
@@ -58,8 +58,8 @@
 
 
             <a href="{{ route('shop.index') }}" class="flex flex-col gap-1 items-center transition ease-in-out hover:text-[#ac93da]">
-                <img class="icon" src="{{ asset('/assets/images/dusk/store_icon.png') }}" alt="community icon">
-                Store
+                <img class="icon" src="{{ asset('/assets/images/dusk/store_icon.png') }}" alt="">
+                {{ __('Store') }}
             </a>
 
             <x-navigation.dropdown icon="home_icon.png" route-group="user*" :uppercase="true">

@@ -17,20 +17,20 @@
         @endif
 
         @if ($package->credits)
-            <li class="ml-3">{{ number_format($package->credits, 0, '.', '.') }} credits</li>
+            <li class="ml-3">{{ number_format($package->credits, 0, '.', '.') }} {{ __('credits') }}</li>
         @endif
 
         @if ($package->duckets)
-            <li class="ml-3">{{ number_format($package->duckets, 0, '.', '.') }} duckets</li>
+            <li class="ml-3">{{ number_format($package->duckets, 0, '.', '.') }} {{ __('duckets') }}</li>
         @endif
 
         @if ($package->diamonds)
-            <li class="ml-3">{{ number_format($package->diamonds, 0, '.', '.') }} diamonds</li>
+            <li class="ml-3">{{ number_format($package->diamonds, 0, '.', '.') }} {{ __('diamonds') }}</li>
         @endif
 
         @if ($package->rank)
             <li class="ml-3">
-                {{ $package->rank->rank_name }} rank
+                {{ $package->rank->rank_name }} {{ __('rank') }}
             </li>
         @endif
     </ul>
@@ -83,7 +83,7 @@
             @csrf
 
             @if($gift)
-                <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
+                <x-form.input name="receiver" type="text" placeholder="{{ __('Enter the name of the recipient you want to gift') }}" classes="mb-2"/>
             @endif
 
             <button type="submit"

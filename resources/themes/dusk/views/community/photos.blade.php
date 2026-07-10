@@ -7,7 +7,7 @@
                 <img src="{{ asset('/assets/images/dusk/camera_icon.png') }}" alt="">
             </x-slot:icon>
 
-            Photos
+            {{ __('Photos') }}
         </x-page-header>
 
         <div class="col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

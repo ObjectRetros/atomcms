@@ -10,24 +10,24 @@
 
            <div class="grid grid-cols-12 gap-3 mt-4">
                <div class="relative w-full overflow-hidden text-black col-span-12">
-                   <input id="username-input" type="text" placeholder="Enter your username" name="username" value="{{ old('username') }}" class="relative py-2 rounded-md w-full" required>
+                   <input id="username-input" type="text" placeholder="{{ __('Enter your username') }}" name="username" value="{{ old('username') }}" class="relative py-2 rounded-md w-full" required>
                </div>
 
                <div class="relative w-full overflow-hidden text-black col-span-12">
-                   <input id="username-input" type="email" placeholder="Enter your e-mail" name="mail" value="{{ old('mail') }}" class="relative py-2 rounded-md w-full" required>
+                   <input id="username-input" type="email" placeholder="{{ __('Enter your e-mail') }}" name="mail" value="{{ old('mail') }}" class="relative py-2 rounded-md w-full" required>
                </div>
 
                <div class="col-span-12">
-                   <input type="password" placeholder="Enter your password" name="password" class="relative py-2 rounded-md text-black w-full" required>
+                   <input type="password" placeholder="{{ __('Enter your password') }}" name="password" class="relative py-2 rounded-md text-black w-full" required>
                </div>
 
                <div class="col-span-12">
-                   <input type="password" placeholder="Confirm your password" name="password_confirmation" class="relative py-2 rounded-md text-black w-full" required>
+                   <input type="password" placeholder="{{ __('Confirm your password') }}" name="password_confirmation" class="relative py-2 rounded-md text-black w-full" required>
                </div>
 
                @if (setting('requires_beta_code'))
                    <div class="col-span-12">
-                       <input type="text" placeholder="Beta code" name="beta_code" class="relative py-2 rounded-md text-black w-full" required>
+                       <input type="text" placeholder="{{ __('Beta code') }}" name="beta_code" class="relative py-2 rounded-md text-black w-full" required>
                    </div>
                @endif
            </div>
@@ -48,10 +48,10 @@
            <x-site-captchas />
 
             <div class="mt-4 grid grid-cols-2 gap-3">
-                <button type="submit" class="py-2 px-4 text-white bg-yellow-500 border-2 border-yellow-300 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">Register</button>
+                <button type="submit" class="py-2 px-4 text-white bg-yellow-500 border-2 border-yellow-300 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">{{ __('Register') }}</button>
 
                 <a href="{{ route('login') }}" class="w-full">
-                    <button type="button" class="py-2 px-4 text-white bg-gray-700 border-2 border-gray-600 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">Back to login</button>
+                    <button type="button" class="py-2 px-4 text-white bg-gray-700 border-2 border-gray-600 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">{{ __('Back to login') }}</button>
                 </a>
             </div>
         </form>
@@ -88,7 +88,7 @@
                                 </div>
 
                                 <a href="{{ route('article.show', $article->slug) }}" class="text-sm read-more-link hover:underline">
-                                    Read more
+                                    {{ __('Read more') }}
                                 </a>
 
                             </div>

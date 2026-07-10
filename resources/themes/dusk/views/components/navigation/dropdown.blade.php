@@ -49,7 +49,7 @@
         ])
     >
         @if(isset($icon))
-            <img class="icon" src="{{ asset(sprintf('/assets/images/dusk/%s', $icon)) }}" alt="Missing icon">
+            <img class="icon" src="{{ asset(sprintf('/assets/images/dusk/%s', $icon)) }}" alt="{{ __('Missing icon') }}">
         @endif
 
         {{ $slot }}

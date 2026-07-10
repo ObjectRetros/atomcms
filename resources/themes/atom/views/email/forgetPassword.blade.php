@@ -1,4 +1,4 @@
-<h1>Forget Password Email</h1>
+<h1>{{ __('Reset your password') }}</h1>
 
-Click the link to reset your password:
-<a href="{{ route('reset.password.get', $token) }}">Reset Password</a>
+{{ __('Click the link to reset your password:') }}
+<a href="{{ route('reset.password.get', $token) }}">{{ __('Reset Password') }}</a>

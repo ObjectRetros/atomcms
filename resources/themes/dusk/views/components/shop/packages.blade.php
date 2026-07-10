@@ -55,7 +55,7 @@
             @csrf
 
             <x-form.secondary-button type="submit" classes="text-green-100 px-4">
-                Buy
+                {{ __('Buy') }}
             </x-form.secondary-button>
         </form>
     </div>

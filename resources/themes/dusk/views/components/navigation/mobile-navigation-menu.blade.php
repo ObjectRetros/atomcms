@@ -41,19 +41,19 @@
             </x-navigation.dropdown>
 
             <a href="" class="transition ease-in-out hover:text-[#ac93da]">
-                Leaderboards
+                {{ __('Leaderboard') }}
             </a>
 
             <a href="" class="transition ease-in-out hover:text-[#ac93da]">
-                News
+                {{ __('News') }}
             </a>
 
             <a href="" class="transition ease-in-out hover:text-[#ac93da]">
-                Events
+                {{ __('Events') }}
             </a>
 
             <a href="" class="transition ease-in-out hover:text-[#ac93da]">
-                Store
+                {{ __('Store') }}
             </a>
 
             <x-navigation.dropdown route-group="help-center*"  :show-chevron="true" :flex-col="false">

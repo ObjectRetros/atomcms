@@ -56,7 +56,7 @@
                 x-show="open"
                 x-transition.opacity.duration.200ms
                 x-on:click="open = false"
-                class="fixed inset-0 bg-gray-950/60 backdrop-blur-sm"
+                class="fixed inset-0 bg-gray-950/70"
             ></div>
 
             <div

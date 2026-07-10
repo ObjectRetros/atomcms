@@ -7,7 +7,7 @@
     <meta name="turbolinks-cache-control" content="no-cache">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ setting('hotel_name') }} - @stack('title')</title>
+    <x-seo-meta />
 
     <link rel="icon" type="image/gif" sizes="18x17" href="{{ asset('assets/images/home_icon.gif') }}">
 

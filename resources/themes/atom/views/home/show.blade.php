@@ -69,7 +69,7 @@
                         </div>
                     </template>
                     <template x-if="editing && selectedItem?.id === item.id">
-                        <button data-no-drag class="absolute top-0 right-0 w-7 h-7 bg-red-500/90 hover:bg-red-400 text-white rounded-bl-lg text-xs flex items-center justify-center backdrop-blur-sm z-50" @click.stop="remove(item)">
+                        <button data-no-drag class="absolute top-0 right-0 w-7 h-7 bg-red-500/90 hover:bg-red-400 text-white rounded-bl-lg text-xs flex items-center justify-center z-50" @click.stop="remove(item)">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                         </button>
                     </template>

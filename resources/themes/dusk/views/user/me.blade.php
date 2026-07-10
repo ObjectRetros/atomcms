@@ -28,7 +28,7 @@
         <div class="flex flex-col lg:flex-row justify-between self-start w-full px-4">
             <div class="flex flex-col gap-1 self-start lg:ml-2 py-2 text-white ">
                 <h2 class="text-3xl font-semibold">
-                    Hey {{ Auth::user()->username }}!
+                    {{ __('Hey :username!', ['username' => Auth::user()->username]) }}
                 </h2>
 
                 <p class="italic">{{ Auth::user()->motto }}</p>

@@ -23,20 +23,20 @@
 
 
                 @if ($article->credits)
-                    <li class="ml-3">{{ number_format($article->credits, 0, '.', '.') }} credits</li>
+                    <li class="ml-3">{{ number_format($article->credits, 0, '.', '.') }} {{ __('credits') }}</li>
                 @endif
 
                 @if ($article->duckets)
-                    <li class="ml-3">{{ number_format($article->duckets, 0, '.', '.') }} duckets</li>
+                    <li class="ml-3">{{ number_format($article->duckets, 0, '.', '.') }} {{ __('duckets') }}</li>
                 @endif
 
                 @if ($article->diamonds)
-                    <li class="ml-3">{{ number_format($article->diamonds, 0, '.', '.') }} diamonds</li>
+                    <li class="ml-3">{{ number_format($article->diamonds, 0, '.', '.') }} {{ __('diamonds') }}</li>
                 @endif
 
                 @if ($article->rank)
                     <li class="ml-3">
-                        {{ $article->rank->rank_name }} rank
+                        {{ $article->rank->rank_name }} {{ __('rank') }}
                     </li>
                 @endif
 
@@ -54,7 +54,7 @@
         <div class="flex flex-col gap-3">
             @if (!empty($article->badges))
                 <div class="flex flex-col items-end">
-                    Badge(s):
+                    {{ __('Badge(s):') }}
                     <div class="flex flex-col dark:text-white py-1.5 px-2 rounded bg-gray-200 dark:bg-gray-700">
                         <div class="flex gap-2 items-center">
                             @foreach (explode(';', $article->badges) as $badge)
@@ -69,7 +69,7 @@
 
             @if ($article->furniture)
                 <div class="flex flex-col items-end">
-                    Furniture:
+                    {{ __('Furniture:') }}
                     <div class="flex flex-col dark:text-white py-2 px-4 rounded bg-gray-200 dark:bg-gray-700">
                         <div class="flex gap-2 items-center">
                             @foreach ($article->furniItems() as $furni)
@@ -106,7 +106,7 @@
                         <form action="{{ route('shop.buy', $article) }}" method="POST" class="w-full">
                             @csrf
 
-                            <x-form.input name="receiver" type="text" placeholder="Enter the name of the recipient you want to gift" classes="mb-2"/>
+                            <x-form.input name="receiver" type="text" placeholder="{{ __('Enter the name of the recipient you want to gift') }}" classes="mb-2"/>
 
                             <button type="submit"
                                     class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">

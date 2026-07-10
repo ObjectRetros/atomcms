@@ -49,7 +49,7 @@
         <div class="order-last lg:order-1 col-span-12 md:col-span-9 grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-3">
                 <x-page-header>
-                    Categories
+                    {{ __('Categories') }}
                 </x-page-header>
 
                 <div class="mt-3 space-y-2">

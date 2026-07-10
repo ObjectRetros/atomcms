@@ -70,7 +70,7 @@
             <form action="{{ route('values.search') }}" method="POST" class="space-y-3">
                 @csrf
 
-                <x-form.input classes="mb-3" name="search" placeholder="Search for a rare"/>
+                <x-form.input classes="mb-3" name="search" placeholder="{{ __('Search for a rare') }}"/>
 
                 @if (setting('google_recaptcha_enabled'))
                     <div class="g-recaptcha" data-sitekey="{{ config('habbo.site.recaptcha_site_key') }}"></div>
