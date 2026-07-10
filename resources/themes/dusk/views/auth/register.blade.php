@@ -147,7 +147,7 @@
                     return;
                 }
 
-                avatar.src = '{{ setting('avatar_imager') }}' + '/' + data.data.look + '&direction=4&action=wav&head_direction=3';
+                avatar.src = '{{ setting('avatar_imager') }}' + data.data.look + '&direction=4&action=wav&head_direction=3';
             } catch (error) {
                 console.error('An error occurred:', error);
             }

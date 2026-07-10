@@ -150,7 +150,7 @@
                         <div class="bg-gray-600 p-2 rounded-md text-gray-200 h-[60px] overflow-hidden">
                             <div class="flex relative">
                                 <img class="-mt-5 drop-shadow"
-                                     src="{{ setting('avatar_imager') }}/{{ $post->user?->look }}"
+                                     src="{{ setting('avatar_imager') }}{{ $post->user?->look }}"
                                      alt="{{ $post->user?->username }}">
 
                                 <div class="flex flex-col">
