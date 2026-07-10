@@ -79,14 +79,6 @@
                         @endforeach
                     </div>
                 @endif
-
-                @if($articles->isNotEmpty())
-                    <div class="grid grid-cols-1 lg:grid-cols-{{ $articles->count() > 1 ? '2' : '1' }} gap-4">
-                        @foreach ($articles as $article)
-                            <x-shop.packages :article="$article"/>
-                        @endforeach
-                    </div>
-                @endif
             </div>
         </div>
 

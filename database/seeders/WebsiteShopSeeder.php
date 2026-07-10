@@ -87,6 +87,7 @@ class WebsiteShopSeeder extends Seeder
         '50 Diamonds' => ['type' => 'currency', 'type_value' => 'diamonds:50'],
         '100 Diamonds' => ['type' => 'currency', 'type_value' => 'diamonds:100'],
         '500 Diamonds' => ['type' => 'currency', 'type_value' => 'diamonds:500'],
+        '250 Points' => ['type' => 'currency', 'type_value' => 'points:250'],
 
         // Badges
         'VIP Badge' => ['type' => 'badge', 'type_value' => 'VIP01'],
@@ -95,6 +96,10 @@ class WebsiteShopSeeder extends Seeder
 
         // Ranks
         'VIP Rank' => ['type' => 'rank', 'type_value' => '2'],
+
+        // Inactive item: kept for purchase history, hidden from the package item picker
+        // (Filament only lists items where is_active is true) and unused below.
+        'Retired Rare Statue' => ['type' => 'furniture', 'type_value' => '9999', 'is_active' => false],
     ];
 
     private array $categories = [
@@ -107,12 +112,17 @@ class WebsiteShopSeeder extends Seeder
         'Limited Edition',
     ];
 
+    /** Hidden from the shop front (ShopController only lists active categories) but still assignable. */
+    private array $inactiveCategories = [
+        'Legacy Collection',
+    ];
+
     public function run(): void
     {
-        $categories = collect($this->categories)->mapWithKeys(function (string $name) {
+        $categories = collect([...$this->categories, ...$this->inactiveCategories])->mapWithKeys(function (string $name) {
             $category = WebsiteShopCategory::updateOrCreate(
                 ['slug' => Str::slug($name)],
-                ['name' => $name, 'is_active' => true],
+                ['name' => $name, 'is_active' => ! in_array($name, $this->inactiveCategories, true)],
             );
 
             return [$name => $category];
@@ -121,7 +131,7 @@ class WebsiteShopSeeder extends Seeder
         $items = collect($this->items)->mapWithKeys(function (array $data, string $name) {
             $item = WebsiteShopItem::updateOrCreate(
                 ['name' => $name],
-                [...$data, 'is_active' => true],
+                ['type' => $data['type'], 'type_value' => $data['type_value'], 'is_active' => $data['is_active'] ?? true],
             );
 
             return [$name => $item];
@@ -135,6 +145,14 @@ class WebsiteShopSeeder extends Seeder
                 'category' => 'Starter Packs',
                 'price' => 299,
                 'items' => ['500 Credits' => 1, 'Bonsai Tree' => 1, 'Digital TV' => 1],
+            ],
+            [
+                'name' => 'Newbie Welcome Gift',
+                'description' => 'A free-ish boost reserved for brand new players, capped at the lowest ranks.',
+                'category' => 'Starter Packs',
+                'price' => 99,
+                'max_rank' => 1,
+                'items' => ['500 Credits' => 1, '100 Duckets' => 1],
             ],
             [
                 'name' => 'New Player Bundle',
@@ -194,6 +212,13 @@ class WebsiteShopSeeder extends Seeder
                 'price' => 599,
                 'items' => ['500 Duckets' => 1],
             ],
+            [
+                'name' => 'Points Starter',
+                'description' => 'A small points top-up to get you climbing the achievement ladder.',
+                'category' => 'Currency',
+                'price' => 199,
+                'items' => ['250 Points' => 1],
+            ],
 
             // VIP
             [
@@ -219,6 +244,15 @@ class WebsiteShopSeeder extends Seeder
                 'price' => 4999,
                 'is_giftable' => false,
                 'items' => ['VIP Rank' => 1, 'VIP Badge' => 1, '5000 Credits' => 1, '500 Diamonds' => 1, '500 Duckets' => 1, 'Throne' => 1, 'Throne Sofa' => 2, 'Mega TV Set' => 1],
+            ],
+            [
+                'name' => 'Veteran Appreciation Pack',
+                'description' => 'A thank-you bundle for our established mid-tier staff and community ranks only.',
+                'category' => 'VIP',
+                'price' => 1599,
+                'min_rank' => 3,
+                'max_rank' => 6,
+                'items' => ['5000 Credits' => 1, 'Majestic Chair' => 1],
             ],
 
             // Rare Collections
@@ -302,6 +336,14 @@ class WebsiteShopSeeder extends Seeder
                 'price' => 2499,
                 'items' => ['Throne' => 1, 'Throne Sofa' => 2, 'Tubmaster' => 1, 'Victorian Street Light' => 2, 'Persian Carpet' => 2],
             ],
+            [
+                'name' => 'Summer Flash Sale',
+                'description' => 'Discounted currency bundle, live for a limited time only, ending at the close of the promotion.',
+                'category' => 'Seasonal',
+                'price' => 399,
+                'available_to' => '2026-07-31',
+                'items' => ['1000 Credits' => 1, 'Cupid Statue' => 1],
+            ],
 
             // Limited Edition
             [
@@ -322,6 +364,23 @@ class WebsiteShopSeeder extends Seeder
                 'stock' => 20,
                 'limit_per_user' => 2,
                 'items' => ['Golden Dragon' => 2, 'Frost Dragon' => 2, 'Jade Dragon' => 2, 'Silver Dragon Lamp' => 2, 'Black Dragon Lamp' => 2, '100 Diamonds' => 1],
+            ],
+            [
+                'name' => 'Anniversary Early Access',
+                'description' => 'Unlocks the moment the anniversary event goes live, and stays available indefinitely after that.',
+                'category' => 'Limited Edition',
+                'price' => 1999,
+                'available_from' => '2026-07-01',
+                'items' => ['Beta Tester Badge' => 1, '100 Diamonds' => 1],
+            ],
+
+            // Legacy Collection (inactive category: seeded for record-keeping, hidden from the shop front)
+            [
+                'name' => 'Vintage Archive Bundle',
+                'description' => 'A discontinued bundle kept for historical reference; not shown on the storefront since its category is inactive.',
+                'category' => 'Legacy Collection',
+                'price' => 799,
+                'items' => ['Gold Trophy' => 1, 'Silver Trophy' => 1],
             ],
         ];
 

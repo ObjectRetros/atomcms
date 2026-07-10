@@ -77,10 +77,6 @@
             @foreach ($shopPackages as $shopPackage)
                 <x-shop.package-card :package="$shopPackage" />
             @endforeach
-
-            @foreach ($articles as $article)
-                <x-shop.packages :article="$article" />
-            @endforeach
         </div>
     </div>
 
