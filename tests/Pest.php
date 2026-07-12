@@ -13,6 +13,7 @@
 
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -46,11 +47,17 @@ expect()->extend('toBeOne', function () {
 
 function installHotel(): void
 {
-    WebsiteInstallation::query()->insert(['completed' => true, 'installation_key' => 'key']);
+    WebsiteInstallation::query()->firstOrCreate(['installation_key' => 'key'], ['completed' => true]);
 
-    WebsiteSetting::query()->insert([
-        'key' => 'max_accounts_per_ip',
-        'value' => 10,
-        'comment' => '',
-    ]);
+    setSetting('max_accounts_per_ip', '10');
+}
+
+/**
+ * Override a website setting for the current test and reset the settings cache.
+ */
+function setSetting(string $key, string $value): void
+{
+    WebsiteSetting::query()->updateOrCreate(['key' => $key], ['value' => $value, 'comment' => '']);
+
+    SettingsService::clearCache();
 }

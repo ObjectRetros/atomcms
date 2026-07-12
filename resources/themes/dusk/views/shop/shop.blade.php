@@ -49,7 +49,7 @@
         <div class="order-last lg:order-1 col-span-12 md:col-span-9 grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-3">
                 <x-page-header>
-                    Categories
+                    {{ __('Categories') }}
                 </x-page-header>
 
                 <div class="mt-3 space-y-2">
@@ -72,11 +72,13 @@
             </div>
 
             <div class="col-span-12 md:col-span-9 space-y-3">
-                <div class="grid grid-cols-1 lg:grid-cols-{{$articles->count() > 1 ? '2' : '1'}} gap-4">
-                    @foreach ($articles as $article)
-                        <x-shop.packages :article="$article"/>
-                    @endforeach
-                </div>
+                @if($shopPackages->isNotEmpty())
+                    <div class="grid grid-cols-1 lg:grid-cols-{{ $shopPackages->count() > 1 ? '2' : '1' }} gap-4">
+                        @foreach ($shopPackages as $shopPackage)
+                            <x-shop.package-card :package="$shopPackage"/>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
 

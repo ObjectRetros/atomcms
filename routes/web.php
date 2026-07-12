@@ -81,9 +81,9 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Password
         Route::get('forgot-password', ForgotPasswordController::class)->name('forgot.password.get');
-        Route::post('forgot-password', [ForgotPasswordController::class, 'submitForgetPassword'])->name('forgot.password.post');
-        Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPassword'])->name('reset.password.get');
-        Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->name('reset.password.post');
+        Route::post('forgot-password', [ForgotPasswordController::class, 'submitForgetPassword'])->middleware('throttle:6,1')->name('forgot.password.post');
+        Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPassword'])->middleware('throttle:6,1')->name('reset.password.get');
+        Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->middleware('throttle:6,1')->name('reset.password.post');
     });
 
     // Can only be accessed if logged in
@@ -175,7 +175,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         Route::prefix('shop')->group(function () {
             Route::get('/{category:slug?}', ShopController::class)->name('shop.index');
 
-            Route::post('/purchase/{package}', [ShopController::class, 'purchase'])->name('shop.buy');
+            Route::post('/purchase-package/{package}', [ShopController::class, 'purchasePackage'])->name('shop.buy-package')->middleware('throttle:10,1');
             Route::post('/voucher', ShopVoucherController::class)->name('shop.use-voucher');
         });
 
@@ -212,11 +212,14 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');
         });
 
-        // Rare values routes
-        Route::get('/values', [WebsiteRareValuesController::class, 'index'])->name('values.index');
-        Route::post('/values/search', [WebsiteRareValuesController::class, 'search'])->name('values.search');
-        Route::get('/values/category/{category}', [WebsiteRareValuesController::class, 'category'])->name('values.category');
-        Route::get('/values/{value}', [WebsiteRareValuesController::class, 'value'])->name('values.value');
+        // Rare values routes - reads the emulator's furniture schema, so only
+        // available on drivers that support it.
+        Route::middleware('emulator.feature:rare-values')->group(function () {
+            Route::get('/values', [WebsiteRareValuesController::class, 'index'])->name('values.index');
+            Route::post('/values/search', [WebsiteRareValuesController::class, 'search'])->name('values.search');
+            Route::get('/values/category/{category}', [WebsiteRareValuesController::class, 'category'])->name('values.category');
+            Route::get('/values/{value}', [WebsiteRareValuesController::class, 'value'])->name('values.value');
+        });
 
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {

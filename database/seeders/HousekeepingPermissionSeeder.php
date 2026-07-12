@@ -155,6 +155,26 @@ class HousekeepingPermissionSeeder extends Seeder
                 'min_rank' => 7,
                 'description' => 'The minimum rank required before being able to manage housekeeping permissions',
             ],
+            [
+                'permission' => 'manage_home_items',
+                'min_rank' => 7,
+                'description' => 'The minimum rank required before being able to manage user home items and categories',
+            ],
+            [
+                'permission' => 'manage_badges',
+                'min_rank' => 6,
+                'description' => 'The minimum rank required before being able to manage badges, badge uploads and drawn badges',
+            ],
+            [
+                'permission' => 'manage_website_ads',
+                'min_rank' => 6,
+                'description' => 'The minimum rank required before being able to manage website advertisements',
+            ],
+            [
+                'permission' => 'manage_shop',
+                'min_rank' => 7,
+                'description' => 'The minimum rank required before being able to manage shop packages, items and categories',
+            ],
         ];
 
         foreach ($permissions as $permission) {

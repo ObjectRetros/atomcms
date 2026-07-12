@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
@@ -182,9 +183,40 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public $timestamps = false;
 
-    protected $guarded = ['id'];
+    /**
+     * Economy and security columns are only ever written through dedicated
+     * paths (increment(), forceFill()), never mass-assignment - guard them so a
+     * stray fill() of request data cannot tamper with balances or 2FA secrets.
+     */
+    protected $guarded = [
+        'id',
+        'website_balance',
+        'pixels',
+        'points',
+        'vip_points',
+        'activity_points',
+        'gotw_points',
+        'machine_id',
+        'pincode',
+        'secret_key',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+    ];
 
-    protected $hidden = ['id', 'password', 'remember_token'];
+    protected $hidden = [
+        'id',
+        'password',
+        'remember_token',
+        'auth_ticket',
+        'mail',
+        'ip_register',
+        'ip_current',
+        'machine_id',
+        'pincode',
+        'secret_key',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+    ];
 
     protected function casts(): array
     {
@@ -196,6 +228,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
+    /**
+     * @return HasMany<UserCurrency, $this>
+     */
     public function currencies(): HasMany
     {
         return $this->hasMany(UserCurrency::class, 'user_id');
@@ -208,17 +243,9 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function currency(string $currency): int
     {
-        if (! $this->relationLoaded('currencies')) {
-            $this->load('currencies');
-        }
-
         $type = CurrencyTypes::fromCurrencyName($currency);
 
-        if ($type === null) {
-            return 0;
-        }
-
-        return $this->currencies->where('type', $type->value)->first()?->amount ?? 0;
+        return $type === null ? 0 : app(CurrencyRepository::class)->balance($this, $type);
     }
 
     public function permission(): HasOne
@@ -246,6 +273,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(ClaimedReferralLog::class);
     }
 
+    /**
+     * @return HasMany<UserBadge, $this>
+     */
     public function badges(): HasMany
     {
         return $this->hasMany(UserBadge::class);
@@ -320,6 +350,9 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsiteArticleComment::class);
     }
 
+    /**
+     * @return HasMany<WebsitePaypalTransaction, $this>
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(WebsitePaypalTransaction::class);

@@ -7,7 +7,7 @@
             <div class="flex items-center gap-x-4">
                 <a href="{{ route('me.show') }}" class="ml-7">
                     <img class="drop-shadow transition duration-300 ease-in-out hover:scale-105"
-                        src="{{ setting('cms_logo') }}" alt="Hotel logo">
+                        src="{{ setting('cms_logo') }}" alt="{{ __('Hotel logo') }}">
                 </a>
 
                 <div

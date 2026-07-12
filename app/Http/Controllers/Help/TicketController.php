@@ -6,24 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WebsiteTicketFormRequest;
 use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Help\WebsiteHelpCenterTicket;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class TicketController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        if (! hasPermission('manage_website_tickets')) {
-            return redirect()->back()->with([
-                'message' => __('You cannot access this page'),
-            ]);
-        }
+        $this->authorize('viewAny', WebsiteHelpCenterTicket::class);
 
         return view('help-center.tickets.index', [
             'tickets' => WebsiteHelpCenterTicket::orderBy('open')->with('user:id,username')->paginate(15),
         ]);
     }
 
-    public function create()
+    public function create(): View
     {
         return view('help-center.tickets.create', [
             'categories' => WebsiteHelpCenterCategory::get(),
@@ -31,20 +29,16 @@ class TicketController extends Controller
         ]);
     }
 
-    public function store(WebsiteTicketFormRequest $request)
+    public function store(WebsiteTicketFormRequest $request): RedirectResponse
     {
         Auth::user()->tickets()->create($request->validated());
 
         return redirect()->back()->with('success', __('Ticket submitted!'));
     }
 
-    public function edit(WebsiteHelpCenterTicket $ticket)
+    public function edit(WebsiteHelpCenterTicket $ticket): View
     {
-        if (! $ticket->canManageTicket()) {
-            return redirect()->back()->with([
-                'message' => __('You cannot manage others tickets.'),
-            ]);
-        }
+        $this->authorize('update', $ticket);
 
         $ticket->load([
             'user:id,username,look',
@@ -59,26 +53,18 @@ class TicketController extends Controller
         ]);
     }
 
-    public function update(WebsiteHelpCenterTicket $ticket, WebsiteTicketFormRequest $request)
+    public function update(WebsiteHelpCenterTicket $ticket, WebsiteTicketFormRequest $request): RedirectResponse
     {
-        if (! $ticket->canManageTicket()) {
-            return redirect()->back()->with([
-                'message' => __('You cannot manage others tickets.'),
-            ]);
-        }
+        $this->authorize('update', $ticket);
 
         $ticket->update($request->validated());
 
         return to_route('help-center.ticket.show', $ticket)->with('success', __('Ticket updated!'));
     }
 
-    public function show(WebsiteHelpCenterTicket $ticket)
+    public function show(WebsiteHelpCenterTicket $ticket): View
     {
-        if (! $ticket->canManageTicket()) {
-            return redirect()->back()->with([
-                'message' => __('You cannot view others tickets.'),
-            ]);
-        }
+        $this->authorize('view', $ticket);
 
         $ticket->load([
             'user:id,username,look',
@@ -92,28 +78,20 @@ class TicketController extends Controller
         ]);
     }
 
-    public function destroy(WebsiteHelpCenterTicket $ticket)
+    public function destroy(WebsiteHelpCenterTicket $ticket): RedirectResponse
     {
-        if (! $ticket->canDeleteTicket()) {
-            return redirect()->back()->with([
-                'message' => __('You cannot delete others tickets.'),
-            ]);
-        }
+        $this->authorize('delete', $ticket);
 
         $ticket->delete();
 
         return to_route('me.show')->with('success', __('The ticket has been deleted!'));
     }
 
-    public function toggleTicketStatus(WebsiteHelpCenterTicket $ticket)
+    public function toggleTicketStatus(WebsiteHelpCenterTicket $ticket): RedirectResponse
     {
-        if (! $ticket->canManageTicket()) {
-            return redirect()->back()->with([
-                'message' => __('You manage others tickets.'),
-            ]);
-        }
+        $this->authorize('update', $ticket);
 
-        $ticket->open ? $ticket->update(['open' => false]) : $ticket->update(['open' => true]);
+        $ticket->update(['open' => ! $ticket->open]);
 
         return redirect()->back()->with('success', __('The ticket status has been changed!'));
     }

@@ -30,7 +30,7 @@
 
         <template x-if="previewing">
             <div class="w-full max-w-[928px] flex items-center justify-between bg-cyan-900/50 border border-cyan-700 rounded-lg px-4 py-2">
-                <span class="text-sm text-cyan-200">{{ __('Preview mode — drag items to arrange, then purchase') }}</span>
+                <span class="text-sm text-cyan-200">{{ __('Preview mode - drag items to arrange, then purchase') }}</span>
                 <div class="flex gap-2">
                     <button class="border border-gray-500 text-gray-300 hover:bg-gray-700 text-sm font-semibold px-4 py-1 rounded transition" @click="endPreview()">{{ __('Cancel') }}</button>
                     <button class="border-2 border-green-500 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-1 rounded transition" @click="openConfirmModal()">{{ __('Buy & Save') }}</button>
@@ -69,7 +69,7 @@
                         </div>
                     </template>
                     <template x-if="editing && selectedItem?.id === item.id">
-                        <button data-no-drag class="absolute top-0 right-0 w-7 h-7 bg-red-500/90 hover:bg-red-400 text-white rounded-bl-lg text-xs flex items-center justify-center backdrop-blur-sm z-50" @click.stop="remove(item)">
+                        <button data-no-drag class="absolute top-0 right-0 w-7 h-7 bg-red-500/90 hover:bg-red-400 text-white rounded-bl-lg text-xs flex items-center justify-center z-50" @click.stop="remove(item)">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                         </button>
                     </template>

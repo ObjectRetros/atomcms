@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\EmulatorTexts;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\Hotel\EmulatorTexts\Pages\ManageEmulatorTexts;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\EmulatorText;
@@ -16,6 +18,13 @@ use Filament\Tables\Table;
 
 class EmulatorTextResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::EmulatorTexts;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = EmulatorText::class;

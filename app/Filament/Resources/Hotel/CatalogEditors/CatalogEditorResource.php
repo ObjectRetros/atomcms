@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\CatalogEditors;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Models\Game\Furniture\CatalogPage;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -11,6 +13,13 @@ use Filament\Tables\Table;
 
 class CatalogEditorResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::CatalogManagement;
+    }
+
     protected static ?string $model = CatalogPage::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';

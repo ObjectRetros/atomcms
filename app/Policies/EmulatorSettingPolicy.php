@@ -2,29 +2,10 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class EmulatorSettingPolicy
+class EmulatorSettingPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny()
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_emulator_settings');
-    }
-
-    public function view()
-    {
-        return hasHousekeepingPermission('manage_emulator_settings');
-    }
-
-    public function create()
-    {
-        return hasHousekeepingPermission('manage_emulator_settings');
-    }
-
-    public function update()
-    {
-        return hasHousekeepingPermission('manage_emulator_settings');
+        return 'manage_emulator_settings';
     }
 }

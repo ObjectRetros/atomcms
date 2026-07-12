@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\User\Users;
 
+use App\Emulator\Data\Feature;
+use App\Emulator\Emulator;
 use App\Filament\Resources\User\Users\Pages\CreateUser;
 use App\Filament\Resources\User\Users\Pages\EditUser;
 use App\Filament\Resources\User\Users\Pages\ListUsers;
@@ -155,7 +157,8 @@ class UserResource extends Resource
                                     ->description(__('filament::resources.helpers.change_username_description'))
                                     ->schema([
                                         Toggle::make('allow_change_username')
-                                            ->label(__('filament::resources.inputs.allow_change_username')),
+                                            ->label(__('filament::resources.inputs.allow_change_username'))
+                                            ->visible(fn (): bool => Emulator::supports(Feature::NameChangePermission)),
                                     ])->collapsible()->collapsed(),
 
                                 Section::make(__('filament::resources.tabs.Change Email'))
@@ -261,12 +264,16 @@ class UserResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            SettingsRelationManager::class,
-            BadgesRelationManager::class,
-            ChatLogRelationManager::class,
-            ChatLogPrivateRelationManager::class,
-        ];
+        // These relation managers read Arcturus tables directly, so they only
+        // appear on that driver regardless of what other drivers support.
+        $isArcturus = Emulator::driver() === 'arcturus';
+
+        return array_values(array_filter([
+            Emulator::supports(Feature::EmulatorUserSettings) ? SettingsRelationManager::class : null,
+            Emulator::supports(Feature::UserBadgeManagement) ? BadgesRelationManager::class : null,
+            $isArcturus ? ChatLogRelationManager::class : null,
+            $isArcturus ? ChatLogPrivateRelationManager::class : null,
+        ]));
     }
 
     public static function fillWithOutsideData(Model $record, array $formData): array
@@ -275,7 +282,7 @@ class UserResource extends Resource
         $formData['currency_5'] = $record->currency('diamonds');
         $formData['currency_101'] = $record->currency('points');
 
-        if ($record->settings) {
+        if (Emulator::supports(Feature::NameChangePermission) && $record->settings) {
             $formData['allow_change_username'] = $record->settings->can_change_name;
         }
 

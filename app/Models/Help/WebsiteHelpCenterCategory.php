@@ -2,6 +2,7 @@
 
 namespace App\Models\Help;
 
+use App\Casts\PurifiedHtml;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -37,4 +38,11 @@ class WebsiteHelpCenterCategory extends Model
     protected $guarded = ['id'];
 
     public $timestamps = false;
+
+    protected function casts(): array
+    {
+        return [
+            'content' => PurifiedHtml::class,
+        ];
+    }
 }

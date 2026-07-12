@@ -1,5 +1,7 @@
 <x-app-layout>
     @push('title', $article->title)
+    @push('meta_description', $article->short_story)
+    @push('meta_image', asset('storage/' . $article->image))
 
     <div class="col-span-12 rounded space-y-3 md:col-span-3">
         <x-community.staff-card :user="$article->user" />

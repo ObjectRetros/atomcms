@@ -28,7 +28,7 @@
         <div class="flex flex-col lg:flex-row justify-between self-start w-full px-4">
             <div class="flex flex-col gap-1 self-start lg:ml-2 py-2 text-white ">
                 <h2 class="text-3xl font-semibold">
-                    Hey {{ Auth::user()->username }}!
+                    {{ __('Hey :username!', ['username' => Auth::user()->username]) }}
                 </h2>
 
                 <p class="italic">{{ Auth::user()->motto }}</p>
@@ -182,30 +182,12 @@
 
     @push('javascript')
         <script>
-            var Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener("mouseenter", Swal.stopTimer);
-                    toast.addEventListener("mouseleave", Swal.resumeTimer);
-                }
-            });
-
             function copyCode() {
                 let copyText = document.querySelector("#referral");
                 copyText.select();
                 document.execCommand("copy");
 
-                Toast.fire({
-                    icon: "success",
-                    title: '{{ __('Your referral code has been copied to your clipbord!') }}',
-                    customClass: {
-                        container: 'dark-mode-toast' // Add this class for dark mode
-                    },
-                });
+                window.toast('{{ __('Your referral code has been copied to your clipbord!') }}');
             }
         </script>
     @endpush

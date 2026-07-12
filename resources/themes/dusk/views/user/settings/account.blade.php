@@ -57,6 +57,18 @@
                     <x-form.input name="motto" value="{{ $user->motto }}" />
                 </div>
 
+                <div class="flex flex-col gap-y-1">
+                    <x-form.label for="current_password">
+                        {{ __('Current password') }}
+
+                        <x-slot:info>
+                            {{ __('Required to change your e-mail address.') }}
+                        </x-slot:info>
+                    </x-form.label>
+
+                    <x-form.input name="current_password" type="password" autocomplete="current-password" />
+                </div>
+
                 <x-site-captchas />
 
                 <div class="flex w-full justify-start md:justify-end">

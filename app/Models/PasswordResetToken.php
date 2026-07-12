@@ -25,14 +25,33 @@ class PasswordResetToken extends Model
 {
     protected $primaryKey = 'token';
 
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $fillable = ['email', 'token', 'created_at'];
 
     protected $casts = [
-        'created_at' => 'date',
+        'created_at' => 'datetime',
     ];
 
     // timestamps = true, but we don't have "UPDATED_AT". To prevent an error, we set the default value to `null`.
     public const UPDATED_AT = null;
+
+    /**
+     * Tokens are stored hashed so a database read cannot reveal a usable reset link.
+     */
+    public static function hashToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    public function hasExpired(): bool
+    {
+        return $this->created_at
+            ->addMinutes((int) config('habbo.password_reset_token_time'))
+            ->isPast();
+    }
 
     public function user(): BelongsTo
     {

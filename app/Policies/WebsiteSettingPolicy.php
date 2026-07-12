@@ -2,35 +2,15 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class WebsiteSettingPolicy
+class WebsiteSettingPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user)
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_website_settings');
+        return 'manage_website_settings';
     }
 
-    public function view(User $user)
+    protected function deletePermission(): string
     {
-        return hasHousekeepingPermission('manage_website_settings');
-    }
-
-    public function create(User $user)
-    {
-        return hasHousekeepingPermission('manage_website_settings');
-    }
-
-    public function update(User $user)
-    {
-        return hasHousekeepingPermission('manage_website_settings');
-    }
-
-    public function delete(User $user)
-    {
-        return hasHousekeepingPermission('delete_website_settings');
+        return 'delete_website_settings';
     }
 }

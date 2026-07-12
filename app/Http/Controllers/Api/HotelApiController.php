@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OnlineUserCountResource;
 use App\Http\Resources\OnlineUsersResource;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\User\UserApiService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class HotelApiController extends Controller
 {
@@ -17,9 +20,25 @@ class HotelApiController extends Controller
         return new UserResource($this->userApiService->fetchUser($username, $columns));
     }
 
-    public function onlineUsers($columns = ['username', 'motto', 'look'], bool $randomOrder = true): OnlineUsersResource
+    public function onlineUsers(): OnlineUsersResource
     {
-        return new OnlineUsersResource($this->userApiService->onlineUsers($columns, $randomOrder));
+        return new OnlineUsersResource($this->userApiService->onlineUsers());
+    }
+
+    public function searchUsers(Request $request): JsonResponse
+    {
+        $query = $request->string('q')->trim()->value();
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        // Escape LIKE wildcards so user input cannot widen the prefix match.
+        $users = User::where('username', 'like', addcslashes($query, '\\%_') . '%')
+            ->limit(8)
+            ->get(['username', 'look']);
+
+        return response()->json($users);
     }
 
     public function onlineUserCount(): OnlineUserCountResource

@@ -68,7 +68,7 @@
                     </div>
                 @empty
                     <p>
-                        You currently have no open tickets.
+                        {{ __('You currently have no open tickets.') }}
                     </p>
 
                 @endforelse

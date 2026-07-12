@@ -2,6 +2,7 @@
 
 namespace App\Services\Home;
 
+use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\HomeItemType;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class HomeService
 {
+    public function __construct(private readonly CurrencyRepository $currencies) {}
+
     /**
      * @throws \Exception
      */
@@ -34,7 +37,7 @@ class HomeService
             ]));
         }
 
-        if ($totalPrice > $user->currencyAmount($item->currency_type)) {
+        if ($totalPrice > $this->currencies->balance($user, $item->currency_type)) {
             throw new \Exception(__("You don't have enough :currency to buy this item.", [
                 'currency' => strtolower(__($item->currency_type->name)),
             ]));
@@ -67,7 +70,10 @@ class HomeService
 
             $this->ensurePurchaseIsAllowed($lockedUser, $item, $quantity, $totalPrice);
 
-            $lockedUser->discountCurrency($item->currency_type, $totalPrice);
+            if (! $this->currencies->deduct($lockedUser, $item->currency_type, $totalPrice)) {
+                throw new \Exception(__('Insufficient balance.'));
+            }
+
             $lockedUser->giveHomeItem($item, $quantity);
 
             return $item;

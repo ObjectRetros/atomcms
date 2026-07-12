@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Emulator\Contracts\BanRepository;
 use App\Http\Controllers\Controller;
-use App\Models\User\Ban;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class BannedController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(BanRepository $bans): View
     {
-        $ipBan = Ban::where('ip', '=', request()->ip())
-            ->where('ban_expire', '>', time())
-            ->orderByDesc('id')
-            ->first();
+        $user = Auth::user();
+
+        $ban = $bans->activeIpBan((string) request()->ip())
+            ?? ($user !== null ? $bans->activeAccountBan($user) : null);
 
         return view('banned', [
-            'ban' => $ipBan ?? Auth::user()->ban,
+            'ban' => $ban,
         ]);
     }
 }

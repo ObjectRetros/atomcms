@@ -6,10 +6,12 @@ use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Rules\WebsiteWordfilterRule;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ArticleComments extends Component
 {
+    #[Locked]
     public WebsiteArticle $article;
 
     public string $comment = '';

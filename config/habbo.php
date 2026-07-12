@@ -14,6 +14,16 @@ return [
         'site_environment' => env('APP_ENV'),
     ],
 
+    /*
+    | Proxies allowed to set X-Forwarded-* headers so request()->ip() reflects
+    | the real client (used for bans, rate limits and per-IP registration caps).
+    | Defaults to "*" since almost every hotel sits behind Cloudflare/nginx;
+    | restrict the origin to your proxy at the server level. Set a
+    | comma-separated list of proxy IPs/CIDRs to trust only those, or set it
+    | empty when the server is directly exposed (trust no forwarded headers).
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES', '*'),
+
     'reactions' => [
         'bad', 'crying', 'good', 'happy', 'taut', 'impatient', 'inlove', 'laugh', 'proud', 'wow',
         'shameful', 'shameless', 'sleeping', 'smile', 'tongue', 'wink', 'disgusted', 'angry', 'lgbt', 'heart2', 'bobba', 'poop',

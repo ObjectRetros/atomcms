@@ -2,51 +2,15 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
-
-class UserPolicy
+class UserPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @return Response|bool
-     */
-    public function viewAny(User $user)
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('edit_user');
+        return 'edit_user';
     }
 
-    /**
-     * Determine whether the user can view the model.
-     *
-     * @return Response|bool
-     */
-    public function view(User $user)
+    protected function deletePermission(): string
     {
-        return hasHousekeepingPermission('edit_user');
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @return Response|bool
-     */
-    public function update(User $user)
-    {
-        return hasHousekeepingPermission('edit_user');
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @return Response|bool
-     */
-    public function delete(User $user)
-    {
-        return hasHousekeepingPermission('delete_user');
+        return 'delete_user';
     }
 }

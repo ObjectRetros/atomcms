@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\Rcon;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
+use App\Services\AfterCommitRcon;
 use App\Services\InstallationService;
 use App\Services\PermissionsService;
 use App\Services\RconService;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,10 +47,22 @@ class AppServiceProvider extends ServiceProvider
             fn () => new PermissionsService,
         );
 
+        // Wrapped so RCON sends inside a DB transaction only fire once it
+        // commits - a rolled-back purchase never grants items in the emulator.
         $this->app->singleton(
-            RconService::class,
-            fn () => new RconService,
+            Rcon::class,
+            fn () => new AfterCommitRcon(new RconService),
         );
+
+        // Resolve the PayPal client pre-authenticated so consumers can inject
+        // it and tests can swap it for a fake.
+        $this->app->bind(PayPalClient::class, function (): PayPalClient {
+            $client = new PayPalClient;
+            $client->setApiCredentials(config('habbo.paypal'));
+            $client->getAccessToken();
+
+            return $client;
+        });
     }
 
     /**

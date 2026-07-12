@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Traits\TranslatableResource;
 use App\Services\Parsers\ExternalTextsParser;
+use Filament\Actions\Action;
 use Filament\Actions\Action as PageAction;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\TextInput;
@@ -293,7 +294,7 @@ class BadgePage extends Page
     }
 
     /**
-     * @return array<\Filament\Actions\Action|ActionGroup>
+     * @return array<Action|ActionGroup>
      */
     protected function getHeaderActions(): array
     {

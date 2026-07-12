@@ -3,26 +3,26 @@
 
 
     <div class="col-span-12 md:col-span-6 min-h-[250px] bg-gray-900/50 rounded-xl flex flex-col py-6 px-8 text-white">
-        <h2 class="text-2xl">Login</h2>
+        <h2 class="text-2xl">{{ __('Login') }}</h2>
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
 
             <div class="relative w-full overflow-hidden text-black">
-                <input id="username-input" type="text" placeholder="Enter your username" name="username" class="relative py-2 rounded-md mt-3 w-full">
+                <input id="username-input" type="text" placeholder="{{ __('Enter your username') }}" name="username" class="relative py-2 rounded-md mt-3 w-full">
 
                 <img id="user-avatar" class="absolute right-0 -top-4" src="{{ asset('/assets/images/dusk/ghost.png') }}" alt="">
             </div>
 
-            <input type="password" placeholder="Enter your password" name="password" class="relative py-2 rounded-md mt-3 text-black w-full">
+            <input type="password" placeholder="{{ __('Enter your password') }}" name="password" class="relative py-2 rounded-md mt-3 text-black w-full">
 
             <x-site-captchas />
 
             <div class="mt-4 flex gap-4">
-                <button type="submit" class="py-2 px-4 text-white bg-yellow-500 border-2 border-yellow-300 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">Login</button>
+                <button type="submit" class="py-2 px-4 text-white bg-yellow-500 border-2 border-yellow-300 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">{{ __('Login') }}</button>
 
                 <a href="{{ route('register') }}" class="w-full">
-                    <button type="button" class="py-2 px-4 text-white bg-gray-700 border-2 border-gray-600 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">Register</button>
+                    <button type="button" class="py-2 px-4 text-white bg-gray-700 border-2 border-gray-600 w-full rounded-md transition duration-300 ease-in-out hover:scale-[102%]">{{ __('Register') }}</button>
                 </a>
             </div>
         </form>
@@ -99,7 +99,7 @@
                     return;
                 }
 
-                avatar.src = '{{ setting('avatar_imager') }}' + '/' + data.data.look + '&direction=4&action=wav&head_direction=3';
+                avatar.src = '{{ setting('avatar_imager') }}' + data.data.look + '&direction=4&action=wav&head_direction=3';
             } catch (error) {
                 console.error('An error occurred:', error);
             }

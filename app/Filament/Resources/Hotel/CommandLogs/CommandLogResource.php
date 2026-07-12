@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\CommandLogs;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\Hotel\CommandLogs\Pages\ManageCommandLogs;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\CommandLog;
@@ -14,6 +16,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CommandLogResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::CommandLogs;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = CommandLog::class;

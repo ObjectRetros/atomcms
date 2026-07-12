@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hotel\ChatlogRooms;
 
+use App\Filament\Concerns\RequiresEmulatorDriver;
 use App\Filament\Resources\Hotel\ChatlogRooms\Pages\ManageChatlogRooms;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogRoom;
@@ -16,7 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChatlogRoomResource extends Resource
 {
+    // Bound to the Arcturus chatlogs_room schema; PlusChatlogResource covers Plus.
+    use RequiresEmulatorDriver;
     use TranslatableResource;
+
+    protected static function requiredEmulatorDriver(): string
+    {
+        return 'arcturus';
+    }
 
     protected static ?string $model = ChatlogRoom::class;
 

@@ -15,6 +15,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class CatalogItemsTable
 {
@@ -62,7 +63,7 @@ class CatalogItemsTable
                 ->label('Item')
                 ->searchable()
                 ->wrap()
-                ->description(fn (CatalogItem $r) => 'ID '.$r->id),
+                ->description(fn (CatalogItem $r) => 'ID ' . $r->id),
 
             Tables\Columns\TextColumn::make('cost_credits')->label('Credits')->numeric()->sortable(),
             Tables\Columns\TextColumn::make('cost_points')->label('Points')->numeric()->sortable(),
@@ -92,7 +93,7 @@ class CatalogItemsTable
             ->modalSubmitActionLabel('Apply changes')
             ->modalWidth('lg')
             ->form(CatalogItemMassEditForm::schema())
-            ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+            ->action(function (Collection $records, array $data): void {
                 $updates = CatalogItemMassEditForm::pickUpdates($data);
 
                 if (empty($updates)) {
@@ -108,7 +109,7 @@ class CatalogItemsTable
                 CatalogItem::whereIn('id', $records->pluck('id'))->update($updates);
 
                 Notification::make()
-                    ->title('Updated '.$records->count().' item(s)')
+                    ->title('Updated ' . $records->count() . ' item(s)')
                     ->success()
                     ->send();
             })
@@ -135,7 +136,7 @@ class CatalogItemsTable
                         ->pluck('caption', 'id'))
                     ->getOptionLabelUsing(fn ($value) => CatalogPage::find($value)?->caption),
             ])
-            ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) use ($reorder): void {
+            ->action(function (Collection $records, array $data) use ($reorder): void {
                 $moved = $reorder->moveItemsToPage((int) $data['page_id'], $records->pluck('id')->all());
 
                 Notification::make()

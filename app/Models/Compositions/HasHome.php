@@ -2,7 +2,7 @@
 
 namespace App\Models\Compositions;
 
-use App\Enums\CurrencyTypes;
+use App\Emulator\Contracts\BadgeRepository;
 use App\Enums\HomeItemType;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
@@ -13,11 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 trait HasHome
 {
+    // Transient aggregate built by loadRatingsForHome() for the profile view.
+    public ?UserHomeRating $homeRatingStats = null;
+
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function homeItems(): HasMany
     {
         return $this->hasMany(UserHomeItem::class);
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function inventoryHomeItems(): HasMany
     {
         return $this->homeItems()
@@ -25,6 +34,9 @@ trait HasHome
             ->where('placed', false);
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function groupedInventoryItems(): HasMany
     {
         return $this->inventoryHomeItems()
@@ -32,6 +44,9 @@ trait HasHome
             ->groupBy('home_item_id');
     }
 
+    /**
+     * @return HasMany<UserHomeItem, $this>
+     */
     public function placedHomeItems(): HasMany
     {
         return $this->homeItems()
@@ -39,16 +54,25 @@ trait HasHome
             ->where('placed', true);
     }
 
+    /**
+     * @return HasMany<UserHomeRating, $this>
+     */
     public function homeRatings(): HasMany
     {
         return $this->hasMany(UserHomeRating::class, 'rated_user_id');
     }
 
+    /**
+     * @return HasMany<UserHomeMessage, $this>
+     */
     public function receivedHomeMessages(): HasMany
     {
         return $this->hasMany(UserHomeMessage::class, 'recipient_user_id');
     }
 
+    /**
+     * @return HasMany<UserHomeMessage, $this>
+     */
     public function sentHomeMessages(): HasMany
     {
         return $this->hasMany(UserHomeMessage::class, 'user_id');
@@ -76,47 +100,6 @@ trait HasHome
             ->update(['placed' => false]);
 
         $background->update(['placed' => true]);
-    }
-
-    public function currencyAmount(CurrencyTypes $type): int
-    {
-        if ($type === CurrencyTypes::Credits) {
-            return $this->credits;
-        }
-
-        if (! $this->relationLoaded('currencies')) {
-            $this->load('currencies');
-        }
-
-        return $this->currencies->where('type', $type->value)->first()?->amount ?? 0;
-    }
-
-    /**
-     * @throws \RuntimeException
-     */
-    public function discountCurrency(CurrencyTypes $type, int $amount): void
-    {
-        if ($type === CurrencyTypes::Credits) {
-            $affected = DB::table($this->getTable())
-                ->where('id', $this->id)
-                ->where('credits', '>=', $amount)
-                ->update(['credits' => DB::raw("credits - {$amount}")]);
-
-            if ($affected === 0) {
-                throw new \RuntimeException(__('Insufficient balance.'));
-            }
-
-            return;
-        }
-
-        $affected = $this->currencies()
-            ->where('type', $type->value)
-            ->where('amount', '>=', $amount)
-            ->update(['amount' => DB::raw("amount - {$amount}")]);
-
-        if ($affected === 0) {
-            throw new \RuntimeException(__('Insufficient balance.'));
-        }
     }
 
     public function loadRoomsForHome(): self
@@ -154,9 +137,8 @@ trait HasHome
     public function loadBadgesForHome(string $routeName): self
     {
         $this->setRelation('badges',
-            $this->badges()
-                ->orderByDesc('id')
-                ->paginate(16, ['*'], 'badges_page')
+            app(BadgeRepository::class)
+                ->paginate($this, 16, 'badges_page')
                 ->withPath(route($routeName, $this->username)),
         );
 
@@ -166,7 +148,7 @@ trait HasHome
     public function loadGuestbookForHome(): self
     {
         return $this->load([
-            'receivedHomeMessages' => fn (HasMany $query) => $query->latest()->defaultUserData(),
+            'receivedHomeMessages' => fn ($query) => $query->latest()->defaultUserData(),
         ]);
     }
 }

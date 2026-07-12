@@ -1,5 +1,6 @@
 <x-app-layout>
     @push('title', $user->username)
+    @push('meta_description', __(":username's profile on :hotel. Check out their badges, rooms and friends!", ['username' => $user->username, 'hotel' => setting('hotel_name')]))
 
     <div class="col-span-12 md:col-span-8 md:max-h-[250px] bg-gray-900/50 rounded-xl text-gray-200">
         <div class="flex mt-6">
@@ -30,7 +31,7 @@
 
                         <div class="flex flex-col">
                             <p class="mt-4 italic">{{ $user->motto }}</p>
-                            <small class="text-gray-400">Last online: {{ date('Y-m-d', $user->last_online) }}</small>
+                            <small class="text-gray-400">{{ __('Last online: :date', ['date' => date('Y-m-d', $user->last_online)]) }}</small>
                         </div>
                     </div>
 
@@ -132,7 +133,7 @@
                     </div>
                 @empty
                     <div class="col-span-12 text-center">
-                        <p>This user currently does not have any rooms</p>
+                        <p>{{ __(':username does not have any rooms yet.', ['username' => $user->username]) }}</p>
                     </div>
                 @endforelse
             </div>
@@ -149,7 +150,7 @@
                         <div class="bg-gray-600 p-2 rounded-md text-gray-200 h-[60px] overflow-hidden">
                             <div class="flex relative">
                                 <img class="-mt-5 drop-shadow"
-                                     src="{{ setting('avatar_imager') }}/{{ $post->user?->look }}"
+                                     src="{{ setting('avatar_imager') }}{{ $post->user?->look }}"
                                      alt="{{ $post->user?->username }}">
 
                                 <div class="flex flex-col">
@@ -184,7 +185,7 @@
                         @csrf
 
                         <x-form.input classes="w-full md:w-2/3" name="message"
-                                      placeholder="Write something on their guestbook"
+                                      placeholder="{{ __('Write something on their guestbook') }}"
                                       :autofocus="false"/>
 
                         <div class="w-full md:w-1/3">

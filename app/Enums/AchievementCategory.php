@@ -2,8 +2,12 @@
 
 namespace App\Enums;
 
+use App\Enums\Concerns\HasOptions;
+
 enum AchievementCategory: string
 {
+    use HasOptions;
+
     case Identity = 'identity';
     case Explore = 'explore';
     case Music = 'music';
@@ -13,19 +17,4 @@ enum AchievementCategory: string
     case Pets = 'pets';
     case Tools = 'tools';
     case Events = 'events';
-
-    public static function values(): array
-    {
-        return array_column(self::cases(), 'value');
-    }
-
-    public static function toInput(): array
-    {
-        $allCurrencies = self::cases();
-
-        return array_combine(
-            array_column($allCurrencies, 'value'),
-            array_column($allCurrencies, 'name'),
-        );
-    }
 }

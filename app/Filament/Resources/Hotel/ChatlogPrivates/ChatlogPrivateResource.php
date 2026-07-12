@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Hotel\ChatlogPrivates;
 
+use App\Emulator\Data\Feature;
+use App\Filament\Concerns\RequiresEmulatorFeature;
 use App\Filament\Resources\Hotel\ChatlogPrivates\Pages\ManageChatlogPrivates;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogPrivate;
@@ -16,6 +18,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChatlogPrivateResource extends Resource
 {
+    use RequiresEmulatorFeature;
+
+    protected static function requiredEmulatorFeature(): Feature
+    {
+        return Feature::PrivateChatlogs;
+    }
+
     use TranslatableResource;
 
     protected static ?string $model = ChatlogPrivate::class;

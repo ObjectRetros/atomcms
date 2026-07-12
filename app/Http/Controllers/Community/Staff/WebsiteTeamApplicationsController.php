@@ -12,7 +12,7 @@ class WebsiteTeamApplicationsController extends Controller
 {
     public function index(): View
     {
-        $positions = \App\Models\Community\Staff\WebsiteOpenPosition::query()
+        $positions = WebsiteOpenPosition::query()
             ->where('position_kind', 'team')
             ->whereNotNull('team_id')
             ->with('team')
@@ -24,7 +24,7 @@ class WebsiteTeamApplicationsController extends Controller
         if (auth()->check()) {
             $teamIds = $positions->pluck('team_id')->filter()->unique()->all();
 
-            $userAppStatuses = \App\Models\Community\Staff\WebsiteStaffApplications::query()
+            $userAppStatuses = WebsiteStaffApplications::query()
                 ->where('user_id', auth()->id())
                 ->whereIn('team_id', $teamIds)
                 ->pluck('status', 'team_id')
@@ -72,6 +72,6 @@ class WebsiteTeamApplicationsController extends Controller
 
         return redirect()
             ->route('team-applications.index')
-            ->with('status', __('Your application has been submitted!'));
+            ->with('success', __('Your application has been submitted!'));
     }
 }

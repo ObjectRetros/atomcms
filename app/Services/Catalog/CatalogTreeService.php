@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class CatalogTreeService
 {
-    /** @return Collection<int, Collection<int, CatalogPage>> */
+    /** @return Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, CatalogPage>> */
     public function pagesGroupedByParent(): Collection
     {
         return CatalogPage::query()
@@ -39,7 +39,8 @@ class CatalogTreeService
 
     /**
      * @param  Collection<int, int>  $hitIds
-     * @return array<int, int>  every ancestor page id, so the hit is visible
+     *
+     * @return array<int, int> every ancestor page id, so the hit is visible
      */
     public function expandToReveal(Collection $hitIds): array
     {
@@ -60,7 +61,7 @@ class CatalogTreeService
     /** @return Collection<int, CatalogPage> */
     public function searchPages(string $needle): Collection
     {
-        $like = '%'.$this->escapeLike($needle).'%';
+        $like = '%' . $this->escapeLike($needle) . '%';
 
         return CatalogPage::query()
             ->where(function ($q) use ($like) {
@@ -75,7 +76,7 @@ class CatalogTreeService
     /** @return Collection<int, CatalogItem> */
     public function searchItems(string $needle): Collection
     {
-        $like = '%'.$this->escapeLike($needle).'%';
+        $like = '%' . $this->escapeLike($needle) . '%';
         $isNumeric = ctype_digit($needle);
 
         return CatalogItem::query()

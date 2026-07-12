@@ -7,7 +7,7 @@
                 <img src="{{ asset('/assets/images/dusk/exclamation-mark_icon.png') }}" alt="">
             </x-slot:icon>
 
-            Rules
+            {{ __('Rules') }}
         </x-page-header>
 
         @foreach ($categories as $category)

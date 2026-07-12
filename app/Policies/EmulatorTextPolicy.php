@@ -2,29 +2,10 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class EmulatorTextPolicy
+class EmulatorTextPolicy extends HousekeepingPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny()
+    protected function permission(): string
     {
-        return hasHousekeepingPermission('manage_emulator_texts');
-    }
-
-    public function view()
-    {
-        return hasHousekeepingPermission('manage_emulator_texts');
-    }
-
-    public function create()
-    {
-        return hasHousekeepingPermission('manage_emulator_texts');
-    }
-
-    public function update()
-    {
-        return hasHousekeepingPermission('manage_emulator_texts');
+        return 'manage_emulator_texts';
     }
 }

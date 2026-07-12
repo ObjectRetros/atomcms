@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\User\Bans;
 
+use App\Filament\Concerns\RequiresEmulatorDriver;
 use App\Filament\Resources\User\Bans\Pages\ManageBans;
 use App\Filament\Tables\Columns\UserAvatarColumn;
 use App\Filament\Traits\TranslatableResource;
@@ -20,7 +21,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class BanResource extends Resource
 {
+    // Bound to the Arcturus bans schema; PlusBanResource covers Plus.
+    use RequiresEmulatorDriver;
     use TranslatableResource;
+
+    protected static function requiredEmulatorDriver(): string
+    {
+        return 'arcturus';
+    }
 
     protected static ?string $model = Ban::class;
 

@@ -16,7 +16,7 @@
             </div>
 
             <a href="{{ route('article.show', $article->slug) }}" class="text-sm mt-1 read-more-link hover:underline">
-                Read more
+                {{ __('Read more') }}
             </a>
 
         </div>
