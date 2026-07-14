@@ -73,6 +73,13 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ],
+        "setup": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@composer install",
+            "npm ci",
+            "@php artisan atom:install"
+        ],
         "test": "pest",
         "lint": "pint --test",
         "fix": "pint",
