@@ -33,10 +33,8 @@ use App\Http\Controllers\Shop\ShopVoucherController;
 use App\Http\Controllers\User\AccountSettingsController;
 use App\Http\Controllers\User\BannedController;
 use App\Http\Controllers\User\ForgotPasswordController;
-use App\Http\Controllers\User\GuestbookController;
 use App\Http\Controllers\User\MeController;
 use App\Http\Controllers\User\PasswordSettingsController;
-use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\ReferralController;
 use App\Http\Controllers\User\TwoFactorAuthenticationController;
 use App\Http\Controllers\User\UserReferralController;
@@ -112,11 +110,6 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         // Drawbadge
         Route::get('/draw-badge', [BadgeController::class, 'show'])->name('draw-badge');
         Route::post('/buy-badge', [BadgeController::class, 'buy'])->name('badge.buy');
-
-        // Profiles
-        Route::get('/profile/{user:username}', ProfileController::class)->name('profile.show');
-        Route::post('/profile/{user}/guestbook', [GuestbookController::class, 'store'])->name('guestbook.store');
-        Route::delete('/profile/{user}/{guestbook}/delete', [GuestbookController::class, 'destroy'])->name('guestbook.destroy');
 
         // Homes
         Route::prefix('home')->as('home.')->group(function () {

@@ -4,7 +4,7 @@
 <div class="relative flex items-center justify-between overflow-hidden rounded px-10 me-backdrop"
     style="background: rgba(0, 0, 0, 0.3) url({{ setting('cms_me_backdrop') }});">
     <div>
-        <a href="{{ route('profile.show', $user) }}"
+        <a href="{{ route('home.show', $user) }}"
             class="absolute -bottom-12 left-0 drop-shadow transition duration-300 ease-in-out hover:scale-105">
             <img style="image-rendering: pixelated;"
                 src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l"

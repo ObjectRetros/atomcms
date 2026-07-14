@@ -10,12 +10,19 @@ class CreateDefaultHome
 {
     public static function for(User $user): void
     {
-        if ($user->homeItems()->exists()) {
-            return;
-        }
+        $ownedItemIds = $user->homeItems()->pluck('home_item_id');
 
-        $background = HomeItem::where('type', HomeItemType::Background)->orderBy('id')->first();
-        $widget = HomeItem::where('type', HomeItemType::Widget)->where('name', 'My Profile')->first();
+        $hasBackground = HomeItem::whereIn('id', $ownedItemIds)
+            ->where('type', HomeItemType::Background)
+            ->exists();
+
+        $hasProfileWidget = HomeItem::whereIn('id', $ownedItemIds)
+            ->where('type', HomeItemType::Widget)
+            ->where('name', 'My Profile')
+            ->exists();
+
+        $background = $hasBackground ? null : HomeItem::where('type', HomeItemType::Background)->orderBy('id')->first();
+        $widget = $hasProfileWidget ? null : HomeItem::where('type', HomeItemType::Widget)->where('name', 'My Profile')->first();
 
         $items = array_values(array_filter([
             $background ? self::placedItem($user, $background, x: 0, y: 0, z: 0, theme: null) : null,

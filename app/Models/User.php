@@ -26,7 +26,6 @@ use App\Models\User\Ban;
 use App\Models\User\ClaimedReferralLog;
 use App\Models\User\Referral;
 use App\Models\User\UserReferral;
-use App\Models\User\WebsiteUserGuestbook;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
@@ -106,8 +105,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $currencies_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MessengerFriendship> $friends
  * @property-read int|null $friends_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, WebsiteUserGuestbook> $guestbook
- * @property-read int|null $guestbook_count
  * @property-read UserSubscription|null $hcSubscription
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Item> $items
  * @property-read int|null $items_count
@@ -116,8 +113,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Permission|null $permission
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CameraWeb> $photos
  * @property-read int|null $photos_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, WebsiteUserGuestbook> $profileGuestbook
- * @property-read int|null $profile_guestbook_count
  * @property-read UserReferral|null $referrals
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Room> $rooms
  * @property-read int|null $rooms_count
@@ -376,16 +371,6 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function photos(): HasMany
     {
         return $this->hasMany(CameraWeb::class);
-    }
-
-    public function profileGuestbook(): HasMany
-    {
-        return $this->hasMany(WebsiteUserGuestbook::class, 'profile_id');
-    }
-
-    public function guestbook(): HasMany
-    {
-        return $this->hasMany(WebsiteUserGuestbook::class, 'user_id');
     }
 
     public function chatLogs(): HasMany

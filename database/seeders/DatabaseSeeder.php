@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             // Home items
             HomeCategorySeeder::class,
             HomeItemSeeder::class,
+            UserHomeSeeder::class,
         ]);
 
         // \App\Models\User::factory(10)->create();

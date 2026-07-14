@@ -35,7 +35,7 @@
                         <span class="w-2 h-2 bg-gray-500 rounded-full shrink-0"></span>
                     @endif
 
-                    <a class="text-xs font-semibold text-blue-400 hover:underline truncate" href="{{ route('profile.show', $message->user) }}">
+                    <a class="text-xs font-semibold text-blue-400 hover:underline truncate" href="{{ route('home.show', $message->user) }}">
                         {{ $message->user->username }}
                     </a>
                 </div>

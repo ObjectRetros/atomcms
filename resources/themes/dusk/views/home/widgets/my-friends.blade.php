@@ -11,7 +11,7 @@
                     >
 
                     <div class="overflow-hidden">
-                        <a class="block text-xs font-semibold text-blue-400 hover:underline truncate" href="{{ route('profile.show', $friend->user) }}">
+                        <a class="block text-xs font-semibold text-blue-400 hover:underline truncate" href="{{ route('home.show', $friend->user) }}">
                             {{ $friend->user->username }}
                         </a>
                     </div>

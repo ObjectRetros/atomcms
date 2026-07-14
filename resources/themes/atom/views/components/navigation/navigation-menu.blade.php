@@ -12,7 +12,7 @@
                     {{ __('Badge Drawer') }}
                 </x-navigation.dropdown-child>
 
-                <x-navigation.dropdown-child :route="route('profile.show', auth()->user()->username)">
+                <x-navigation.dropdown-child :route="route('home.show', auth()->user()->username)">
                     {{ __('My Profile') }}
                 </x-navigation.dropdown-child>
 

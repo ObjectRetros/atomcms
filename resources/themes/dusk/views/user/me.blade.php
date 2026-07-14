@@ -4,7 +4,7 @@
 
     <div class="col-span-12 md:col-span-8 h-[250px] bg-gray-900/50 rounded-xl flex lg:px-8 py-8 items-center text-white relative overflow-hidden">
         <div class="block lg:hidden w-40">
-            <a href="{{ route('profile.show', $user) }}"
+            <a href="{{ route('home.show', $user) }}"
                class="absolute bottom-2 -left-4 lg:left-8 drop-shadow transition duration-300 ease-in-out hover:scale-105">
                 <img style="image-rendering: pixelated;"
                      src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l"
@@ -15,7 +15,7 @@
         <div class="z-10">
             <div class="hidden lg:block h-[200px] w-[200px] rounded-full relative overflow-hidden" style="background: url('/assets/images/dusk/me_circle_image.png')">
                 <div>
-                    <a href="{{ route('profile.show', $user) }}"
+                    <a href="{{ route('home.show', $user) }}"
                        class="absolute -bottom-12 left-2 lg:left-8 drop-shadow transition duration-300 ease-in-out hover:scale-105">
                         <img style="image-rendering: pixelated;"
                              src="{{ setting('avatar_imager') }}{{ $user->look }}&direction=2&head_direction=3&gesture=sml&action=wav&size=l"
