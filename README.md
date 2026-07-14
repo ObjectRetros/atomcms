@@ -84,7 +84,7 @@ extension=intl
 
 ### Quick Setup (Recommended)
 
-One command installs everything — dependencies, the bundled Arcturus Morningstar 3.5.5 base database with an up-to-date catalog, app key, storage link, migrations, seeders and your theme's assets:
+One command installs everything - dependencies, the bundled Arcturus Morningstar 3.5.5 base database with an up-to-date catalog, app key, storage link, migrations, seeders and your theme's assets:
 
 ```bash
 git clone https://github.com/ObjectRetros/atomcms.git

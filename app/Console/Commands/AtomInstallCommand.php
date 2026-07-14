@@ -212,7 +212,7 @@ class AtomInstallCommand extends Command
     private function importArcturusDatabase(): bool
     {
         if (Schema::hasTable(self::ARCTURUS_MARKER_TABLE)) {
-            note('Arcturus tables already exist — skipping the base database and catalog import.');
+            note('Arcturus tables already exist - skipping the base database and catalog import.');
 
             return true;
         }
@@ -323,7 +323,7 @@ class AtomInstallCommand extends Command
         $theme = $this->option('theme');
 
         if ($theme !== null && ! in_array($theme, self::THEMES, true)) {
-            warning("Unknown theme '{$theme}' — expected one of: " . implode(', ', self::THEMES) . '. Keeping the current theme.');
+            warning("Unknown theme '{$theme}' - expected one of: " . implode(', ', self::THEMES) . '. Keeping the current theme.');
             $theme = null;
         }
 
@@ -345,7 +345,7 @@ class AtomInstallCommand extends Command
         info("Active theme set to '{$theme}'.");
 
         if ($this->option('skip-build')) {
-            note('Skipping the asset build — run this yourself: npm run build:' . $theme);
+            note('Skipping the asset build - run this yourself: npm run build:' . $theme);
 
             return;
         }
@@ -356,7 +356,7 @@ class AtomInstallCommand extends Command
         );
 
         if ($result->failed()) {
-            warning("The asset build failed — fix the error below and re-run: npm run build:{$theme}");
+            warning("The asset build failed - fix the error below and re-run: npm run build:{$theme}");
             $this->line(trim($result->errorOutput() ?: $result->output()));
 
             return;
@@ -368,7 +368,7 @@ class AtomInstallCommand extends Command
     private function linkStorage(): void
     {
         if (file_exists(public_path('storage'))) {
-            note('Storage link already exists — skipping.');
+            note('Storage link already exists - skipping.');
 
             return;
         }
