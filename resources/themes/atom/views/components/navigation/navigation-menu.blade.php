@@ -13,10 +13,6 @@
                 </x-navigation.dropdown-child>
 
                 <x-navigation.dropdown-child :route="route('home.show', auth()->user()->username)">
-                    {{ __('My Profile') }}
-                </x-navigation.dropdown-child>
-
-                <x-navigation.dropdown-child :route="route('home.show', auth()->user()->username)">
                     {{ __('My Home') }}
                 </x-navigation.dropdown-child>
             </x-slot:children>
