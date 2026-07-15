@@ -15,7 +15,7 @@
                 style="background: rgba(0, 0, 0, 0.5) url({{ asset(sprintf('assets/images/%s', $article->user ? $article->user->permission->staff_background ?? 'staff-bg.png'  : 'staff-bg.png')) }});">
             </div>
 
-            <a href="{{ route('profile.show', $article->user ?? \App\Models\User::first()) }}" class="absolute top-4 left-1 drop-shadow">
+            <a href="{{ route('home.show', $article->user ?? \App\Models\User::first()) }}" class="absolute top-4 left-1 drop-shadow">
                 <img style="image-rendering: pixelated;" class="transition duration-300 ease-in-out hover:scale-105"
                     src="{{ setting('avatar_imager') }}{{ $article->user?->look }}&direction=2&head_direction=3&gesture=sml&action=wav"
                     alt="">

@@ -27,12 +27,12 @@ test('authenticated community pages render', function (string $route) {
     'ticket create' => 'help-center.ticket.create',
 ]);
 
-test('a user profile page renders', function () {
+test('a user home page renders', function () {
     $user = User::factory()->create();
     $subject = User::factory()->create();
 
     $this->actingAs($user)
-        ->get(route('profile.show', $subject->username))
+        ->get(route('home.show', $subject->username))
         ->assertOk();
 });
 

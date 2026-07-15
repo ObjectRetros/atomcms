@@ -53,7 +53,7 @@
                             wire:key="article-comment-{{ $comment->id }}"
                             class="w-full rounded-xl p-3 shadow-sm transition {{ $theme === 'dusk' ? 'bg-[#21242e] border border-[#2b3040]' : 'bg-[#f5f5f5] dark:bg-gray-700 border border-gray-200 dark:border-gray-600' }}">
                             <div class="flex items-start gap-3">
-                                <a href="{{ route('profile.show', $comment->user) }}" class="shrink-0 drop-shadow-sm">
+                                <a href="{{ route('home.show', $comment->user) }}" class="shrink-0 drop-shadow-sm">
                                     <span class="flex items-center justify-center rounded-lg border p-0 {{ $theme === 'dusk' ? 'border-gray-600 bg-[#2c3140]' : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800' }}">
                                         <img style="image-rendering: pixelated;"
                                              class="transition duration-300 ease-in-out hover:scale-105"
@@ -64,7 +64,7 @@
 
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between gap-3">
-                                        <a href="{{ route('profile.show', $comment->user) }}"
+                                        <a href="{{ route('home.show', $comment->user) }}"
                                            class="truncate font-semibold text-[#89cdf0] hover:underline">
                                             {{ $comment->user->username }}
                                         </a>

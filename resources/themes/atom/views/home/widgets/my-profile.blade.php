@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-2 p-2">
     <div class="flex items-start gap-3 border-b border-gray-200 dark:border-gray-600 pb-3">
         <div class="flex flex-col">
-            <a class="font-bold text-blue-500 hover:underline" href="{{ route('profile.show', $user) }}">
+            <a class="font-bold text-blue-500 hover:underline" href="{{ route('home.show', $user) }}">
                 {{ $user->username }}
             </a>
 
