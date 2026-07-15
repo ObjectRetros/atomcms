@@ -93,11 +93,6 @@
     },
     "repositories": [
         {
-            "name": "filament",
-            "type": "composer",
-            "url": "https://packages.filamentphp.com/composer"
-        },
-        {
             "type": "package",
             "package": {
                 "name": "flowframe/laravel-trend",
