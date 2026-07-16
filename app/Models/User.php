@@ -439,15 +439,6 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->dontSubmitEmptyLogs();
     }
 
-    public function save(array $options = []): bool
-    {
-        if (! $this->isDirty()) {
-            return true;
-        }
-
-        return parent::save($options);
-    }
-
     public function hasAppliedForTeam(int $teamId): bool
     {
         if (! $teamId) {
