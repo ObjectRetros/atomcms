@@ -72,6 +72,20 @@ test('a user can change their password with their current one', function () {
     expect(Hash::check('N3wSecret!pass', $user->refresh()->password))->toBeTrue();
 });
 
+test('a user cannot change to a weak password', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->put(route('settings.password.update'), [
+            'current_password' => 'password',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
+});
+
 test('a wrong current password is rejected', function () {
     $user = User::factory()->create();
 

@@ -34,6 +34,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -177,6 +178,8 @@ class UserResource extends Resource
                                             ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                                             ->dehydrated(fn ($state) => filled($state))
                                             ->password()
+                                            ->required(fn (string $operation): bool => $operation === 'create')
+                                            ->rule(Password::default())
                                             ->confirmed(),
 
                                         TextInput::make('password_confirmation')

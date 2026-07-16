@@ -17,6 +17,7 @@ use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Livewire\Blaze\Blaze;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
@@ -70,6 +71,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Password::defaults(fn (): Password => Password::min(12)
+            ->mixedCase()
+            ->numbers()
+            ->symbols());
+
         Model::preventLazyLoading(! $this->app->isProduction());
 
         Blaze::optimize()
