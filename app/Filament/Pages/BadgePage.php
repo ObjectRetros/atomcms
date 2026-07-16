@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Traits\TranslatableResource;
 use App\Services\Parsers\ExternalTextsParser;
+use App\Support\BadgeCode;
 use App\Support\OutboundHttp;
 use App\Support\PublicHttpUrlResolver;
 use Filament\Actions\Action;
@@ -64,7 +65,7 @@ class BadgePage extends Page
                             ->label(__('filament::resources.inputs.badge_code'))
                             ->helperText(__('filament::resources.helpers.badge_code_helper'))
                             ->required()
-                            ->maxLength(64)
+                            ->maxLength(BadgeCode::MAX_LENGTH)
                             ->regex('/\A[A-Z0-9_-]+\z/')
                             ->afterStateUpdated(function (?string $state, Set $set) {
                                 $set('code', is_string($state) ? strtoupper($state) : null);
@@ -135,7 +136,19 @@ class BadgePage extends Page
 
         $this->data['code'] = $badgeCode;
 
-        $badgeData = app(ExternalTextsParser::class)->getBadgeData($badgeCode);
+        try {
+            $badgeData = app(ExternalTextsParser::class)->getBadgeData($badgeCode);
+        } catch (Throwable $exception) {
+            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
+
+            Notification::make()
+                ->danger()
+                ->title(__('filament::resources.notifications.badge_update_failed'))
+                ->send();
+
+            return;
+        }
+
         $this->badgeWasPreviouslyCreated = is_array($badgeData['nitro']) || is_array($badgeData['flash']);
 
         if ($this->badgeWasPreviouslyCreated) {
@@ -361,15 +374,7 @@ class BadgePage extends Page
 
     private function badgeCode(): ?string
     {
-        $code = $this->data['code'] ?? null;
-
-        if (! is_string($code)) {
-            return null;
-        }
-
-        $code = strtoupper(trim($code));
-
-        return preg_match('/\A[A-Z0-9_-]{1,64}\z/', $code) === 1 ? $code : null;
+        return BadgeCode::normalize($this->data['code'] ?? null);
     }
 
     private function notifyBadgeImageUploadFailed(): void
