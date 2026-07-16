@@ -84,6 +84,8 @@ class WebsiteHelpCenterTicket extends Model
 
     public function getContentAttribute(string $value): string
     {
-        return (string) Purify::clean($value);
+        $cleaned = Purify::clean($value);
+
+        return is_string($cleaned) ? $cleaned : '';
     }
 }

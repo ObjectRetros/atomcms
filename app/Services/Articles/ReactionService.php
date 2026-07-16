@@ -30,7 +30,7 @@ class ReactionService
 
         return [
             'success' => true,
-            'added' => $existingReaction->active ?? true,
+            'added' => (bool) ($existingReaction->active ?? true),
             'username' => $user->username,
         ];
     }
