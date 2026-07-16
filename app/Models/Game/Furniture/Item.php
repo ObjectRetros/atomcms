@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $wired_data
  * @property string $limited_data
  * @property int $guild_id
+ * @property-read Room|null $room
  * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Item newModelQuery()

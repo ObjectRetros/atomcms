@@ -41,7 +41,7 @@ class ListBadgeTextEditors extends ListRecords
         ];
     }
 
-    public function exportToJson(SettingsService $settingsService)
+    public function exportToJson(SettingsService $settingsService): void
     {
         $jsonPath = $settingsService->getOrDefault('nitro_external_texts_file');
 
@@ -110,7 +110,7 @@ class ListBadgeTextEditors extends ListRecords
         }
     }
 
-    public function createBackup(SettingsService $settingsService)
+    public function createBackup(SettingsService $settingsService): void
     {
         $jsonPath = $settingsService->getOrDefault('nitro_external_texts_file');
 

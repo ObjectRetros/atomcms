@@ -8,14 +8,16 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use LogicException;
 
 class ManageBadgeUploads extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    public $badge_file;
+    public TemporaryUploadedFile|string|null $badge_file = null;
 
     protected static string $resource = BadgeUploadResource::class;
 
@@ -26,6 +28,7 @@ class ManageBadgeUploads extends Page implements HasForms
         $this->formSchema()->fill([]);
     }
 
+    /** @return array<int, Component> */
     protected function getFormSchema(): array
     {
         return [

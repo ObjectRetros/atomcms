@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Auth\Pages\Login
 {
-    public $username = '';
+    public string $username = '';
 
     public function authenticate(): ?LoginResponse
     {
@@ -65,6 +65,7 @@ class Login extends \Filament\Auth\Pages\Login
         ]);
     }
 
+    /** @return array<int, Component> */
     protected function getFormSchema(): array
     {
         return [

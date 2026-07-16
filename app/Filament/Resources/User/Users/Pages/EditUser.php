@@ -94,6 +94,7 @@ class EditUser extends EditRecord
         });
     }
 
+    /** @param array<string, mixed> $data */
     private function treatChangedCurrenciesWithoutRcon(User $user, array $data): void
     {
         $currencies = app(CurrencyRepository::class);
@@ -139,6 +140,7 @@ class EditUser extends EditRecord
         return $changes;
     }
 
+    /** @param array<string, mixed> $data */
     private function checkUsernameChangedPermission(User $user, array $data, Rcon $rcon): void
     {
         if (! Emulator::supports(Feature::NameChangePermission)) {
@@ -163,6 +165,7 @@ class EditUser extends EditRecord
         $this->updateNameChangePermission($user, $data);
     }
 
+    /** @param array<string, mixed> $data */
     private function updateNameChangePermission(User $user, array $data): void
     {
         if (! Emulator::supports(Feature::NameChangePermission) || $user->settings === null) {
@@ -172,6 +175,7 @@ class EditUser extends EditRecord
         $user->settings->update(['can_change_name' => ($data['allow_change_username'] ?? false) ? '1' : '0']);
     }
 
+    /** @param array<string, mixed> $data */
     private function treatChangedCurrencies(User $user, array $data): void
     {
         foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
@@ -179,6 +183,7 @@ class EditUser extends EditRecord
         }
     }
 
+    /** @param array<string, mixed> $data */
     private function treatChangedUserRank(User $user, array $data, Rcon $rcon): void
     {
         if ($data['rank'] == $user->rank) {
@@ -209,6 +214,7 @@ class EditUser extends EditRecord
         $rcon->setRank($user, $data['rank']);
     }
 
+    /** @param array<string, mixed> $data */
     private function treatChangedUserMotto(User $user, array $data, Rcon $rcon): void
     {
         if ($data['motto'] == $user->motto) {

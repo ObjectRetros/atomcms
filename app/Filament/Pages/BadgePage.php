@@ -165,6 +165,13 @@ class BadgePage extends Page
         ];
     }
 
+    /**
+     * @return array{
+     *     image: string,
+     *     nitro: array{title: string, description: string},
+     *     flash: array{title: string, description: string}
+     * }
+     */
     private function getDefaultDataBehavior(
         ?string $badgeImageUrl = null,
         ?string $nitroTitle = null,
@@ -185,7 +192,7 @@ class BadgePage extends Page
         ];
     }
 
-    public function create()
+    public function create(): void
     {
         $nitroEnabled = config('hotel.client.nitro.enabled');
         $flashEnabled = config('hotel.client.flash.enabled');

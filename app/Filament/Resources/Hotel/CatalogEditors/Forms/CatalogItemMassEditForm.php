@@ -36,7 +36,11 @@ class CatalogItemMassEditForm
         ];
     }
 
-    /** @return array<string, int|string>  only the non-empty fields, ready for ->update() */
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, int|string> only the non-empty fields, ready for ->update()
+     */
     public static function pickUpdates(array $data): array
     {
         $updates = [];

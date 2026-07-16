@@ -14,9 +14,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -47,6 +49,7 @@ class HomeItemResource extends Resource
             ]);
     }
 
+    /** @return array<int, Component> */
     public static function getForm(): array
     {
         return [
@@ -137,6 +140,7 @@ class HomeItemResource extends Resource
             ]);
     }
 
+    /** @return array<int, Column> */
     public static function getTable(): array
     {
         return [

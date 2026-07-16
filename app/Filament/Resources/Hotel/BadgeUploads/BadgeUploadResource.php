@@ -61,6 +61,7 @@ class BadgeUploadResource extends Resource
         ];
     }
 
+    /** @return array<int, array{filename: string, path: string}> */
     public static function getFiles(): array
     {
         $files = Storage::disk('badges')->files();

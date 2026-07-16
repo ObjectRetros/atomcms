@@ -32,8 +32,10 @@ class EditCatalogItem extends Page implements HasForms
 
     public ?ItemBase $itemBase = null;
 
+    /** @var array<string, mixed> */
     public array $catalogData = [];
 
+    /** @var array<string, mixed> */
     public array $itemBaseData = [];
 
     public function mount(int $item): void
@@ -131,6 +133,7 @@ class EditCatalogItem extends Page implements HasForms
             });
     }
 
+    /** @return Collection<int, covariant array{room: Room|null, count: int<0, max>}> */
     public function getRoomPlacementsProperty(): Collection
     {
         if (! $this->itemBase) {
@@ -145,13 +148,18 @@ class EditCatalogItem extends Page implements HasForms
             ->with(['room.owner:id,username,look'])
             ->get(['id', 'item_id', 'room_id', 'user_id'])
             ->groupBy('room_id')
-            ->map(fn (Collection $items, int $roomId) => [
-                'room' => $items->first()->room,
-                'count' => $items->count(),
-            ])
+            ->map(function (Collection $items): array {
+                $item = $items->first();
+
+                return [
+                    'room' => $item instanceof Item ? $item->room : null,
+                    'count' => $items->count(),
+                ];
+            })
             ->values();
     }
 
+    /** @return Collection<int, array{user: User, count: int}> */
     public function getOwnerSummaryProperty(): Collection
     {
         if (! $this->itemBase) {

@@ -281,6 +281,11 @@ class UserResource extends Resource
         ]));
     }
 
+    /**
+     * @param  array<string, mixed>  $formData
+     *
+     * @return array<string, mixed>
+     */
     public static function fillWithOutsideData(User $record, array $formData): array
     {
         $formData['currency_0'] = $record->currency('duckets');
