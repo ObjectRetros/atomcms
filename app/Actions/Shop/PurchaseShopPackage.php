@@ -8,6 +8,7 @@ use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
+use App\Support\StorefrontMoney;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -55,8 +56,8 @@ class PurchaseShopPackage
 
         $this->ensureWithinPurchaseLimit($buyer, $package);
 
-        if ($buyer->website_balance < $package->priceInDollars()) {
-            throw new ShopPurchaseException($this->insufficientMessage($buyer, $package->priceInDollars()));
+        if ($buyer->website_balance < $package->price) {
+            throw new ShopPurchaseException($this->insufficientMessage($buyer, $package->price));
         }
     }
 
@@ -126,7 +127,7 @@ class PurchaseShopPackage
                 throw new ShopPurchaseException(__('This package is no longer available'));
             }
 
-            $price = $lockedPackage->priceInDollars();
+            $price = $lockedPackage->price;
 
             if ($lockedBuyer->website_balance < $price) {
                 throw new ShopPurchaseException($this->insufficientMessage($lockedBuyer, $price));
@@ -199,10 +200,10 @@ class PurchaseShopPackage
             ->keyBy('id');
     }
 
-    private function insufficientMessage(User $buyer, float $price): string
+    private function insufficientMessage(User $buyer, int $price): string
     {
-        return __('You need to top-up your account with another $:amount to purchase this package', [
-            'amount' => $price - $buyer->website_balance,
+        return __('You need to top-up your account with another :amount to purchase this package', [
+            'amount' => StorefrontMoney::format($price - $buyer->website_balance),
         ]);
     }
 

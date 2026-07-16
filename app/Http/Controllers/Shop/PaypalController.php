@@ -2,196 +2,102 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Exceptions\PaypalPaymentException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountTopupFormRequest;
 use App\Models\Shop\WebsitePaypalTransaction;
-use App\Models\User;
+use App\Services\Payments\PaypalPaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Srmklive\PayPal\Services\PayPal as PayPalClient;
-use Symfony\Component\HttpFoundation\Response;
 
 class PaypalController extends Controller
 {
-    private const STATUS_CANCELLED = 'CANCELLED';
-
-    private const STATUS_COMPLETED = 'COMPLETED';
-
-    public function __construct(private readonly PayPalClient $provider) {}
-
-    public function process(AccountTopupFormRequest $request): Response|RedirectResponse
+    public function process(AccountTopupFormRequest $request, PaypalPaymentService $payments): RedirectResponse
     {
-        $response = $this->provider->createOrder($this->buildOrderData($request->integer('amount')));
+        try {
+            $approvalUrl = $payments->createOrder($request->user(), $request->integer('amount'));
+        } catch (PaypalPaymentException $exception) {
+            Log::warning('PayPal order creation failed.', [
+                'user_id' => $request->user()->getKey(),
+                'exception_class' => $exception::class,
+            ]);
 
-        $approvalUrl = isset($response['id']) ? $this->approvalUrl($response['links'] ?? []) : null;
-
-        if ($approvalUrl === null) {
-            return $this->orderCreationFailed($response);
+            return $this->failure();
         }
-
-        $request->user()->transactions()->create([
-            'transaction_id' => $response['id'],
-            'amount' => 0,
-        ]);
 
         return redirect()->away($approvalUrl);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function buildOrderData(int $amount): array
+    public function successful(Request $request, PaypalPaymentService $payments): RedirectResponse
     {
-        return [
-            'intent' => 'CAPTURE',
-            'application_context' => [
-                'return_url' => route('paypal.successful-transaction'),
-                'cancel_url' => route('paypal.cancelled-transaction'),
-                'brand_name' => setting('hotel_name'),
-                'landing_page' => 'BILLING',
-                'shipping_preference' => 'NO_SHIPPING',
-                'user_action' => 'CONTINUE',
-            ],
-            'purchase_units' => [
-                [
-                    'amount' => [
-                        'currency_code' => config('habbo.paypal.currency'),
-                        'value' => (string) $amount,
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @param  array<int, array{rel?: string, href?: string}>  $links
-     */
-    private function approvalUrl(array $links): ?string
-    {
-        foreach ($links as $link) {
-            if (($link['rel'] ?? null) === 'approve') {
-                return $link['href'] ?? null;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param  array<string, mixed>  $response
-     */
-    private function orderCreationFailed(array $response): RedirectResponse
-    {
-        Log::error('Error creating PayPal order', ['response' => $response]);
-
-        return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
-    }
-
-    public function successful(Request $request): Response
-    {
-        $request->validate([
-            'token' => 'required',
+        $validated = $request->validate([
+            'token' => ['required', 'string', 'max:255'],
         ]);
 
-        $user = $request->user();
+        $transaction = $request->user()
+            ->transactions()
+            ->where('transaction_id', $validated['token'])
+            ->first();
 
-        $transaction = $user->transactions()->where('transaction_id', $request['token'])->first();
         if ($transaction === null) {
-            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
+            return $this->failure();
         }
 
-        // Idempotency: never capture or credit an order that already completed.
-        if ($transaction->status === self::STATUS_COMPLETED) {
-            return to_route('shop.index')->with('success', __('Transaction successful'));
+        if ($transaction->credited_at !== null || $transaction->status === WebsitePaypalTransaction::STATUS_COMPLETED) {
+            return $this->success();
         }
 
-        $response = $this->provider->capturePaymentOrder($request['token']);
-        $capture = data_get($response, 'purchase_units.0.payments.captures.0');
+        try {
+            $completed = $payments->capture($transaction);
+        } catch (PaypalPaymentException $exception) {
+            Log::warning('PayPal capture could not be completed on return.', [
+                'order_id' => $transaction->transaction_id,
+                'exception_class' => $exception::class,
+            ]);
 
-        if (! isset($response['status']) || $capture === null) {
-            $this->recordFailure($transaction, $response);
-
-            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
+            return $this->pending();
         }
 
-        if ($response['status'] !== self::STATUS_COMPLETED) {
-            $transaction->update(['status' => $capture['status'] ?? $response['status'], 'amount' => 0]);
+        return $completed ? $this->success() : $this->pending();
+    }
 
-            return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
+    public function cancelled(Request $request, PaypalPaymentService $payments): RedirectResponse
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string', 'max:255'],
+        ]);
+
+        $transaction = $request->user()
+            ->transactions()
+            ->where('transaction_id', $validated['token'])
+            ->first();
+
+        if ($transaction !== null) {
+            $payments->cancel($transaction);
         }
 
-        if (data_get($capture, 'amount.currency_code') !== config('habbo.paypal.currency')) {
-            Log::error('PayPal currency mismatch', ['response' => $response]);
+        return to_route('shop.index')->withErrors([
+            'message' => __('You have canceled the transaction'),
+        ]);
+    }
 
-            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please try again later')]);
-        }
-
-        $this->creditCompletedOrder($user, $transaction->getKey(), $capture);
-
+    private function success(): RedirectResponse
+    {
         return to_route('shop.index')->with('success', __('Transaction successful'));
     }
 
-    /**
-     * Mark the order completed and credit the balance exactly once, even under
-     * concurrent return-url requests, by locking the transaction row first.
-     *
-     * @param  array<string, mixed>  $capture
-     */
-    private function creditCompletedOrder(User $user, int|string $transactionKey, array $capture): void
+    private function pending(): RedirectResponse
     {
-        DB::transaction(function () use ($user, $transactionKey, $capture) {
-            $transaction = $user->transactions()->whereKey($transactionKey)->lockForUpdate()->first();
-
-            if ($transaction === null || $transaction->status === self::STATUS_COMPLETED) {
-                return;
-            }
-
-            $transaction->update([
-                'status' => $capture['status'],
-                'amount' => $capture['amount']['value'],
-                'currency' => $capture['amount']['currency_code'],
-            ]);
-
-            $user->increment('website_balance', (int) $capture['amount']['value']);
-        });
+        return to_route('shop.index')->withErrors([
+            'message' => __('Your payment is still being verified. Your balance will update automatically.'),
+        ]);
     }
 
-    /**
-     * @param  array<string, mixed>  $response
-     */
-    private function recordFailure(WebsitePaypalTransaction $transaction, array $response): void
+    private function failure(): RedirectResponse
     {
-        $details = data_get($response, 'details.0', data_get($response, 'error.details.0'));
-
-        $transaction->update([
-            'status' => $response['name'] ?? 'FAILED',
-            'description' => $details
-                ? sprintf('%s - %s', $details['issue'] ?? '', $details['description'] ?? '')
-                : ($response['message'] ?? 'Unknown PayPal error'),
-            'amount' => 0,
+        return to_route('shop.index')->withErrors([
+            'message' => __('Something went wrong, please try again later'),
         ]);
-
-        Log::error('PayPal capture failed', ['response' => $response]);
-    }
-
-    public function cancelled(Request $request): Response
-    {
-        $request->validate([
-            'token' => 'required',
-        ]);
-
-        $transaction = $request->user()->transactions()->where('transaction_id', $request['token'])->first();
-        if ($transaction !== null) {
-            $transaction->update([
-                'status' => self::STATUS_CANCELLED,
-                'description' => 'The user cancelled the transaction',
-            ]);
-        }
-
-        return to_route('shop.index')->withErrors(
-            ['message' => __('You have canceled the transaction')],
-        );
     }
 }

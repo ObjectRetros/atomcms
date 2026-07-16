@@ -4,6 +4,8 @@ namespace App\Models\Shop;
 
 use App\Models\Game\Furniture\ItemBase;
 use App\Models\Game\Permission;
+use App\Support\StorefrontMoney;
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -81,12 +83,8 @@ class WebsiteShopArticle extends Model
         return $this->hasMany(WebsiteShopArticleFeature::class, 'article_id', 'id');
     }
 
-    public function price(): float|int
+    public function price(): Money
     {
-        if ($this->costs < 100) {
-            return 1;
-        }
-
-        return $this->costs / 100;
+        return StorefrontMoney::fromMinor(max($this->costs, 100));
     }
 }

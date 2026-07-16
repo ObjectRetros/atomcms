@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
  * @property string $code
  * @property int $max_uses
  * @property int $use_count
- * @property int $amount
+ * @property int $amount Amount in the storefront currency's minor unit
  * @property Carbon|null $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

@@ -2,6 +2,8 @@
 
 namespace App\Models\Shop;
 
+use App\Support\StorefrontMoney;
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -72,9 +74,14 @@ class WebsiteShopPackage extends Model
         return $this->hasMany(WebsiteShopPurchase::class);
     }
 
-    public function priceInDollars(): float
+    public function price(): Money
     {
-        return round($this->price / 100, 2);
+        return StorefrontMoney::fromMinor($this->price);
+    }
+
+    public function formattedPrice(): string
+    {
+        return (string) $this->price();
     }
 
     public function isAvailable(): bool

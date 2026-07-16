@@ -78,7 +78,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $machine_id
  * @property int $home_room
  * @property string|null $referral_code
- * @property int $website_balance
+ * @property int $website_balance Storefront balance in the configured currency's minor unit
  * @property string|null $secret_key
  * @property string|null $pincode
  * @property int|null $extra_rank
@@ -178,6 +178,10 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public $timestamps = false;
 
+    protected $attributes = [
+        'website_balance' => 0,
+    ];
+
     /**
      * Economy and security columns are only ever written through dedicated
      * paths (increment(), forceFill()), never mass-assignment - guard them so a
@@ -220,6 +224,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             'password' => 'hashed',
             'hidden_staff' => 'boolean',
             'online' => 'boolean',
+            'website_balance' => 'integer',
         ];
     }
 

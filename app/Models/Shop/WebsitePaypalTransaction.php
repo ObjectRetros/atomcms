@@ -13,8 +13,10 @@ use Illuminate\Support\Carbon;
  * @property string $transaction_id
  * @property string|null $status
  * @property string|null $description
- * @property float $amount
+ * @property int $amount Amount in the currency's minor unit
  * @property string $currency
+ * @property string|null $capture_id
+ * @property Carbon|null $credited_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User $user
@@ -36,7 +38,33 @@ use Illuminate\Support\Carbon;
  */
 class WebsitePaypalTransaction extends Model
 {
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    public const STATUS_CANCELLED = 'CANCELLED';
+
+    public const STATUS_COMPLETED = 'COMPLETED';
+
+    public const STATUS_CREATED = 'CREATED';
+
+    public const STATUS_LEGACY_CREATED = 'LEGACY_CREATED';
+
+    public const STATUS_REVIEW = 'REVIEW';
+
+    protected $fillable = [
+        'transaction_id',
+        'capture_id',
+        'status',
+        'description',
+        'amount',
+        'currency',
+        'credited_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'integer',
+            'credited_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {

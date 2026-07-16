@@ -200,7 +200,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Paypal routes
         Route::controller(PaypalController::class)->prefix('paypal')->group(function () {
-            Route::get('/process-transaction', 'process')->name('paypal.process-transaction');
+            Route::post('/process-transaction', 'process')->name('paypal.process-transaction')->middleware('throttle:10,1');
             Route::get('/successful-transaction', 'successful')->name('paypal.successful-transaction');
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');
         });
