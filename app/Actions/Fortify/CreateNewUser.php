@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Rules\BetaCodeRule;
 use App\Rules\GoogleRecaptchaRule;
 use App\Rules\WebsiteWordfilterRule;
+use App\Services\Auth\RegistrationMutex;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -21,6 +22,8 @@ class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
 
+    public function __construct(private readonly RegistrationMutex $mutex) {}
+
     /**
      * Validate and create a newly registered user.
      *
@@ -30,13 +33,24 @@ class CreateNewUser implements CreatesNewUsers
     {
         $ip = request()->ip();
 
-        $this->ensureRegistrationAllowed($ip);
-        $this->validate($input);
+        $this->ensureRegistrationIsOpen($ip);
+        $validated = $this->validate($input);
+        $password = Hash::make($validated['password']);
 
-        $user = $this->createUser($input, $ip);
+        $user = $this->mutex->run(
+            $this->lockIdentifiers($validated, $ip),
+            function () use ($validated, $password, $ip): User {
+                $this->ensureRegistrationAllowed($ip);
+                $this->ensureIdentityIsAvailable($validated);
 
-        $this->applyBetaCode($input['beta_code'] ?? null, $user);
-        $this->recordReferral($input['referral_code'] ?? null, $user, $ip);
+                $user = $this->createUser($validated, $password, $ip);
+
+                $this->applyBetaCode($validated['beta_code'] ?? null, $user);
+                $this->recordReferral($validated['referral_code'] ?? null, $user, $ip);
+
+                return $user;
+            },
+        );
 
         if (setting('enable_discord_webhook') === '1') {
             // After the response, so registration never waits on Discord.
@@ -46,15 +60,20 @@ class CreateNewUser implements CreatesNewUsers
         return $user;
     }
 
-    private function ensureRegistrationAllowed(?string $ip): void
+    private function ensureRegistrationIsOpen(?string $ip): void
     {
-        if ((setting('disable_registration') ?: '0') == '1') {
+        if (setting('disable_registration', '0') === '1') {
             throw ValidationException::withMessages(['registration' => __('Registration is disabled.')]);
         }
-
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
             throw ValidationException::withMessages(['registration' => __('Your IP address seems to be invalid')]);
         }
+
+    }
+
+    private function ensureRegistrationAllowed(string $ip): void
+    {
+        $this->ensureRegistrationIsOpen($ip);
 
         $matchingIpCount = User::query()
             ->where('ip_current', $ip)
@@ -69,12 +88,12 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * @param  array<string, mixed>  $input
      */
-    private function createUser(array $input, string $ip): User
+    private function createUser(array $input, string $password, string $ip): User
     {
         $user = User::create([
             'username' => $input['username'],
             'mail' => $input['mail'],
-            'password' => Hash::make($input['password']),
+            'password' => $password,
             'account_created' => time(),
             'last_login' => time(),
             'motto' => setting('start_motto') ?: 'Welcome to the hotel!',
@@ -93,11 +112,19 @@ class CreateNewUser implements CreatesNewUsers
 
     private function applyBetaCode(?string $betaCode, User $user): void
     {
-        if (! setting('requires_beta_code') || $betaCode === null) {
+        if (setting('requires_beta_code') !== '1' || $betaCode === null) {
             return;
         }
 
-        WebsiteBetaCode::where('code', $betaCode)->update(['user_id' => $user->id]);
+        $claimed = WebsiteBetaCode::where('code', $betaCode)
+            ->whereNull('user_id')
+            ->update(['user_id' => $user->id]);
+
+        if ($claimed !== 1) {
+            throw ValidationException::withMessages([
+                'beta_code' => __('The beta code is invalid.'),
+            ]);
+        }
     }
 
     /**
@@ -110,7 +137,9 @@ class CreateNewUser implements CreatesNewUsers
             return;
         }
 
-        $referralUser = User::where('referral_code', $referralCode)->first();
+        $referralUser = User::where('referral_code', $referralCode)
+            ->lockForUpdate()
+            ->first();
 
         if ($referralUser === null
             || $referralUser->ip_current === $user->ip_current
@@ -135,7 +164,8 @@ class CreateNewUser implements CreatesNewUsers
             'username' => ['required', 'string', sprintf('regex:%s', setting('username_regex') ?: '/^[a-zA-Z0-9_.-]+$/'), 'max:25', Rule::unique('users'), new WebsiteWordfilterRule],
             'mail' => ['required', 'string', 'email', 'max:255', Rule::unique('users')],
             'password' => $this->passwordRules(),
-            'beta_code' => ['sometimes', 'string', new BetaCodeRule],
+            'beta_code' => [Rule::requiredIf(setting('requires_beta_code') === '1'), 'nullable', 'string', new BetaCodeRule],
+            'referral_code' => ['nullable', 'string', 'max:255'],
             'terms' => ['required', 'accepted'],
             'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
@@ -147,5 +177,37 @@ class CreateNewUser implements CreatesNewUsers
         ];
 
         return Validator::make($inputs, $rules, $messages)->validate();
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @return list<string>
+     */
+    private function lockIdentifiers(array $input, string $ip): array
+    {
+        return [
+            'ip:' . $ip,
+            'mail:' . Str::lower($input['mail']),
+            'username:' . Str::lower($input['username']),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function ensureIdentityIsAvailable(array $input): void
+    {
+        if (User::where('username', $input['username'])->exists()) {
+            throw ValidationException::withMessages([
+                'username' => __('The username has already been taken.'),
+            ]);
+        }
+
+        if (User::where('mail', $input['mail'])->exists()) {
+            throw ValidationException::withMessages([
+                'mail' => __('The mail has already been taken.'),
+            ]);
+        }
     }
 }
