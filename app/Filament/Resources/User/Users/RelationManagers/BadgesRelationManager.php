@@ -5,6 +5,7 @@ namespace App\Filament\Resources\User\Users\RelationManagers;
 use App\Contracts\Rcon;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
 use App\Filament\Traits\TranslatableResource;
+use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -15,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use LogicException;
 
 class BadgesRelationManager extends RelationManager
 {
@@ -70,7 +72,7 @@ class BadgesRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->before(function (CreateAction $action, RelationManager $livewire): void {
-                        $user = $livewire->getOwnerRecord();
+                        $user = self::owner($livewire);
 
                         if (! $user->online) {
                             return;
@@ -111,7 +113,7 @@ class BadgesRelationManager extends RelationManager
 
     public static function onDeleteBadgeAction(DeleteAction|DeleteBulkAction $action, RelationManager $livewire): void
     {
-        $user = $livewire->getOwnerRecord();
+        $user = self::owner($livewire);
 
         if (! $user->online) {
             return;
@@ -127,5 +129,16 @@ class BadgesRelationManager extends RelationManager
             ->send();
 
         $action->cancel();
+    }
+
+    private static function owner(RelationManager $livewire): User
+    {
+        $record = $livewire->getOwnerRecord();
+
+        if (! $record instanceof User) {
+            throw new LogicException('The badge manager received an unsupported owner model.');
+        }
+
+        return $record;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
 use App\Filament\Traits\TranslatableResource;
+use App\Models\User;
 use Carbon\CarbonInterval;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -15,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use LogicException;
 
 class SettingsRelationManager extends RelationManager
 {
@@ -179,8 +181,19 @@ class SettingsRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->disabled(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->online),
+                    ->disabled(fn (RelationManager $livewire): bool => self::owner($livewire)->online),
             ])
             ->toolbarActions([]);
+    }
+
+    private static function owner(RelationManager $livewire): User
+    {
+        $record = $livewire->getOwnerRecord();
+
+        if (! $record instanceof User) {
+            throw new LogicException('The settings manager received an unsupported owner model.');
+        }
+
+        return $record;
     }
 }
