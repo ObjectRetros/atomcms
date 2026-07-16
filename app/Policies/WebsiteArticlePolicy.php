@@ -18,6 +18,6 @@ class WebsiteArticlePolicy extends HousekeepingPolicy
 
     public function update(User $user): bool
     {
-        return hasHousekeepingPermission('edit_article');
+        return $this->allows($user, 'edit_article');
     }
 }
