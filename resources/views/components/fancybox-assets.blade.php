@@ -1,0 +1,13 @@
+@once
+    <script
+        src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.umd.js"
+        integrity="sha384-mfITPNdkUxVtTV4zhg4SDrxOL/aZBoz/p9adHFmaCoLDa43yghU46m5oEkJzLsav"
+        crossorigin="anonymous"
+    ></script>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0.31/dist/fancybox.css"
+        integrity="sha384-kPPlFUTv5pDfb8JmcIDGDPhxzM4ZG0aIQ5/7vANkrD1Z7GR9e3k459LTa7fDCOX/"
+        crossorigin="anonymous"
+    >
+@endonce

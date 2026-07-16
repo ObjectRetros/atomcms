@@ -38,9 +38,5 @@
         @endif
     </div>
 
-    @push('javascript')
-        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
-    @endpush
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
+    <x-fancybox-assets />
 </x-app-layout>
