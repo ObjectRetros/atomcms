@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+use App\Models\Articles\WebsiteArticleComment;
 use App\Policies\ActivityPolicy;
+use App\Policies\WebsiteArticleCommentPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 
@@ -15,8 +17,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
         Activity::class => ActivityPolicy::class,
+        WebsiteArticleComment::class => WebsiteArticleCommentPolicy::class,
     ];
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Miscellaneous\WebsitePermission;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,10 +22,17 @@ class PermissionsService
 
     public function getOrDefault(string $permissionName, bool $default = false): bool
     {
+        $user = auth()->user();
+
+        return $user !== null && $this->allows($user, $permissionName, $default);
+    }
+
+    public function allows(User $user, string $permissionName, bool $default = false): bool
+    {
         if (! $this->permissions->has($permissionName)) {
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        return $user->rank >= (int) $this->permissions->get($permissionName);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Services\Articles\CommentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class WebsiteArticleCommentsController extends Controller
 {
@@ -15,14 +16,14 @@ class WebsiteArticleCommentsController extends Controller
 
     public function store(WebsiteArticle $article, ArticleCommentFormRequest $request): RedirectResponse
     {
-        $this->commentService->store($request->get('comment'), $article);
+        $this->commentService->store($request->user(), $request->string('comment')->toString(), $article);
 
         return redirect()->back()->with('success', __('You comment has been posted!'));
     }
 
-    public function destroy(WebsiteArticleComment $comment): RedirectResponse
+    public function destroy(WebsiteArticleComment $comment, Request $request): RedirectResponse
     {
-        $this->commentService->destroy($comment);
+        $this->commentService->destroy($request->user(), $comment);
 
         return redirect()->back()->with('success', __('You comment has been deleted!'));
     }

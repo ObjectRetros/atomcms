@@ -87,6 +87,9 @@ class WebsiteArticle extends Model
             ->whereActive(true);
     }
 
+    /**
+     * @return HasMany<WebsiteArticleComment, $this>
+     */
     public function comments(): HasMany
     {
         return $this->hasMany(WebsiteArticleComment::class, 'article_id');

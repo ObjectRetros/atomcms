@@ -1,7 +1,9 @@
 <?php
 
+use App\Livewire\ArticleComments;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\User;
+use Livewire\Livewire;
 
 function publishArticle(User $author): WebsiteArticle
 {
@@ -60,9 +62,48 @@ test('a reader cannot delete someone else\'s comment', function () {
 
     $this->actingAs($stranger)
         ->delete(route('article.comment.destroy', $comment))
-        ->assertSessionHasErrors();
+        ->assertForbidden();
 
     expect($article->comments()->count())->toBe(1);
+});
+
+test('a guest cannot post through the public article livewire component', function () {
+    $article = publishArticle($this->author);
+
+    Livewire::test(ArticleComments::class, ['article' => $article])
+        ->set('comment', 'Anonymous comment')
+        ->call('postComment')
+        ->assertForbidden();
+
+    expect($article->comments()->count())->toBe(0);
+});
+
+test('livewire enforces comment ownership when deleting', function () {
+    $article = publishArticle($this->author);
+    $comment = $article->comments()->create([
+        'user_id' => $this->reader->id,
+        'comment' => 'Owned by the reader',
+    ]);
+    $stranger = User::factory()->create();
+
+    Livewire::actingAs($stranger)
+        ->test(ArticleComments::class, ['article' => $article])
+        ->call('deleteComment', $comment->id)
+        ->assertForbidden();
+
+    expect($comment->fresh())->not->toBeNull();
+});
+
+test('a locked article reports the failure instead of flashing success', function () {
+    $article = publishArticle($this->author);
+    $article->update(['can_comment' => false]);
+
+    $this->actingAs($this->reader)
+        ->post(route('article.comment.store', $article->slug), ['comment' => 'Should not persist'])
+        ->assertSessionHasErrors('comment')
+        ->assertSessionMissing('success');
+
+    expect($article->comments()->count())->toBe(0);
 });
 
 test('a reader can toggle a reaction', function () {
