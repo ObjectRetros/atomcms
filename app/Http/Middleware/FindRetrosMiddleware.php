@@ -10,12 +10,12 @@ use Symfony\Component\HttpFoundation\Response;
 /* Credits to Kani for this */
 class FindRetrosMiddleware
 {
+    public function __construct(private readonly FindRetrosService $findRetros) {}
+
     public function handle(Request $request, Closure $next): Response
     {
-        $findRetrosService = new FindRetrosService;
-
-        if (config('habbo.findretros.enabled') && ! $findRetrosService->checkHasVoted()) {
-            return redirect($findRetrosService->getRedirectUri());
+        if (config('habbo.findretros.enabled') && ! $this->findRetros->checkHasVoted($request)) {
+            return redirect($this->findRetros->getRedirectUri());
         }
 
         return $next($request);

@@ -2,13 +2,16 @@
 
 namespace App\Jobs;
 
+use App\Support\DiscordWebhookUrl;
+use App\Support\OutboundHttp;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 /**
  * Notifies the configured Discord webhook about a new registration. Dispatched
@@ -17,6 +20,11 @@ use Illuminate\Support\Facades\Log;
 class SendRegisteredUserWebhook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [10, 60, 300];
 
     public function __construct(
         private readonly string $username,
@@ -28,25 +36,33 @@ class SendRegisteredUserWebhook implements ShouldQueue
     {
         $url = setting('discord_webhook_url');
 
-        if (! $url) {
-            Log::error('Discord webhook url not provided', ['Please provide a discord webhook url before being able to send any webhook requests.']);
+        if (! DiscordWebhookUrl::isValid($url)) {
+            Log::error('Discord registration webhook URL is missing or invalid.');
 
             return;
         }
 
-        $response = Http::asJson()->post($url, [
-            'username' => sprintf('%s Bot', setting('hotel_name')),
-            'content' => "User: {$this->username} has just registered, with the IP: {$this->ip} and E-mail: {$this->email}",
-        ]);
+        try {
+            $response = OutboundHttp::request()
+                ->asJson()
+                ->post($url, [
+                    'username' => sprintf('%s Bot', setting('hotel_name')),
+                    'content' => "User: {$this->username} has just registered, with the IP: {$this->ip} and E-mail: {$this->email}",
+                ]);
+        } catch (Throwable $exception) {
+            Log::warning('Discord registration webhook delivery failed.', [
+                'exception_class' => $exception::class,
+            ]);
+
+            throw new RuntimeException('Discord registration webhook delivery failed.');
+        }
 
         if (! $response->successful()) {
-            Log::error('Failed to send Discord webhook notification', [
-                'username' => $this->username,
-                'ip' => $this->ip,
-                'email' => $this->email,
-                'response_status' => $response->status(),
-                'response_body' => $response->body(),
+            Log::warning('Discord registration webhook returned an error.', [
+                'status' => $response->status(),
             ]);
+
+            throw new RuntimeException('Discord registration webhook delivery failed.');
         }
     }
 }
