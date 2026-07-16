@@ -75,7 +75,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     private function findCachedPage(int $id): ?CatalogPage
     {
-        foreach ($this->pagesByParent as $children) {
+        foreach ($this->getPagesByParentProperty() as $children) {
             foreach ($children as $page) {
                 if ($page->id === $id) {
                     return $page;
@@ -88,7 +88,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     public function getBreadcrumbProperty(): array
     {
-        return $this->tree()->breadcrumb($this->selectedPage);
+        return $this->tree()->breadcrumb($this->getSelectedPageProperty());
     }
 
     public function selectPage(int $pageId): void
@@ -207,17 +207,23 @@ class ManageCatalogEditor extends Page implements HasTable
         return Action::make('editPage')
             ->label('Edit page')
             ->icon('heroicon-m-pencil-square')
-            ->visible(fn () => (bool) $this->selectedPage)
-            ->modalHeading(fn () => $this->selectedPage ? "Edit: {$this->selectedPage->caption}" : 'Edit page')
+            ->visible(fn () => $this->getSelectedPageProperty() !== null)
+            ->modalHeading(function (): string {
+                $selectedPage = $this->getSelectedPageProperty();
+
+                return $selectedPage ? "Edit: {$selectedPage->caption}" : 'Edit page';
+            })
             ->modalWidth('xl')
             ->form(CatalogPageForm::schema())
-            ->fillForm(fn () => $this->selectedPage?->only(['caption', 'caption_save', 'order_num', 'icon_image']) ?? [])
+            ->fillForm(fn () => $this->getSelectedPageProperty()?->only(['caption', 'caption_save', 'order_num', 'icon_image']) ?? [])
             ->action(function (array $data): void {
-                if (! $this->selectedPage) {
+                $selectedPage = $this->getSelectedPageProperty();
+
+                if (! $selectedPage) {
                     return;
                 }
 
-                $this->selectedPage->update([
+                $selectedPage->update([
                     'caption' => $data['caption'],
                     'caption_save' => CatalogPageForm::sanitizeTag($data['caption_save'] ?? ''),
                     'order_num' => (int) ($data['order_num'] ?? 1),
@@ -235,7 +241,7 @@ class ManageCatalogEditor extends Page implements HasTable
             ->icon('heroicon-m-arrow-path')
             ->color('gray')
             ->tooltip('Re-spaces items at 10, 20, 30… while preserving their order. Useful after bulk changes.')
-            ->visible(fn () => $this->selectedPage && $this->selectedPage->parent_id !== -1)
+            ->visible(fn () => ($selectedPage = $this->getSelectedPageProperty()) !== null && $selectedPage->parent_id !== -1)
             ->action(function (): void {
                 $count = $this->reorderService()->resetItemSpacing((int) $this->selectedPageId);
 
@@ -257,7 +263,7 @@ class ManageCatalogEditor extends Page implements HasTable
             ->requiresConfirmation()
             ->modalHeading('Sort items A→Z')
             ->modalDescription('This rewrites order_number for every item on the page. Continue?')
-            ->visible(fn () => $this->selectedPage && $this->selectedPage->parent_id !== -1)
+            ->visible(fn () => ($selectedPage = $this->getSelectedPageProperty()) !== null && $selectedPage->parent_id !== -1)
             ->action(function (): void {
                 $count = $this->reorderService()->sortItemsAlphabetically((int) $this->selectedPageId);
 

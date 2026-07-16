@@ -18,6 +18,8 @@ class TagsRelationManager extends RelationManager
 {
     use TranslatableResource;
 
+    protected static string|\UnitEnum|null $navigationGroup = null;
+
     protected static string $relationship = 'tags';
 
     protected static ?string $recordTitleAttribute = 'name';

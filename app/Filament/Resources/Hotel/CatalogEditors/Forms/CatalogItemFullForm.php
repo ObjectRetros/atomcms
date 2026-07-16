@@ -9,7 +9,7 @@ use Filament\Schemas\Components\Grid;
 
 class CatalogItemFullForm
 {
-    /** @return array<int, Component|Forms\Components\Component> */
+    /** @return array<int, Component> */
     public static function schema(): array
     {
         return [

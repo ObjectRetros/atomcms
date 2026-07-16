@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 
 use Filament\Forms;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 
 /** Empty fields are skipped on save so a patch-only edit doesn't trample other columns. */
 class CatalogItemMassEditForm
 {
-    /** @return array<int, Forms\Components\Component> */
+    /** @return array<int, Component> */
     public static function schema(): array
     {
         $note = 'Leave empty to keep unchanged';
@@ -41,7 +42,7 @@ class CatalogItemMassEditForm
         $updates = [];
 
         foreach (['cost_credits', 'cost_points', 'points_type', 'amount', 'order_number'] as $col) {
-            if (isset($data[$col]) && $data[$col] !== '' && $data[$col] !== null) {
+            if (isset($data[$col]) && $data[$col] !== '') {
                 $updates[$col] = (int) $data[$col];
             }
         }

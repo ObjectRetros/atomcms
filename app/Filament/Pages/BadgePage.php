@@ -32,8 +32,9 @@ class BadgePage extends Page
 
     protected static string $translateIdentifier = 'badge-resource';
 
-    public $badgeWasPreviouslyCreated;
+    public bool $badgeWasPreviouslyCreated = false;
 
+    /** @var array<string, mixed> */
     public ?array $data = [];
 
     public static string $roleName = 'badge_page';
@@ -69,7 +70,7 @@ class BadgePage extends Page
                             ->label(__('filament::resources.inputs.badge_image'))
                             ->placeholder('...')
                             ->autocomplete()
-                            ->visible(fn (Get $get) => isset($this->data['image']) ?? false)
+                            ->visible(fn (Get $get) => isset($this->data['image']))
                             ->prefixAction(
                                 fn (?string $state): PageAction => PageAction::make('visit')
                                     ->icon('heroicon-s-arrow-top-right-on-square')
@@ -87,12 +88,12 @@ class BadgePage extends Page
                         TextInput::make('nitro.title')
                             ->label(__('filament::resources.inputs.badge_title'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['nitro']['title']) ?? false),
+                            ->visible(fn () => isset($this->data['nitro']['title'])),
 
                         TextInput::make('nitro.description')
                             ->label(__('filament::resources.inputs.badge_description'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['nitro']['description']) ?? false),
+                            ->visible(fn () => isset($this->data['nitro']['description'])),
                     ]),
 
                 Section::make('Flash Texts')
@@ -102,12 +103,12 @@ class BadgePage extends Page
                         TextInput::make('flash.title')
                             ->label(__('filament::resources.inputs.badge_title'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['flash']['title']) ?? false),
+                            ->visible(fn () => isset($this->data['flash']['title'])),
 
                         TextInput::make('flash.description')
                             ->label(__('filament::resources.inputs.badge_description'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['flash']['description']) ?? false),
+                            ->visible(fn () => isset($this->data['flash']['description'])),
                     ]),
             ])
             ->statePath('data');
@@ -115,10 +116,13 @@ class BadgePage extends Page
 
     private function searchBadgesByCode(): void
     {
-        $badgeCode = $this->form->getState()['code'] ?? null;
+        $badgeCode = $this->data['code'] ?? null;
 
         if (empty($badgeCode)) {
-            $this->notify('danger', __('filament::resources.notifications.badge_code_required'));
+            Notification::make()
+                ->danger()
+                ->title(__('filament::resources.notifications.badge_code_required'))
+                ->send();
 
             return;
         }

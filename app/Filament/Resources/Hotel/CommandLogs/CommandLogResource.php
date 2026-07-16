@@ -57,7 +57,8 @@ class CommandLogResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'yes' => 'primary',
-                        'no' => 'warning'
+                        'no' => 'warning',
+                        default => 'gray',
                     })
                     ->label(__('filament::resources.columns.success'))
                     ->formatStateUsing(fn (string $state): string => __("filament::resources.options.{$state}")),

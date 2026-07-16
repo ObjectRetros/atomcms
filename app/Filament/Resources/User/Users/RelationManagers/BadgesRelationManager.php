@@ -20,6 +20,8 @@ class BadgesRelationManager extends RelationManager
 {
     use TranslatableResource;
 
+    protected static string|\UnitEnum|null $navigationGroup = null;
+
     protected static string $relationship = 'badges';
 
     protected static ?string $recordTitleAttribute = 'badge_code';

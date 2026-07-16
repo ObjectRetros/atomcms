@@ -31,7 +31,3 @@ parameters:
         # Nullsafe is intentional - these relations CAN be null at runtime despite PHPDoc
         - identifier: nullsafe.neverNull
           path: app/Models/User.php
-
-    excludePaths:
-        - app/Console/Commands/AtomSetupCommand.php
-        - app/Filament/

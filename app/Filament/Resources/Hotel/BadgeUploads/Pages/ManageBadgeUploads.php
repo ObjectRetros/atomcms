@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Hotel\BadgeUploads\Pages;
 
+use App\Filament\Resources\Hotel\BadgeUploads\BadgeUploadResource;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\Page; // Import the Notification class
+use Filament\Resources\Pages\Page;
+use Filament\Schemas\Schema;
+use LogicException;
 
 class ManageBadgeUploads extends Page implements HasForms
 {
@@ -14,13 +17,13 @@ class ManageBadgeUploads extends Page implements HasForms
 
     public $badge_file;
 
-    protected static string $resource = 'App\Filament\Resources\Hotel\BadgeUploads\BadgeUploadResource';
+    protected static string $resource = BadgeUploadResource::class;
 
     protected string $view = 'filament.pages.manage-badge-uploads';
 
     public function mount(): void
     {
-        $this->form->fill([]);
+        $this->formSchema()->fill([]);
     }
 
     protected function getFormSchema(): array
@@ -38,11 +41,17 @@ class ManageBadgeUploads extends Page implements HasForms
 
     public function save(): void
     {
-        $data = $this->form->getState();
+        $this->formSchema()->getState();
 
         Notification::make()
             ->title('Badge uploaded successfully!')
             ->success()
             ->send();
+    }
+
+    private function formSchema(): Schema
+    {
+        return $this->getSchema('form')
+            ?? throw new LogicException('The badge upload form schema is not registered.');
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Home\HomeCategoryResource\Pages;
 
 use App\Filament\Resources\Home\HomeCategoryResource;
+use App\Models\Home\HomeCategory;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
 
 class EditHomeCategory extends EditRecord
 {
@@ -16,7 +16,7 @@ class EditHomeCategory extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->action(function (Model $record): void {
+                ->action(function (HomeCategory $record): void {
                     if ($record->homeItems()->exists()) {
                         Notification::make()
                             ->danger()

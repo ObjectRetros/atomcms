@@ -20,6 +20,8 @@ class SettingsRelationManager extends RelationManager
 {
     use TranslatableResource;
 
+    protected static string|\UnitEnum|null $navigationGroup = null;
+
     protected static string $relationship = 'settings';
 
     protected static string $translateIdentifier = 'settings';

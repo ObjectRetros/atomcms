@@ -63,8 +63,7 @@ class BadgeUploadResource extends Resource
 
     public static function getFiles(): array
     {
-        $badgePath = env('BadgePath', 'badges');
-        $files = Storage::disk('local')->files($badgePath);
+        $files = Storage::disk('badges')->files();
 
         return collect($files)->map(function ($file) {
             return [

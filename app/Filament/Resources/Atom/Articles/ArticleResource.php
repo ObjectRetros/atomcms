@@ -206,6 +206,7 @@ class ArticleResource extends Resource
 
     public static function getGlobalSearchEloquentQuery(): Builder
     {
-        return parent::getGlobalSearchEloquentQuery()->withTrashed();
+        return parent::getGlobalSearchEloquentQuery()
+            ->withoutGlobalScope(SoftDeletingScope::class);
     }
 }

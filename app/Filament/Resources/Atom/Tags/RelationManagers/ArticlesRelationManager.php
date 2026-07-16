@@ -16,6 +16,8 @@ class ArticlesRelationManager extends RelationManager
 {
     use TranslatableResource;
 
+    protected static string|\UnitEnum|null $navigationGroup = null;
+
     // Use camelCase to match the method in the Tag model
     protected static string $relationship = 'websiteArticles';
 
