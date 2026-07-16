@@ -4,6 +4,7 @@ namespace App\Services\Home;
 
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\HomeItemType;
+use App\Exceptions\HomePurchaseException;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
@@ -14,42 +15,39 @@ class HomeService
 {
     public function __construct(private readonly CurrencyRepository $currencies) {}
 
-    /**
-     * @throws \Exception
-     */
     private function ensurePurchaseIsAllowed(User $user, HomeItem $item, int $quantity, int $totalPrice): void
     {
         if ($user->online) {
-            throw new \Exception(__('You must be offline to buy this item.'));
+            throw new HomePurchaseException(__('You must be offline to buy this item.'));
         }
 
         if (! $item->enabled) {
-            throw new \Exception(__('This item is not available for purchase.'));
+            throw new HomePurchaseException(__('This item is not available for purchase.'));
         }
 
         if ($item->hasExceededPurchaseLimit()) {
-            throw new \Exception(__('This item exceeded the purchase limit.'));
+            throw new HomePurchaseException(__('This item exceeded the purchase limit.'));
         }
 
         if ($item->limit !== null && ($item->total_bought + $quantity) > $item->limit) {
-            throw new \Exception(__("You can't buy more than :max of this item.", [
+            throw new HomePurchaseException(__("You can't buy more than :max of this item.", [
                 'max' => $item->limit - $item->total_bought,
             ]));
         }
 
         if ($totalPrice > $this->currencies->balance($user, $item->currency_type)) {
-            throw new \Exception(__("You don't have enough :currency to buy this item.", [
+            throw new HomePurchaseException(__("You don't have enough :currency to buy this item.", [
                 'currency' => strtolower(__($item->currency_type->name)),
             ]));
         }
 
         if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget])
             && $user->homeItems()->where('home_item_id', $item->id)->exists()) {
-            throw new \Exception(__('You already have this item in your inventory.'));
+            throw new HomePurchaseException(__('You already have this item in your inventory.'));
         }
 
         if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget]) && $quantity > 1) {
-            throw new \Exception(__('You can buy this item only once.'));
+            throw new HomePurchaseException(__('You can buy this item only once.'));
         }
     }
 
@@ -71,7 +69,7 @@ class HomeService
             $this->ensurePurchaseIsAllowed($lockedUser, $item, $quantity, $totalPrice);
 
             if (! $this->currencies->deduct($lockedUser, $item->currency_type, $totalPrice)) {
-                throw new \Exception(__('Insufficient balance.'));
+                throw new HomePurchaseException(__('Insufficient balance.'));
             }
 
             $lockedUser->giveHomeItem($item, $quantity);
