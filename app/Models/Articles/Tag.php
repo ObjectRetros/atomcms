@@ -3,8 +3,10 @@
 namespace App\Models\Articles;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -29,11 +31,13 @@ use Illuminate\Support\Carbon;
  */
 class Tag extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
 
-    public function websiteArticles()
+    /** @return MorphToMany<WebsiteArticle, $this> */
+    public function websiteArticles(): MorphToMany
     {
         return $this->morphedByMany(WebsiteArticle::class, 'taggable');
     }

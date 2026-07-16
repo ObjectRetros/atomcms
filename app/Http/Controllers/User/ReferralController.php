@@ -13,16 +13,18 @@ class ReferralController extends Controller
     public function __invoke(SendCurrency $sendCurrency): RedirectResponse
     {
         $user = Auth::user();
-        if (! $user->referrals || $user->referrals->referrals_total < setting('referrals_needed')) {
+        $referralsNeeded = (int) setting('referrals_needed', 5);
+
+        if (! $user->referrals || $user->referrals->referrals_total < $referralsNeeded) {
             return redirect()->back()->withErrors([
                 'message' => __('You do not have enough referrals to claim your reward'),
             ]);
         }
 
         // Decrease the total amount of referrals with the amount needed to claim reward
-        $user->referrals->decrement('referrals_total', setting('referrals_needed'));
+        $user->referrals->decrement('referrals_total', $referralsNeeded);
 
-        $sendCurrency->execute($user, CurrencyTypes::Diamonds, (int) setting('referral_reward_amount'));
+        $sendCurrency->execute($user, CurrencyTypes::Diamonds, (int) setting('referral_reward_amount', 30));
 
         // Log the claim
         $user->claimedReferralLog()->create([

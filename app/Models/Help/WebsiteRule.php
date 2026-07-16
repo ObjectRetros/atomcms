@@ -31,6 +31,7 @@ class WebsiteRule extends Model
 {
     protected $guarded = [];
 
+    /** @return BelongsTo<WebsiteRuleCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(WebsiteRuleCategory::class, 'category_id');

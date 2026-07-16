@@ -59,6 +59,7 @@ class WebsiteShopArticle extends Model
 {
     protected $guarded = ['id'];
 
+    /** @return Collection<int, ItemBase> */
     public function furniItems(): Collection
     {
         if (! $this->furniture) {
@@ -71,11 +72,13 @@ class WebsiteShopArticle extends Model
         return ItemBase::whereIn('id', $furnitureIds)->get();
     }
 
+    /** @return HasOne<Permission, $this> */
     public function rank(): HasOne
     {
         return $this->hasOne(Permission::class, 'id', 'give_rank');
     }
 
+    /** @return HasMany<WebsiteShopArticleFeature, $this> */
     public function features(): HasMany
     {
         return $this->hasMany(WebsiteShopArticleFeature::class, 'article_id', 'id');

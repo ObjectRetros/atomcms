@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\SettingsService;
 use Exception;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class WebsiteAd extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [

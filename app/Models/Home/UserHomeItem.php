@@ -6,6 +6,7 @@ use App\Enums\HomeItemType;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class UserHomeItem extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
@@ -50,6 +52,7 @@ class UserHomeItem extends Model
         return $this->belongsTo(HomeItem::class);
     }
 
+    /** @param Builder<static> $query */
     public function scopeDefaultRelationships(Builder $query, bool $completeLoading = false): void
     {
         $relation = $completeLoading ? 'homeItem' : 'homeItem:id,type,name,image';

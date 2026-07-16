@@ -44,43 +44,46 @@ class WebsiteHelpCenterTicket extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<WebsiteHelpCenterCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(WebsiteHelpCenterCategory::class);
     }
 
+    /** @return HasMany<WebsiteHelpCenterTicketReply, $this> */
     public function replies(): HasMany
     {
         return $this->hasMany(WebsiteHelpCenterTicketReply::class, 'ticket_id');
     }
 
-    public function canDeleteTicket()
+    public function canDeleteTicket(): bool
     {
         return $this->user_id === Auth::id() || hasPermission('delete_website_tickets');
     }
 
-    public function canManageTicket()
+    public function canManageTicket(): bool
     {
         return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
     }
 
-    public function canCloseTicket()
+    public function canCloseTicket(): bool
     {
         return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
     }
 
-    public function isOpen()
+    public function isOpen(): bool
     {
         return $this->open || hasPermission('manage_website_tickets');
     }
 
-    public function getContentAttribute($value)
+    public function getContentAttribute(string $value): string
     {
-        return Purify::clean($value);
+        return (string) Purify::clean($value);
     }
 }

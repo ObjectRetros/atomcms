@@ -35,23 +35,25 @@ class WebsiteHelpCenterTicketReply extends Model
 {
     protected $guarded = ['id'];
 
+    /** @return BelongsTo<WebsiteHelpCenterTicket, $this> */
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(WebsiteHelpCenterTicket::class, 'ticket_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function canDeleteReply()
+    public function canDeleteReply(): bool
     {
         return $this->user_id === Auth::id() || hasPermission('delete_website_ticket_replies');
     }
 
-    public function getContentAttribute($value)
+    public function getContentAttribute(string $value): string
     {
-        return Purify::clean($value);
+        return (string) Purify::clean($value);
     }
 }

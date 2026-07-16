@@ -26,6 +26,7 @@ use App\Models\User\Ban;
 use App\Models\User\ClaimedReferralLog;
 use App\Models\User\Referral;
 use App\Models\User\UserReferral;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
@@ -174,7 +175,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, HasHome, LogsActivity, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory;
+
+    use HasHome, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     public $timestamps = false;
 
@@ -231,6 +237,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserCurrency::class, 'user_id');
     }
 
+    /** @return HasMany<Session, $this> */
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
@@ -243,26 +250,31 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $type === null ? 0 : app(CurrencyRepository::class)->balance($this, $type);
     }
 
+    /** @return HasOne<Permission, $this> */
     public function permission(): HasOne
     {
         return $this->hasOne(Permission::class, 'id', 'rank');
     }
 
+    /** @return HasMany<WebsiteArticle, $this> */
     public function articles(): HasMany
     {
         return $this->hasMany(WebsiteArticle::class);
     }
 
+    /** @return HasOne<UserReferral, $this> */
     public function referrals(): HasOne
     {
         return $this->hasOne(UserReferral::class);
     }
 
+    /** @return HasMany<Referral, $this> */
     public function userReferrals(): HasMany
     {
         return $this->hasMany(Referral::class);
     }
 
+    /** @return HasMany<ClaimedReferralLog, $this> */
     public function claimedReferralLog(): HasMany
     {
         return $this->hasMany(ClaimedReferralLog::class);
@@ -276,11 +288,13 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserBadge::class);
     }
 
+    /** @return HasMany<Room, $this> */
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class, 'owner_id');
     }
 
+    /** @return HasMany<MessengerFriendship, $this> */
     public function friends(): HasMany
     {
         return $this->hasMany(MessengerFriendship::class, 'user_one_id');
@@ -290,14 +304,16 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $referrals = $this->referrals?->referrals_total ?? 0;
 
-        return setting('referrals_needed') - $referrals;
+        return (int) setting('referrals_needed', 5) - $referrals;
     }
 
+    /** @return HasOne<Ban, $this> */
     public function ban(): HasOne
     {
         return $this->hasOne(Ban::class, 'user_id')->where('ban_expire', '>', time())->whereIn('type', ['account', 'super']);
     }
 
+    /** @return HasOne<UserSetting, $this> */
     public function settings(): HasOne
     {
         return $this->hasOne(UserSetting::class);
@@ -308,7 +324,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         $maxAttempts = 5;
 
         for ($i = 0; $i < $maxAttempts; $i++) {
-            $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name')), Str::uuid());
+            $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name', 'Atom')), Str::uuid());
 
             if (! User::where('auth_ticket', $sso)->exists()) {
                 $this->update(['auth_ticket' => $sso]);
@@ -320,26 +336,31 @@ class User extends Authenticatable implements FilamentUser, HasName
         throw new \RuntimeException('Failed to generate unique SSO ticket after ' . $maxAttempts . ' attempts.');
     }
 
+    /** @return HasOne<WebsiteBetaCode, $this> */
     public function betaCode(): HasOne
     {
         return $this->hasOne(WebsiteBetaCode::class);
     }
 
+    /** @return BelongsTo<WebsiteTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(WebsiteTeam::class, 'team_id');
     }
 
+    /** @return HasMany<WebsiteStaffApplications, $this> */
     public function applications(): HasMany
     {
         return $this->hasMany(WebsiteStaffApplications::class, 'user_id');
     }
 
+    /** @return HasOne<UserSubscription, $this> */
     public function hcSubscription(): HasOne
     {
         return $this->hasOne(UserSubscription::class);
     }
 
+    /** @return HasMany<WebsiteArticleComment, $this> */
     public function articleComments(): HasMany
     {
         return $this->hasMany(WebsiteArticleComment::class);
@@ -353,36 +374,43 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsitePaypalTransaction::class);
     }
 
+    /** @return HasMany<WebsiteUsedShopVoucher, $this> */
     public function usedShopVouchers(): HasMany
     {
         return $this->hasMany(WebsiteUsedShopVoucher::class);
     }
 
+    /** @return HasMany<Item, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(Item::class, 'user_id');
     }
 
+    /** @return HasMany<WebsiteHelpCenterTicket, $this> */
     public function tickets(): HasMany
     {
         return $this->hasMany(WebsiteHelpCenterTicket::class);
     }
 
+    /** @return HasMany<CameraWeb, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(CameraWeb::class);
     }
 
+    /** @return HasMany<ChatlogRoom, $this> */
     public function chatLogs(): HasMany
     {
         return $this->hasMany(ChatlogRoom::class, 'user_from_id');
     }
 
+    /** @return HasMany<ChatlogPrivate, $this> */
     public function chatLogsPrivate(): HasMany
     {
         return $this->hasMany(ChatlogPrivate::class, 'user_from_id');
     }
 
+    /** @return Collection<int, MessengerFriendship> */
     public function getOnlineFriends(int $total = 10): Collection
     {
         return $this->friends()
@@ -394,7 +422,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->get();
     }
 
-    public function confirmTwoFactorAuthentication($code): bool
+    public function confirmTwoFactorAuthentication(string $code): bool
     {
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);

@@ -5,6 +5,7 @@ namespace App\Models\Home;
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class HomeItem extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
@@ -40,16 +42,19 @@ class HomeItem extends Model
         ];
     }
 
+    /** @return BelongsTo<HomeCategory, $this> */
     public function homeCategory(): BelongsTo
     {
         return $this->belongsTo(HomeCategory::class);
     }
 
+    /** @return HasMany<UserHomeItem, $this> */
     public function userHomeItems(): HasMany
     {
         return $this->hasMany(UserHomeItem::class, 'home_item_id');
     }
 
+    /** @param Builder<static> $query */
     public function scopeEnabled(Builder $query): void
     {
         $query->where('enabled', true);

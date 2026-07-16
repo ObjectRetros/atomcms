@@ -24,10 +24,6 @@ parameters:
         - identifier: booleanNot.alwaysTrue
           path: app/Http/Middleware/InstallationMiddleware.php
 
-        # Collection items have properties at runtime that PHPStan can't infer through closures
-        - identifier: property.notFound
-          path: app/Livewire/ArticleReactions.php
-
         # Nullsafe is intentional - these relations CAN be null at runtime despite PHPDoc
         - identifier: nullsafe.neverNull
           path: app/Models/User.php

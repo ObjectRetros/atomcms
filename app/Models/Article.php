@@ -8,6 +8,7 @@ use App\Models\Articles\WebsiteArticleReaction;
 use Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -54,6 +55,7 @@ use Str;
  */
 class Article extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
@@ -89,6 +91,7 @@ class Article extends Model
         );
     }
 
+    /** @return Builder<Article> */
     public static function fromIdAndSlug(string $id, string $slug, bool $withDefaultRelationships = true): Builder
     {
         return Article::valid()
@@ -113,6 +116,7 @@ class Article extends Model
         return $article;
     }
 
+    /** @return Builder<Article> */
     public static function forIndex(int $limit): Builder
     {
         return Article::valid()
@@ -122,11 +126,13 @@ class Article extends Model
             ->latest();
     }
 
+    /** @param Builder<static> $query */
     public function scopeValid(Builder $query): void
     {
         $query->whereVisible(true);
     }
 
+    /** @param Builder<static> $query */
     public function scopeDefaultRelationships(Builder $query): void
     {
         $query->with([
@@ -136,21 +142,25 @@ class Article extends Model
         ]);
     }
 
+    /** @return HasMany<WebsiteArticleComment, $this> */
     public function comments(): HasMany
     {
         return $this->hasMany(WebsiteArticleComment::class);
     }
 
+    /** @return HasMany<WebsiteArticleReaction, $this> */
     public function reactions(): HasMany
     {
         return $this->hasMany(WebsiteArticleReaction::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return MorphToMany<Tag, $this> */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');

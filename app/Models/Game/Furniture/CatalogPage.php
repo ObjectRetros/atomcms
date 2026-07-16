@@ -68,6 +68,7 @@ class CatalogPage extends Model
 
     public $timestamps = false;
 
+    /** @return HasMany<CatalogItem, $this> */
     public function catalogItems(): HasMany
     {
         return $this->hasMany(CatalogItem::class, 'page_id');

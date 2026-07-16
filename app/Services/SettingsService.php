@@ -33,6 +33,13 @@ class SettingsService
         return $this->cachedSettings;
     }
 
+    /**
+     * @template TDefault
+     *
+     * @param  TDefault  $default
+     *
+     * @return string|TDefault
+     */
     public function getOrDefault(string $key, mixed $default = null): mixed
     {
         return $this->settings()->get($key, $default);

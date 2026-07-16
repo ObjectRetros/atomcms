@@ -33,6 +33,7 @@ class WebsiteRuleCategory extends Model
 {
     protected $guarded = [];
 
+    /** @return HasMany<WebsiteRule, $this> */
     public function rules(): HasMany
     {
         return $this->hasMany(WebsiteRule::class, 'category_id');

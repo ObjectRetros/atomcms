@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Models\Game\Room;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $room_id
@@ -29,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ChatlogRoom extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $table = 'chatlogs_room';
@@ -39,17 +42,20 @@ class ChatlogRoom extends Model
 
     protected $primaryKey = 'timestamp';
 
-    public function room()
+    /** @return BelongsTo<Room, $this> */
+    public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
-    public function sender()
+    /** @return BelongsTo<User, $this> */
+    public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_from_id');
     }
 
-    public function receiver()
+    /** @return BelongsTo<User, $this> */
+    public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_to_id');
     }

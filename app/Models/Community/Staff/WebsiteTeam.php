@@ -40,6 +40,7 @@ class WebsiteTeam extends Model
 {
     protected $guarded = [];
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'team_id', 'id');

@@ -48,16 +48,19 @@ class Item extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Room, $this> */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /** @return BelongsTo<ItemBase, $this> */
     public function itemBase(): BelongsTo
     {
         return $this->belongsTo(ItemBase::class, 'item_id');

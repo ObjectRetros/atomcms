@@ -38,6 +38,7 @@ class WebsitePaypalTransaction extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -33,6 +33,7 @@ class WebsiteRareValueCategory extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    /** @return HasMany<WebsiteRareValue, $this> */
     public function furniture(): HasMany
     {
         return $this->hasMany(WebsiteRareValue::class, 'category_id');

@@ -5,6 +5,13 @@ use App\Services\PermissionsService;
 use App\Services\SettingsService;
 
 if (! function_exists('setting')) {
+    /**
+     * @template TDefault
+     *
+     * @param  TDefault  $default
+     *
+     * @return string|TDefault
+     */
     function setting(string $key, mixed $default = null): mixed
     {
         return app(SettingsService::class)->getOrDefault($key, $default);

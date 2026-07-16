@@ -34,6 +34,7 @@ class GuildMember extends Model
 
     public $timestamps = false;
 
+    /** @return HasMany<Guild, $this> */
     public function guilds(): HasMany
     {
         return $this->hasMany(Guild::class);
