@@ -21,7 +21,7 @@ class ImportAdsData extends Command
     {
         $adsPath = $settingsService->getOrDefault('ads_path_filesystem');
 
-        if (! $this->validatePath($adsPath)) {
+        if (! is_string($adsPath) || ! $this->validatePath($adsPath)) {
             return;
         }
 

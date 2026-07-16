@@ -37,7 +37,13 @@ class VPNCheckerMiddleware
     private function checkReputation(Request $request, Closure $next): Response
     {
         $ip = $request->ip();
-        $apiResponse = (new IpLookupService(setting('ipdata_api_key')))->ipLookup($ip);
+        $apiKey = setting('ipdata_api_key');
+
+        if (! is_string($ip) || ! is_string($apiKey) || $apiKey === '') {
+            return $next($request);
+        }
+
+        $apiResponse = (new IpLookupService($apiKey))->ipLookup($ip);
         $asn = $apiResponse['asn']['asn'] ?? '';
 
         if ($this->asnListed($asn, WebsiteIpWhitelist::class, 'whitelist_asn')) {

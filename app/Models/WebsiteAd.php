@@ -42,7 +42,7 @@ class WebsiteAd extends Model
         $settingsService = app(SettingsService::class);
 
         $adsPicturePath = Cache::remember('ads_picture_path', 3600, function () use ($settingsService) {
-            return $settingsService->getOrDefault('ads_picture_path');
+            return $settingsService->getOrDefault('ads_picture_path', '');
         });
 
         if (! str_starts_with($adsPicturePath, 'http')) {

@@ -28,7 +28,7 @@ class InstallationController extends Controller
             'installation_key' => ['required', 'string', 'max:255', new ValidateInstallationKeyRule],
         ]);
 
-        WebsiteInstallation::first()->update([
+        $this->installation()->update([
             'step' => 1,
             'user_ip' => $request->ip(),
         ]);
@@ -57,21 +57,23 @@ class InstallationController extends Controller
     {
         $this->updateSettings($request);
 
-        WebsiteInstallation::first()->increment('step');
+        $installation = $this->installation();
+        $installation->increment('step');
 
-        return to_route('installation.show-step', WebsiteInstallation::first()->step);
+        return to_route('installation.show-step', $installation->step);
     }
 
     public function previousStep(): RedirectResponse
     {
-        WebsiteInstallation::first()->decrement('step');
+        $installation = $this->installation();
+        $installation->decrement('step');
 
-        return to_route('installation.show-step', WebsiteInstallation::first()->step);
+        return to_route('installation.show-step', $installation->step);
     }
 
     public function restartInstallation(): RedirectResponse
     {
-        WebsiteInstallation::first()->update([
+        $this->installation()->update([
             'step' => 0,
             'installation_key' => Str::uuid(),
             'user_ip' => null,
@@ -112,6 +114,11 @@ class InstallationController extends Controller
         }
 
         // Cache will be automatically cleared by WebsiteSetting model events
+    }
+
+    private function installation(): WebsiteInstallation
+    {
+        return WebsiteInstallation::query()->oldest('id')->firstOrFail();
     }
 
     /** @return Collection<int, WebsiteSetting> */

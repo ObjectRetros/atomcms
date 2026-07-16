@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Community\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,9 +42,12 @@ class StaffApplicationsController extends Controller
             'content' => ['required', 'string', 'min:10'],
         ]);
 
-        $user = $request->user();
+        $rankId = $position->permission_id;
+        abort_if($rankId === null, 404);
 
-        if ($user->hasAppliedForPosition($position->permission_id)) {
+        $user = AuthenticatedUser::from($request);
+
+        if ($user->hasAppliedForPosition($rankId)) {
             return back()->withErrors([
                 'content' => __('You have already applied for this position.'),
             ])->withInput();
@@ -51,7 +55,7 @@ class StaffApplicationsController extends Controller
 
         WebsiteStaffApplications::create([
             'user_id' => $user->id,
-            'rank_id' => $position->permission_id,
+            'rank_id' => $rankId,
             'content' => $validated['content'],
         ]);
 

@@ -9,6 +9,7 @@ use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
 use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\Articles\WebsiteArticle;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -93,7 +94,7 @@ class ArticleResource extends Resource
                                 ->columnSpan('full'),
 
                             Hidden::make('user_id')
-                                ->default(fn () => auth()->check() ? auth()->user()->id : null),
+                                ->default(fn (): int => AuthenticatedUser::current()->id),
                         ]),
 
                     Tab::make(__('filament::resources.tabs.Configurations'))

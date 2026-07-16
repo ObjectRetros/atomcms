@@ -5,14 +5,14 @@ namespace App\Http\Controllers\User;
 use App\Actions\SendCurrency;
 use App\Enums\CurrencyTypes;
 use App\Http\Controllers\Controller;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 class ReferralController extends Controller
 {
     public function __invoke(SendCurrency $sendCurrency): RedirectResponse
     {
-        $user = Auth::user();
+        $user = AuthenticatedUser::current();
         $referralsNeeded = (int) setting('referrals_needed', 5);
 
         if (! $user->referrals || $user->referrals->referrals_total < $referralsNeeded) {

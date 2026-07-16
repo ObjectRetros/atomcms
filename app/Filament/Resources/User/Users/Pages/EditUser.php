@@ -10,6 +10,7 @@ use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -47,7 +48,7 @@ class EditUser extends EditRecord
         $data = $this->getSchema('form')?->getState()
             ?? throw new LogicException('The user edit form schema is not registered.');
 
-        if ($data['rank'] > auth()->user()->rank) {
+        if ($data['rank'] > AuthenticatedUser::current()->rank) {
             Notification::make()
                 ->danger()
                 ->title(__('You cannot edit this user!'))
@@ -189,7 +190,7 @@ class EditUser extends EditRecord
         if ($data['rank'] == $user->rank) {
             return;
         }
-        if ($data['rank'] > auth()->user()->rank) {
+        if ($data['rank'] > AuthenticatedUser::current()->rank) {
             return;
         }
 

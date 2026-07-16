@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,10 @@ class MaintenanceMiddleware
     {
         // Default to rank 5 when unset; a missing setting must not let every
         // logged-in user through ("rank >= null" is always true).
-        return Auth::check() && Auth::user()->rank >= (int) (setting('min_maintenance_login_rank') ?: 5);
+        $user = Auth::user();
+
+        return $user instanceof User
+            && $user->rank >= (int) (setting('min_maintenance_login_rank') ?: 5);
     }
 
     private function isTwoFactorRoute(Request $request): bool

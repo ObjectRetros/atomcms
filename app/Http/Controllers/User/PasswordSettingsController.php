@@ -4,8 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PasswordSettingsFormRequest;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -18,7 +18,7 @@ class PasswordSettingsController extends Controller
 
     public function update(PasswordSettingsFormRequest $request): RedirectResponse
     {
-        Auth::user()->update([
+        AuthenticatedUser::from($request)->update([
             'password' => Hash::make($request->input('password')),
         ]);
 

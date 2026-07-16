@@ -41,7 +41,7 @@ class BadgePage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('view::admin::' . static::$roleName);
+        return auth()->user()?->can('view::admin::' . static::$roleName) ?? false;
     }
 
     public function getTitle(): string|Htmlable
@@ -61,7 +61,7 @@ class BadgePage extends Page
                             ->label(__('filament::resources.inputs.badge_code'))
                             ->helperText(__('filament::resources.helpers.badge_code_helper'))
                             ->afterStateUpdated(function (?string $state, Set $set) {
-                                $set('code', strtoupper($state));
+                                $set('code', is_string($state) ? strtoupper($state) : null);
                             })
                             ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode()),
                             ),
@@ -248,7 +248,13 @@ class BadgePage extends Page
             return;
         }
 
-        $this->data['image'] = $externalTextsParser->getBadgeImageUrl($this->data['code']);
+        $badgeCode = $this->data['code'] ?? null;
+
+        if (! is_string($badgeCode)) {
+            return;
+        }
+
+        $this->data['image'] = $externalTextsParser->getBadgeImageUrl($badgeCode);
         $this->badgeWasPreviouslyCreated = true;
 
         Notification::make()

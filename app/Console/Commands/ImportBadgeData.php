@@ -30,7 +30,7 @@ class ImportBadgeData extends Command
     {
         $jsonPath = $this->settingsService->getOrDefault('nitro_external_texts_file');
 
-        if (! $this->validateJsonFile($jsonPath)) {
+        if (! is_string($jsonPath) || ! $this->validateJsonFile($jsonPath)) {
             return;
         }
 

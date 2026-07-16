@@ -5,7 +5,7 @@ parameters:
     paths:
         - app/
 
-    level: 7
+    level: 8
 
     treatPhpDocTypesAsCertain: false
 

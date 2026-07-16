@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ShopVoucherFormRequest;
 use App\Models\Shop\WebsiteShopVoucher;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +14,7 @@ class ShopVoucherController extends Controller
 {
     public function __invoke(ShopVoucherFormRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = AuthenticatedUser::from($request);
         $voucher = WebsiteShopVoucher::where('code', $request->string('code'))->first();
 
         if ($voucher === null || ! $this->isActive($voucher)) {

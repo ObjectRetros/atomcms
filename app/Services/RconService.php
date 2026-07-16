@@ -71,7 +71,7 @@ class RconService implements Rcon
 
     public function sendCommand(string $command, ?array $data = null): bool
     {
-        if (! $this->isConnected) {
+        if (! $this->isConnected || ! $this->socket instanceof Socket) {
             Log::error('RCON command failed: Not connected');
 
             $this->closeConnection();
@@ -80,9 +80,10 @@ class RconService implements Rcon
         }
 
         $payload = json_encode(['key' => $command, 'data' => $data], JSON_THROW_ON_ERROR);
+        $socket = $this->socket;
 
-        if (! @socket_write($this->socket, $payload, strlen($payload))) {
-            Log::error("RCON command ($command) failed: " . socket_strerror(socket_last_error($this->socket)));
+        if (! @socket_write($socket, $payload, strlen($payload))) {
+            Log::error("RCON command ($command) failed: " . socket_strerror(socket_last_error($socket)));
 
             $this->closeConnection();
 

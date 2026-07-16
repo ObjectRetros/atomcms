@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Community\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -57,9 +58,12 @@ class WebsiteTeamApplicationsController extends Controller
             'content' => ['required', 'string', 'min:10'],
         ]);
 
-        $user = $request->user();
+        $teamId = $position->team_id;
+        abort_if($teamId === null, 404);
 
-        if ($user->hasAppliedForTeam($position->team_id)) {
+        $user = AuthenticatedUser::from($request);
+
+        if ($user->hasAppliedForTeam($teamId)) {
             return back()->withErrors([
                 'content' => __('You have already applied for this team.'),
             ]);
@@ -67,7 +71,7 @@ class WebsiteTeamApplicationsController extends Controller
 
         WebsiteStaffApplications::create([
             'user_id' => $user->id,
-            'team_id' => $position->team_id,
+            'team_id' => $teamId,
             'content' => $request->string('content'),
         ]);
 
