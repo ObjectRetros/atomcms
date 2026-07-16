@@ -39,8 +39,16 @@ class InstallationController extends Controller
     public function showStep(int $currentStep): View
     {
         $settings = $this->getSettingsForStep($currentStep);
+        $view = match ($currentStep) {
+            1 => 'installation.step-1',
+            2 => 'installation.step-2',
+            3 => 'installation.step-3',
+            4 => 'installation.step-4',
+            5 => 'installation.step-5',
+            default => throw new Exception('Step does not exist'),
+        };
 
-        return view('installation.step-' . $currentStep, [
+        return view($view, [
             'settings' => $settings,
         ]);
     }
@@ -109,7 +117,8 @@ class InstallationController extends Controller
     /** @return Collection<int, WebsiteSetting> */
     private function getSettingsForStep(int $step): Collection
     {
-        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), (int) ceil(WebsiteSetting::count() / 4));
+        $chunkSize = max(1, (int) ceil(WebsiteSetting::count() / 4));
+        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), $chunkSize);
 
         $settings = match ($step) {
             1 => $settingsData[0] ?? [],

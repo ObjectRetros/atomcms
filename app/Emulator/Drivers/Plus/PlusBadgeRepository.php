@@ -43,7 +43,10 @@ class PlusBadgeRepository implements BadgeRepository
         return $this->badges($user)
             ->orderByDesc('id')
             ->paginate($perPage, ['*'], $pageName)
-            ->through(fn (object $row) => new OwnedBadge($row->badge_id, (int) $row->badge_slot));
+            ->through(fn (object $row) => new OwnedBadge(
+                (string) data_get($row, 'badge_id'),
+                (int) data_get($row, 'badge_slot'),
+            ));
     }
 
     private function badges(User $user): Builder

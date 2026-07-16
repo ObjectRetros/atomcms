@@ -58,12 +58,18 @@ class ImportAdsData extends Command
     /** @return list<string> */
     private function getImageFiles(string $adsPath): array
     {
-        return array_filter(scandir($adsPath), function ($file) use ($adsPath) {
+        $files = scandir($adsPath);
+
+        if ($files === false) {
+            return [];
+        }
+
+        return array_values(array_filter($files, function (string $file) use ($adsPath): bool {
             $filePath = $adsPath . DIRECTORY_SEPARATOR . $file;
 
             return is_file($filePath) &&
                    in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS);
-        });
+        }));
     }
 
     /** @param  list<string>  $files */

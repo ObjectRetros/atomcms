@@ -115,7 +115,7 @@ trait HasHome
             ->selectRaw('AVG(rating) as rating_avg, COUNT(*) as total, COUNT(IF(rating >= 4, 4, NULL)) as most_positive')
             ->first();
 
-        $this->homeRatingStats->rating_avg = number_format($this->homeRatingStats->rating_avg ?? 0, 1);
+        $this->homeRatingStats->rating_avg = number_format((float) ($this->homeRatingStats->rating_avg ?? 0), 1);
 
         return $this;
     }

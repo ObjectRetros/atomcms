@@ -75,7 +75,7 @@ class Article extends Model
         parent::boot();
 
         static::creating(function (Article $article) {
-            $article->user_id = Auth::id();
+            $article->user_id = (int) Auth::id();
             $article->slug = Str::slug($article->title);
         });
 

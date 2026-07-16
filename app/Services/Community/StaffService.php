@@ -52,10 +52,13 @@ class StaffService
             return Cache::get('staff_ids');
         }
 
-        $staffIds = User::select('id')
+        $staffIds = array_values(User::select('id')
             ->where('rank', '>=', setting('min_staff_rank'))
             ->get()
-            ->pluck('id')->toArray();
+            ->pluck('id')
+            ->map(fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all());
 
         if ($cacheEnabled) {
             $cacheTimer = (int) setting('cache_timer');

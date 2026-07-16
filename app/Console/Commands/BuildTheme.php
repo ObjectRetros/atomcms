@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class BuildTheme extends Command
 {
@@ -22,17 +23,21 @@ class BuildTheme extends Command
             return Command::FAILURE;
         }
 
-        $selectedTheme = $this->choice(
+        $selection = $this->choice(
             'Which theme would you like to build?',
             $themes->toArray(),
             0,
         );
 
-        $this->info("Building {$selectedTheme} theme...");
+        if (! is_string($selection)) {
+            $this->error('The selected theme is invalid.');
 
-        $this->runBuildCommand($selectedTheme);
+            return Command::FAILURE;
+        }
 
-        return Command::SUCCESS;
+        $this->info("Building {$selection} theme...");
+
+        return $this->runBuildCommand($selection);
     }
 
     /** @return Collection<int, string> */
@@ -49,22 +54,20 @@ class BuildTheme extends Command
             ->sort();
     }
 
-    private function runBuildCommand(string $theme): void
+    private function runBuildCommand(string $theme): int
     {
-        $command = escapeshellcmd("npm run build:{$theme}");
-        $output = [];
-        $returnCode = 0;
+        $process = new Process(['npm', 'run', "build:{$theme}"], base_path());
+        $process->setTimeout(300);
+        $process->run(fn (string $type, string $buffer) => $this->output->write($buffer));
 
-        exec($command, $output, $returnCode);
-
-        foreach ($output as $line) {
-            $this->line($line);
-        }
-
-        if ($returnCode === 0) {
+        if ($process->isSuccessful()) {
             $this->info("Theme {$theme} built successfully!");
-        } else {
-            $this->error("Failed to build theme {$theme}");
+
+            return Command::SUCCESS;
         }
+
+        $this->error("Failed to build theme {$theme}");
+
+        return Command::FAILURE;
     }
 }

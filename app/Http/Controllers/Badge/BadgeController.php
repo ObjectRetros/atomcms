@@ -25,7 +25,12 @@ class BadgeController extends Controller
 
     public function buy(BadgePurchaseRequest $request, CreateDrawnBadge $createDrawnBadge): JsonResponse
     {
-        $badge = $createDrawnBadge->execute($request->user(), $request->validated());
+        $validated = $request->validated();
+        $badge = $createDrawnBadge->execute($request->user(), [
+            'badge_data' => (string) $validated['badge_data'],
+            'badge_name' => (string) $validated['badge_name'],
+            'badge_description' => (string) $validated['badge_description'],
+        ]);
 
         return response()->json(['success' => true, 'badge_path_filesystem' => $badge->badge_path]);
     }

@@ -25,14 +25,19 @@ class PaypalController extends Controller
     {
         $response = $this->provider->createOrder($this->buildOrderData($request->integer('amount')));
 
-        $approvalUrl = isset($response['id']) ? $this->approvalUrl($response['links'] ?? []) : null;
+        if (! is_array($response)) {
+            return $this->orderCreationFailed(['message' => 'PayPal returned an invalid order response.']);
+        }
+
+        $orderId = $response['id'] ?? null;
+        $approvalUrl = is_string($orderId) ? $this->approvalUrl($response['links'] ?? null) : null;
 
         if ($approvalUrl === null) {
             return $this->orderCreationFailed($response);
         }
 
         $request->user()->transactions()->create([
-            'transaction_id' => $response['id'],
+            'transaction_id' => $orderId,
             'amount' => 0,
         ]);
 
@@ -65,14 +70,21 @@ class PaypalController extends Controller
         ];
     }
 
-    /**
-     * @param  array<int, array{rel?: string, href?: string}>  $links
-     */
-    private function approvalUrl(array $links): ?string
+    private function approvalUrl(mixed $links): ?string
     {
+        if (! is_array($links)) {
+            return null;
+        }
+
         foreach ($links as $link) {
-            if (($link['rel'] ?? null) === 'approve') {
-                return $link['href'] ?? null;
+            if (! is_array($link) || ($link['rel'] ?? null) !== 'approve') {
+                continue;
+            }
+
+            $href = $link['href'] ?? null;
+
+            if (is_string($href)) {
+                return $href;
             }
         }
 
@@ -108,9 +120,16 @@ class PaypalController extends Controller
         }
 
         $response = $this->provider->capturePaymentOrder($request['token']);
+
+        if (! is_array($response)) {
+            $this->recordFailure($transaction, ['message' => 'PayPal returned an invalid capture response.']);
+
+            return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
+        }
+
         $capture = data_get($response, 'purchase_units.0.payments.captures.0');
 
-        if (! isset($response['status']) || $capture === null) {
+        if (! is_string($response['status'] ?? null) || ! is_array($capture)) {
             $this->recordFailure($transaction, $response);
 
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
