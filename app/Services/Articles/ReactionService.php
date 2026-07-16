@@ -17,20 +17,11 @@ class ReactionService
             return ['success' => false];
         }
 
-        $existingReaction = WebsiteArticleReaction::getReaction($article->id, $user->id, $reaction);
-
-        if ($existingReaction) {
-            $existingReaction->update(['active' => ! $existingReaction->active]);
-        } else {
-            $article->reactions()->create([
-                'user_id' => $user->id,
-                'reaction' => $reaction,
-            ]);
-        }
+        $storedReaction = WebsiteArticleReaction::toggleFor($article, $user, $reaction);
 
         return [
             'success' => true,
-            'added' => $existingReaction->active ?? true,
+            'added' => (bool) $storedReaction->active,
             'username' => $user->username,
         ];
     }

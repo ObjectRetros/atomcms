@@ -32,6 +32,7 @@ class WebsiteArticleReaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'article_id',
         'user_id',
         'reaction',
         'active',
@@ -44,12 +45,21 @@ class WebsiteArticleReaction extends Model
         'article_id',
     ];
 
-    public static function getReaction(int $articleId, int $userId, string $reaction): ?self
+    public static function toggleFor(WebsiteArticle $article, User $user, string $reaction): self
     {
-        return self::where('user_id', $userId)
-            ->where('article_id', $articleId)
-            ->where('reaction', $reaction)
-            ->first();
+        $record = self::query()->firstOrCreate([
+            'article_id' => $article->id,
+            'user_id' => $user->id,
+            'reaction' => $reaction,
+        ], [
+            'active' => true,
+        ]);
+
+        if (! $record->wasRecentlyCreated) {
+            $record->update(['active' => ! $record->active]);
+        }
+
+        return $record;
     }
 
     public function article(): BelongsTo
