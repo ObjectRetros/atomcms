@@ -27,7 +27,7 @@ class BadgeController extends Controller
     {
         $badge = $createDrawnBadge->execute($request->user(), $request->validated());
 
-        return response()->json(['success' => true, 'badge_path_filesystem' => $badge->badge_path]);
+        return response()->json(['success' => true, 'badge_url' => $badge->badge_url]);
     }
 
     private function badgeFolderError(?string $path): ?string

@@ -3,13 +3,10 @@
 namespace App\Filament\Resources\Hotel\BadgeUploads;
 
 use App\Filament\Resources\Hotel\BadgeUploads\Pages\ManageBadgeUploads;
-use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class BadgeUploadResource extends Resource
 {
@@ -24,23 +21,6 @@ class BadgeUploadResource extends Resource
         return hasHousekeepingPermission('manage_badges');
     }
 
-    public static function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                FileUpload::make('badge_file')
-                    ->label('Upload Badge')
-                    ->disk('local')
-                    ->directory(setting('badge_path_filesystem'))
-                    ->required()
-                    ->getUploadedFileNameForStorageUsing(
-                        function (TemporaryUploadedFile $file): string {
-                            return strtolower(str_replace([' ', '-', 'æ', 'ø', 'å'], ['_', '_', 'ae', 'oe', 'aa'], $file->getClientOriginalName()));
-                        },
-                    ),
-            ]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -48,8 +28,6 @@ class BadgeUploadResource extends Resource
                 TextColumn::make('filename')
                     ->label('File Name')
                     ->sortable(),
-                TextColumn::make('path')
-                    ->label('File Path'),
             ])
             ->filters([]);
     }
@@ -63,14 +41,12 @@ class BadgeUploadResource extends Resource
 
     public static function getFiles(): array
     {
-        $badgePath = env('BadgePath', 'badges');
-        $files = Storage::disk('local')->files($badgePath);
+        $files = Storage::disk('badges')->files();
 
-        return collect($files)->map(function ($file) {
-            return [
-                'filename' => basename($file),
-                'path' => $file,
-            ];
-        })->toArray();
+        return collect($files)
+            ->filter(fn (string $file): bool => strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'gif')
+            ->map(fn (string $file): array => ['filename' => basename($file)])
+            ->values()
+            ->toArray();
     }
 }

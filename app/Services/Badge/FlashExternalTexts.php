@@ -2,7 +2,10 @@
 
 namespace App\Services\Badge;
 
+use App\Services\Files\AtomicFileWriter;
 use App\Services\SettingsService;
+use App\Support\BadgeCode;
+use RuntimeException;
 
 /**
  * Maintains the badge name/description entries in the flash client's
@@ -11,13 +14,17 @@ use App\Services\SettingsService;
  */
 class FlashExternalTexts
 {
-    public function __construct(private readonly SettingsService $settings) {}
+    public function __construct(
+        private readonly SettingsService $settings,
+        private readonly AtomicFileWriter $files,
+    ) {}
 
     /**
      * @return array{title: string, description: string}|null null when the badge has no entries
      */
     public function find(string $badgeCode): ?array
     {
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $texts = $this->all();
 
         $name = $texts["badge_name_{$badgeCode}"] ?? null;
@@ -38,34 +45,37 @@ class FlashExternalTexts
      */
     public function add(string $badgeCode, ?string $title, ?string $description): void
     {
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $path = $this->path();
 
         if (! $path || ! file_exists($path) || ! is_writable($path)) {
-            return;
+            throw new RuntimeException('The Flash external texts file is not writable.');
         }
-
-        $lines = preg_split('/\r\n|\n/', rtrim((string) file_get_contents($path)));
-        $lines = $lines === false ? [] : $lines;
 
         $entries = [
-            "badge_name_{$badgeCode}" => (string) ($title ?? ''),
-            "badge_desc_{$badgeCode}" => (string) ($description ?? ''),
+            "badge_name_{$badgeCode}" => $this->singleLine($title),
+            "badge_desc_{$badgeCode}" => $this->singleLine($description),
         ];
 
-        foreach ($lines as $index => $line) {
-            [$key] = explode('=', $line, 2);
+        $this->files->update($path, function (string $contents) use ($entries): string {
+            $lines = preg_split('/\r\n|\n/', rtrim($contents));
+            $lines = $lines === false ? [] : $lines;
 
-            if (array_key_exists($key, $entries)) {
-                $lines[$index] = $key . '=' . $entries[$key];
-                unset($entries[$key]);
+            foreach ($lines as $index => $line) {
+                [$key] = explode('=', $line, 2);
+
+                if (array_key_exists($key, $entries)) {
+                    $lines[$index] = $key . '=' . $entries[$key];
+                    unset($entries[$key]);
+                }
             }
-        }
 
-        foreach ($entries as $key => $value) {
-            $lines[] = $key . '=' . $value;
-        }
+            foreach ($entries as $key => $value) {
+                $lines[] = $key . '=' . $value;
+            }
 
-        file_put_contents($path, implode("\n", $lines) . "\n");
+            return implode("\n", $lines) . "\n";
+        });
     }
 
     /**
@@ -98,5 +108,10 @@ class FlashExternalTexts
         $path = $this->settings->getOrDefault('flash_external_texts_file');
 
         return is_string($path) && $path !== '' ? $path : null;
+    }
+
+    private function singleLine(?string $value): string
+    {
+        return str_replace(["\r", "\n"], ' ', (string) $value);
     }
 }

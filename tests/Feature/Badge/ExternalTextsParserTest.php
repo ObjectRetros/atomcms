@@ -2,10 +2,12 @@
 
 use App\Services\Parsers\ExternalTextsParser;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 function externalTextsSetup(): ExternalTextsParser
 {
     installHotel();
+    Storage::fake('badges');
 
     $directory = storage_path('framework/testing/external-texts');
     File::ensureDirectoryExists($directory);
@@ -26,6 +28,7 @@ function externalTextsSetup(): ExternalTextsParser
 
     setSetting('nitro_external_texts_file', $nitroPath);
     setSetting('flash_external_texts_file', $flashPath);
+    setSetting('badges_path', '/testing-badges');
 
     return app(ExternalTextsParser::class);
 }
@@ -83,21 +86,24 @@ test('updating an existing badge rewrites its lines in place', function () {
         ->and(substr_count($flash, 'badge_name_ACH_Existing='))->toBe(1);
 });
 
-test('the badge image url and existence follow the flash client path', function () {
+test('the badge image url and existence follow the configured badge disk', function () {
     $parser = externalTextsSetup();
 
-    config(['hotel.client.flash.relative_files_path' => 'testing-client']);
+    expect($parser->getBadgeImageUrl('ACH_Img'))->toBe(url('/testing-badges/ACH_Img.gif'));
 
-    expect($parser->getBadgeImageUrl('ACH_Img'))->toBe(url('testing-client/c_images/album1584/ACH_Img.gif'));
+    Storage::disk('badges')->put('ACH_Img.gif', 'gif');
 
-    $imageDir = public_path('testing-client/c_images/album1584');
-    File::ensureDirectoryExists($imageDir);
-    file_put_contents($imageDir . '/ACH_Img.gif', 'gif');
+    expect($parser->getBadgeData('ACH_Img')['image'])
+        ->toBe(url('/testing-badges/ACH_Img.gif'));
+});
 
-    try {
-        expect($parser->getBadgeData('ACH_Img')['image'])
-            ->toBe(url('testing-client/c_images/album1584/ACH_Img.gif'));
-    } finally {
-        File::deleteDirectory(public_path('testing-client'));
-    }
+test('flash badge text values cannot inject additional lines', function () {
+    $parser = externalTextsSetup();
+
+    $parser->updateFlashBadgeTexts('ACH_Safe', "Safe\nmalicious.key=owned", 'Description');
+
+    $flash = (string) file_get_contents(storage_path('framework/testing/external-texts/external_flash_texts.txt'));
+
+    expect($flash)->toContain('badge_name_ACH_Safe=Safe malicious.key=owned')
+        ->not->toContain("\nmalicious.key=owned");
 });

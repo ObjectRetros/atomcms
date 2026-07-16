@@ -3,7 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Traits\TranslatableResource;
+use App\Rules\ValidBadgeCode;
+use App\Services\Badge\BadgeImageStorage;
 use App\Services\Parsers\ExternalTextsParser;
+use App\Support\BadgeCode;
 use Filament\Actions\Action;
 use Filament\Actions\Action as PageAction;
 use Filament\Actions\ActionGroup;
@@ -16,8 +19,8 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 
 class BadgePage extends Page
@@ -59,8 +62,11 @@ class BadgePage extends Page
                         TextInput::make('code')
                             ->label(__('filament::resources.inputs.badge_code'))
                             ->helperText(__('filament::resources.helpers.badge_code_helper'))
+                            ->required()
+                            ->maxLength(32)
+                            ->rules([new ValidBadgeCode])
                             ->afterStateUpdated(function (?string $state, Set $set) {
-                                $set('code', strtoupper($state));
+                                $set('code', strtoupper((string) $state));
                             })
                             ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode()),
                             ),
@@ -68,6 +74,8 @@ class BadgePage extends Page
                         TextInput::make('image')
                             ->label(__('filament::resources.inputs.badge_image'))
                             ->placeholder('...')
+                            ->url()
+                            ->maxLength(2048)
                             ->autocomplete()
                             ->visible(fn (Get $get) => isset($this->data['image']) ?? false)
                             ->prefixAction(
@@ -86,11 +94,13 @@ class BadgePage extends Page
                     ->schema([
                         TextInput::make('nitro.title')
                             ->label(__('filament::resources.inputs.badge_title'))
+                            ->maxLength(100)
                             ->placeholder('...')
                             ->visible(fn () => isset($this->data['nitro']['title']) ?? false),
 
                         TextInput::make('nitro.description')
                             ->label(__('filament::resources.inputs.badge_description'))
+                            ->maxLength(255)
                             ->placeholder('...')
                             ->visible(fn () => isset($this->data['nitro']['description']) ?? false),
                     ]),
@@ -101,11 +111,13 @@ class BadgePage extends Page
                     ->schema([
                         TextInput::make('flash.title')
                             ->label(__('filament::resources.inputs.badge_title'))
+                            ->maxLength(100)
                             ->placeholder('...')
                             ->visible(fn () => isset($this->data['flash']['title']) ?? false),
 
                         TextInput::make('flash.description')
                             ->label(__('filament::resources.inputs.badge_description'))
+                            ->maxLength(255)
                             ->placeholder('...')
                             ->visible(fn () => isset($this->data['flash']['description']) ?? false),
                     ]),
@@ -115,7 +127,7 @@ class BadgePage extends Page
 
     private function searchBadgesByCode(): void
     {
-        $badgeCode = $this->form->getState()['code'] ?? null;
+        $badgeCode = BadgeCode::normalize((string) ($this->form->getState()['code'] ?? ''));
 
         if (empty($badgeCode)) {
             $this->notify('danger', __('filament::resources.notifications.badge_code_required'));
@@ -181,8 +193,10 @@ class BadgePage extends Page
         ];
     }
 
-    public function create()
+    public function create(): void
     {
+        $this->data = $this->form->getState();
+
         $nitroEnabled = config('hotel.client.nitro.enabled');
         $flashEnabled = config('hotel.client.flash.enabled');
 
@@ -216,7 +230,8 @@ class BadgePage extends Page
         }
 
         try {
-            $this->uploadBadgeImage($externalTextsParser);
+            $this->data['code'] = BadgeCode::normalize((string) $this->data['code']);
+            $this->uploadBadgeImage($externalTextsParser, app(BadgeImageStorage::class));
 
             if (! empty($this->data['nitro']) && $nitroEnabled) {
                 $externalTextsParser->updateNitroBadgeTexts($this->data['code'], ...$this->data['nitro']);
@@ -225,7 +240,10 @@ class BadgePage extends Page
                 $externalTextsParser->updateFlashBadgeTexts($this->data['code'], ...$this->data['flash']);
             }
         } catch (Throwable $exception) {
-            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
+            Log::channel('badge')->error('Badge update failed', [
+                'badge_code' => $this->data['code'] ?? null,
+                'exception' => $exception,
+            ]);
 
             Notification::make()
                 ->icon('heroicon-o-exclamation-triangle')
@@ -248,49 +266,21 @@ class BadgePage extends Page
             ->send();
     }
 
-    protected function uploadBadgeImage(ExternalTextsParser $parser): void
+    protected function uploadBadgeImage(ExternalTextsParser $parser, BadgeImageStorage $images): void
     {
-        if (empty($this->data['image']) || ! filter_var($this->data['image'], FILTER_VALIDATE_URL)) {
+        if (empty($this->data['image'])) {
             return;
         }
 
-        if ($this->data['image'] == $parser->getBadgeImageUrl($this->data['code'])) {
+        if (! filter_var($this->data['image'], FILTER_VALIDATE_URL)) {
+            throw new RuntimeException('The badge image URL is invalid.');
+        }
+
+        if ($this->data['image'] === $parser->getBadgeImageUrl($this->data['code'])) {
             return;
         }
 
-        $image = Http::get($this->data['image']);
-
-        if (! $image->successful()) {
-            return;
-        }
-
-        $contentType = $image->header('content-type');
-
-        $gdImage = match ($contentType) {
-            'image/png' => imagecreatefrompng($this->data['image']),
-            'image/gif' => imagecreatefromgif($this->data['image']),
-            'image/jpeg' => imagecreatefromjpeg($this->data['image']),
-            default => false
-        };
-
-        if ($gdImage === false) {
-            Notification::make()
-                ->icon('heroicon-o-exclamation-triangle')
-                ->iconColor('danger')
-                ->color('danger')
-                ->title(__('filament::resources.notifications.badge_image_upload_failed'))
-                ->send();
-
-            return;
-        }
-
-        $uploadPath = public_path(sprintf('%s%s%s.gif',
-            rtrim(config('hotel.client.flash.relative_files_path'), '\//'),
-            '/c_images/album1584/',
-            $this->data['code'],
-        ));
-
-        imagegif($gdImage, $uploadPath);
+        $images->storeRemote($this->data['code'], $this->data['image']);
     }
 
     /**
