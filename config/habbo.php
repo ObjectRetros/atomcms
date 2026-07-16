@@ -36,9 +36,8 @@ return [
     ],
 
     'rcon' => [
-        'domain' => AF_INET,
-        'type' => SOCK_STREAM,
-        'protocol' => SOL_TCP,
+        'connect_timeout_seconds' => (float) env('RCON_CONNECT_TIMEOUT', 1),
+        'read_timeout_seconds' => (float) env('RCON_READ_TIMEOUT', 2),
     ],
 
     'client' => [

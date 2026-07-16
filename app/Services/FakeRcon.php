@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\Rcon;
+use App\Data\RconResponse;
 use App\Enums\CurrencyTypes;
+use App\Exceptions\RconConnectionException;
 use App\Models\User;
 
 /**
@@ -18,11 +20,21 @@ class FakeRcon implements Rcon
      */
     public array $calls = [];
 
+    /** @var list<RconResponse> */
+    private array $responses = [];
+
     public function __construct(private bool $connected = false) {}
 
     public function connected(bool $connected = true): self
     {
         $this->connected = $connected;
+
+        return $this;
+    }
+
+    public function respondWith(RconResponse ...$responses): self
+    {
+        array_push($this->responses, ...$responses);
 
         return $this;
     }
@@ -35,9 +47,21 @@ class FakeRcon implements Rcon
     /**
      * @param  array<string, mixed>|null  $data
      */
-    public function sendCommand(string $command, ?array $data = null): bool
+    public function sendCommand(string $command, ?array $data = null): RconResponse
     {
-        return $this->record(__FUNCTION__, ['command' => $command, 'data' => $data]);
+        $this->record(__FUNCTION__, ['command' => $command, 'data' => $data]);
+
+        if (! $this->connected) {
+            throw new RconConnectionException('Unable to connect to fake RCON');
+        }
+
+        $response = array_shift($this->responses) ?? new RconResponse(0, 'OK');
+
+        if ($command === 'disconnect' && $response->successful() && isset($data['user_id'])) {
+            User::whereKey((int) $data['user_id'])->update(['online' => '0']);
+        }
+
+        return $response;
     }
 
     public function sendGift(User $user, int $itemId, string $message = 'Here is a gift.'): void
@@ -98,10 +122,8 @@ class FakeRcon implements Rcon
     /**
      * @param  array<string, mixed>  $args
      */
-    private function record(string $method, array $args): bool
+    private function record(string $method, array $args): void
     {
         $this->calls[] = ['method' => $method, 'args' => $args];
-
-        return $this->connected;
     }
 }

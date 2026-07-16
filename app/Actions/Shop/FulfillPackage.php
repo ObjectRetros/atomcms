@@ -2,10 +2,9 @@
 
 namespace App\Actions\Shop;
 
-use App\Actions\SendBadges;
-use App\Actions\SendCurrency;
-use App\Actions\SendFurniture;
-use App\Contracts\Rcon;
+use App\Emulator\Contracts\BadgeRepository;
+use App\Emulator\Contracts\CurrencyRepository;
+use App\Emulator\Contracts\FurnitureRepository;
 use App\Enums\CurrencyTypes;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopItem;
@@ -16,10 +15,9 @@ use RuntimeException;
 class FulfillPackage
 {
     public function __construct(
-        private readonly Rcon $rcon,
-        private readonly SendCurrency $sendCurrency,
-        private readonly SendFurniture $sendFurniture,
-        private readonly SendBadges $sendBadges,
+        private readonly CurrencyRepository $currencies,
+        private readonly FurnitureRepository $furniture,
+        private readonly BadgeRepository $badges,
     ) {}
 
     /**
@@ -32,14 +30,22 @@ class FulfillPackage
     {
         $package->loadMissing('items');
 
+        if ($package->items->isEmpty()) {
+            throw new ShopPurchaseException(__('This package is currently unavailable'));
+        }
+
         foreach ($package->items as $item) {
             $quantity = (int) $item->pivot->quantity;
+
+            if (! $item->is_active || $quantity < 1) {
+                throw self::misconfigured($item);
+            }
 
             match ($item->type) {
                 'currency' => $this->giveCurrency($user, $item, $quantity),
                 'furniture' => $this->giveFurniture($user, $item, $quantity),
-                'badge' => $this->sendBadges->execute($user, $item->type_value),
-                'rank' => $this->giveRank($user, (int) $item->type_value),
+                'badge' => $this->giveBadges($user, $item),
+                'rank' => $this->giveRank($user, $item),
                 default => throw self::misconfigured($item),
             };
         }
@@ -59,26 +65,42 @@ class FulfillPackage
             throw self::misconfigured($item);
         }
 
-        $this->sendCurrency->execute($user, $currency, (int) $amount * $quantity);
+        $this->currencies->give($user, $currency, (int) $amount * $quantity);
     }
 
     private function giveFurniture(User $user, WebsiteShopItem $item, int $quantity): void
     {
-        $this->sendFurniture->execute($user, [
-            ['item_id' => (int) $item->type_value, 'amount' => $quantity],
-        ]);
-    }
+        $baseItemId = (int) $item->type_value;
 
-    private function giveRank(User $user, int $rank): void
-    {
-        if (! $this->rcon->isConnected()) {
-            $user->update(['rank' => $rank]);
-
-            return;
+        if ($baseItemId <= 0) {
+            throw self::misconfigured($item);
         }
 
-        $this->rcon->setRank($user, $rank);
-        $this->rcon->disconnectUser($user);
+        $this->furniture->grant($user, $baseItemId, $quantity);
+    }
+
+    private function giveBadges(User $user, WebsiteShopItem $item): void
+    {
+        $codes = array_values(array_filter(array_map('trim', explode(';', $item->type_value))));
+
+        if ($codes === []) {
+            throw self::misconfigured($item);
+        }
+
+        foreach ($codes as $badge) {
+            $this->badges->grant($user, $badge);
+        }
+    }
+
+    private function giveRank(User $user, WebsiteShopItem $item): void
+    {
+        $rank = (int) $item->type_value;
+
+        if ($rank <= 0) {
+            throw self::misconfigured($item);
+        }
+
+        $user->update(['rank' => $rank]);
     }
 
     private static function misconfigured(WebsiteShopItem $item): ShopPurchaseException

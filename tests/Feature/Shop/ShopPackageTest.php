@@ -1,9 +1,14 @@
 <?php
 
+use App\Actions\Shop\PurchaseShopPackage;
+use App\Data\RconResponse;
+use App\Emulator\Contracts\CurrencyRepository;
+use App\Enums\CurrencyTypes;
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 function makePackage(array $attributes = []): WebsiteShopPackage
 {
@@ -125,4 +130,91 @@ test('a gifted package delivers to the recipient and records the gift', function
     expect((float) $buyer->refresh()->website_balance)->toBe(95.0)
         ->and((int) $recipient->refresh()->credits)->toBe($recipientCredits + 200)
         ->and(WebsiteShopPurchase::where('user_id', $buyer->id)->where('gifted_to', $recipient->id)->count())->toBe(1);
+});
+
+test('an online recipient is disconnected before atomic delivery', function () {
+    installHotel();
+
+    $user = User::factory()->create(['website_balance' => 20, 'online' => '1'])->refresh();
+    $package = makePackage();
+    $startCredits = (int) $user->credits;
+    $this->rcon->connected();
+
+    $this->actingAs($user)
+        ->post(route('shop.buy-package', $package), [])
+        ->assertSessionHas('success');
+
+    expect($user->refresh()->online)->toBeFalse()
+        ->and((float) $user->website_balance)->toBe(15.0)
+        ->and((int) $user->credits)->toBe($startCredits + 200)
+        ->and(array_column($this->rcon->calls, 'method'))->toBe(['sendCommand', 'sendCommand'])
+        ->and($this->rcon->calls[0]['args']['command'])->toBe('alertuser')
+        ->and($this->rcon->calls[1]['args']['command'])->toBe('disconnect');
+});
+
+test('a failed online disconnect leaves balances and goods untouched', function () {
+    installHotel();
+
+    $user = User::factory()->create(['website_balance' => 20, 'online' => '1'])->refresh();
+    $package = makePackage();
+    $startCredits = (int) $user->credits;
+    $this->rcon->connected()->respondWith(
+        new RconResponse(2, 'Arcturus alert response'),
+        new RconResponse(1, 'Unable to disconnect user'),
+    );
+
+    $this->actingAs($user)
+        ->post(route('shop.buy-package', $package), [])
+        ->assertSessionHasErrors('message');
+
+    expect($user->refresh()->online)->toBeTrue()
+        ->and((float) $user->website_balance)->toBe(20.0)
+        ->and((int) $user->credits)->toBe($startCredits)
+        ->and(WebsiteShopPurchase::count())->toBe(0);
+});
+
+test('a fulfillment failure rolls back goods stock charge and history', function () {
+    installHotel();
+
+    $user = User::factory()->create(['website_balance' => 20]);
+    $package = makePackage(['stock' => 1]);
+    $startCredits = (int) $user->credits;
+    $currencies = app(CurrencyRepository::class);
+
+    $failingCurrencies = new class($currencies) implements CurrencyRepository
+    {
+        public function __construct(private readonly CurrencyRepository $inner) {}
+
+        public function balance(User $user, CurrencyTypes $currency): int
+        {
+            return $this->inner->balance($user, $currency);
+        }
+
+        public function give(User $user, CurrencyTypes $currency, int $amount): void
+        {
+            $this->inner->give($user, $currency, $amount);
+
+            throw new RuntimeException('Simulated fulfillment failure');
+        }
+
+        public function deduct(User $user, CurrencyTypes $currency, int $amount): bool
+        {
+            return $this->inner->deduct($user, $currency, $amount);
+        }
+
+        public function topBy(CurrencyTypes $currency, int $limit, array $excludeUserIds = []): Collection
+        {
+            return $this->inner->topBy($currency, $limit, $excludeUserIds);
+        }
+    };
+
+    $this->app->instance(CurrencyRepository::class, $failingCurrencies);
+
+    expect(fn () => app(PurchaseShopPackage::class)->execute($user, $package, null))
+        ->toThrow(RuntimeException::class, 'Simulated fulfillment failure');
+
+    expect((float) $user->refresh()->website_balance)->toBe(20.0)
+        ->and((int) $user->credits)->toBe($startCredits)
+        ->and($package->refresh()->stock)->toBe(1)
+        ->and(WebsiteShopPurchase::count())->toBe(0);
 });
