@@ -19,7 +19,7 @@
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.0",
         "opcodesio/log-viewer": "^3.24",
-        "qirolab/laravel-themer": "dev-master",
+        "qirolab/laravel-themer": "^2.4.99",
         "ryangjchandler/laravel-cloudflare-turnstile": "^3.0",
         "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-sluggable": "^3.7",
@@ -29,13 +29,12 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.9.1",
-        "filament/upgrade": "^5.0",
-        "fruitcake/laravel-debugbar": "*",
+        "fruitcake/laravel-debugbar": "^4.2.6",
         "itsgoingd/clockwork": "^5.3",
         "laravel/boost": "^2.4",
         "larastan/larastan": "^3.9",
         "laravel/pint": "^v1.14",
-        "laravel/sail": "*",
+        "laravel/sail": "^1.57",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
         "pestphp/pest": "^4.0",
@@ -61,8 +60,7 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -92,6 +90,39 @@
         }
     },
     "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "qirolab/laravel-themer",
+                "version": "2.4.99",
+                "source": {
+                    "url": "https://github.com/qirolab/laravel-themer.git",
+                    "type": "git",
+                    "reference": "d6bb07f3d7cd80760e1b9ac95ba02be5ed69c97c"
+                },
+                "dist": {
+                    "url": "https://api.github.com/repos/qirolab/laravel-themer/zipball/d6bb07f3d7cd80760e1b9ac95ba02be5ed69c97c",
+                    "type": "zip",
+                    "reference": "d6bb07f3d7cd80760e1b9ac95ba02be5ed69c97c"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Qirolab\\Theme\\": "src",
+                        "Qirolab\\Theme\\Database\\Factories\\": "database/factories"
+                    }
+                },
+                "require": {
+                    "php": ">=7.1.0",
+                    "facade/ignition-contracts": "^1.0",
+                    "illuminate/support": "^9.19|^10.0|^11.0|^12.0|^13.0"
+                },
+                "extra": {
+                    "laravel": {
+                        "providers": ["Qirolab\\Theme\\ThemeServiceProvider"]
+                    }
+                }
+            }
+        },
         {
             "type": "package",
             "package": {
@@ -154,7 +185,5 @@
                 }
             }
         }
-    ],
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    ]
 }
