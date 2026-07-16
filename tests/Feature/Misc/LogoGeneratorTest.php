@@ -19,10 +19,25 @@ test('staff can upload a generated logo', function () {
         ->assertJson(['success' => true]);
 
     $logoPath = setting('cms_logo');
+    $firstAbsolutePath = public_path(ltrim((string) $logoPath, '/'));
 
     try {
         expect($logoPath)->toContain('generated-logos')
-            ->and(file_exists(public_path(ltrim((string) $logoPath, '/'))))->toBeTrue();
+            ->and(file_exists($firstAbsolutePath))->toBeTrue();
+
+        $this->actingAs($staff)
+            ->post(route('store.generated-logo'), [
+                'logo' => UploadedFile::fake()->image('replacement.webp', 120, 50),
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $replacementPath = setting('cms_logo');
+
+        expect($replacementPath)->not->toBe($logoPath)
+            ->and(file_exists($firstAbsolutePath))->toBeFalse()
+            ->and(file_exists(public_path(ltrim((string) $replacementPath, '/'))))->toBeTrue()
+            ->and(File::files(public_path('assets/images/generated-logos')))->toHaveCount(1);
     } finally {
         File::deleteDirectory(public_path('assets/images/generated-logos'));
     }
