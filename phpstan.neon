@@ -35,4 +35,3 @@ parameters:
     excludePaths:
         - app/Console/Commands/AtomSetupCommand.php
         - app/Filament/
-
