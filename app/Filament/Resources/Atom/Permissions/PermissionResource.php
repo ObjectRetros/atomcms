@@ -47,6 +47,11 @@ class PermissionResource extends Resource
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, mixed>
+     */
     public static function normalizeFormData(array $data): array
     {
         $data['log_commands'] = ($data['log_commands'] ?? '') === ''

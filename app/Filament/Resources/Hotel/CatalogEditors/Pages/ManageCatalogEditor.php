@@ -16,6 +16,8 @@ use Filament\Resources\Pages\Page;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 class ManageCatalogEditor extends Page implements HasTable
@@ -32,6 +34,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     /** Server-driven open state. Once rendered, expand/collapse runs client-side
      *  so drag-and-drop isn't interrupted by Livewire morphs. */
+    /** @var array<int, int> */
     public array $initialOpenIds = [];
 
     public function mount(): void
@@ -61,8 +64,10 @@ class ManageCatalogEditor extends Page implements HasTable
 
     /** The recursive tree partial reads pagesByParent on every node; without
      *  this the Cache::remember deserialize fires thousands of times per render. */
+    /** @var Collection<int|string, EloquentCollection<int, CatalogPage>>|null */
     private ?Collection $pagesByParentCache = null;
 
+    /** @return Collection<int|string, EloquentCollection<int, CatalogPage>> */
     public function getPagesByParentProperty(): Collection
     {
         return $this->pagesByParentCache ??= $this->tree()->pagesGroupedByParent();
@@ -86,6 +91,7 @@ class ManageCatalogEditor extends Page implements HasTable
         return null;
     }
 
+    /** @return array<int, CatalogPage> */
     public function getBreadcrumbProperty(): array
     {
         return $this->tree()->breadcrumb($this->getSelectedPageProperty());
@@ -134,6 +140,7 @@ class ManageCatalogEditor extends Page implements HasTable
         $this->searchTerm = '';
     }
 
+    /** @param array<int, mixed> $orderedIds */
     public function reorderPages(int $parentId, array $orderedIds): void
     {
         $this->reorderService()->reorderPages($parentId, $orderedIds);
@@ -153,7 +160,8 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Page moved')->success()->send();
     }
 
-    protected function getTableQuery()
+    /** @return Builder<CatalogItem> */
+    protected function getTableQuery(): Builder
     {
         if (! $this->selectedPageId) {
             return CatalogItem::query()->whereRaw('1=0');
@@ -169,6 +177,7 @@ class ManageCatalogEditor extends Page implements HasTable
         return CatalogItemsTable::configure($table, fn () => $this->selectedPageId);
     }
 
+    /** @param array<int, mixed> $order */
     public function reorderTable(array $order): void
     {
         if (! $this->selectedPageId) {
@@ -179,6 +188,7 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Items reordered')->success()->send();
     }
 
+    /** @return Collection<int, CatalogItem> */
     public function getLockedItemsProperty(): Collection
     {
         if (! $this->selectedPageId) {

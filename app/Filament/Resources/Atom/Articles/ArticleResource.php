@@ -23,9 +23,11 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -54,6 +56,7 @@ class ArticleResource extends Resource
             ->components(static::getForm());
     }
 
+    /** @return array<int, Component> */
     public static function getForm(): array
     {
         return [
@@ -142,6 +145,7 @@ class ArticleResource extends Resource
             ]);
     }
 
+    /** @return array<int, Column> */
     public static function getTable(): array
     {
         return [

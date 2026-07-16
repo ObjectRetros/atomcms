@@ -10,10 +10,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Table;
 
 class WebsiteShopItemResource extends Resource
@@ -30,6 +32,7 @@ class WebsiteShopItemResource extends Resource
 
     protected static ?string $slug = 'shop/items';
 
+    /** @return array<int, Component> */
     public static function getFormFields(): array
     {
         return [
@@ -62,6 +65,7 @@ class WebsiteShopItemResource extends Resource
         ];
     }
 
+    /** @return array<int, Column> */
     public static function getTableColumns(): array
     {
         return [

@@ -71,6 +71,7 @@ class CatalogItemFullForm
         ];
     }
 
+    /** @return array<string, bool|int|string|null> */
     public static function fillFrom(CatalogItem $record): array
     {
         return [
@@ -92,6 +93,11 @@ class CatalogItemFullForm
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, int|string|null>
+     */
     public static function castForSave(array $data): array
     {
         return [
