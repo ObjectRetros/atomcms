@@ -19,11 +19,9 @@ class PaypalController extends Controller
 
     private const STATUS_COMPLETED = 'COMPLETED';
 
-    public function __construct(private readonly PayPalClient $provider) {}
-
-    public function process(AccountTopupFormRequest $request): Response|RedirectResponse
+    public function process(AccountTopupFormRequest $request, PayPalClient $provider): Response|RedirectResponse
     {
-        $response = $this->provider->createOrder($this->buildOrderData($request->integer('amount')));
+        $response = $provider->createOrder($this->buildOrderData($request->integer('amount')));
 
         $approvalUrl = isset($response['id']) ? $this->approvalUrl($response['links'] ?? []) : null;
 
@@ -89,7 +87,7 @@ class PaypalController extends Controller
         return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
     }
 
-    public function successful(Request $request): Response
+    public function successful(Request $request, PayPalClient $provider): Response
     {
         $request->validate([
             'token' => 'required',
@@ -107,7 +105,7 @@ class PaypalController extends Controller
             return to_route('shop.index')->with('success', __('Transaction successful'));
         }
 
-        $response = $this->provider->capturePaymentOrder($request['token']);
+        $response = $provider->capturePaymentOrder($request['token']);
         $capture = data_get($response, 'purchase_units.0.payments.captures.0');
 
         if (! isset($response['status']) || $capture === null) {

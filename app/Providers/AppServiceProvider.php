@@ -6,6 +6,7 @@ use App\Contracts\Rcon;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
 use App\Services\AfterCommitRcon;
+use App\Services\HousekeepingPermissionsService;
 use App\Services\InstallationService;
 use App\Services\PermissionsService;
 use App\Services\RconService;
@@ -14,7 +15,6 @@ use App\Services\ViteService;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Vite;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
@@ -45,6 +45,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(
             PermissionsService::class,
             fn () => new PermissionsService,
+        );
+
+        $this->app->singleton(
+            HousekeepingPermissionsService::class,
+            fn () => new HousekeepingPermissionsService,
         );
 
         // Wrapped so RCON sends inside a DB transaction only fire once it
@@ -83,13 +88,6 @@ class AppServiceProvider extends ServiceProvider
         Table::configureUsing(function (Table $table) {
             $table->paginated([10, 25, 50]);
         });
-
-        $settingsService = app(SettingsService::class);
-        $badgePath = $settingsService->getOrDefault('badge_path_filesystem', '/var/www/gamedata/c_images/album1584');
-        Config::set('filesystems.disks.badges.root', $badgePath);
-
-        $adsPath = $settingsService->getOrDefault('ads_path_filesystem', '/var/www/gamedata/custom');
-        Config::set('filesystems.disks.ads.root', $adsPath);
 
         WebsiteDrawBadge::observe(WebsiteDrawBadgeObserver::class);
     }

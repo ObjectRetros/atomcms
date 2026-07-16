@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HousekeepingPermissionsService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -28,4 +29,10 @@ use Illuminate\Support\Carbon;
 class WebsiteHousekeepingPermission extends Model
 {
     protected $guarded = ['id'];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => HousekeepingPermissionsService::clearCache());
+        static::deleted(fn () => HousekeepingPermissionsService::clearCache());
+    }
 }

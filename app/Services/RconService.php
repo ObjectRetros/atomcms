@@ -14,23 +14,11 @@ class RconService implements Rcon
 
     protected bool $isConnected = false;
 
-    /**
-     * @var array{ip: mixed, port: int}
-     */
-    protected array $config;
-
-    public function __construct()
-    {
-        $this->config = [
-            'ip' => setting('rcon_ip'),
-            'port' => (int) setting('rcon_port'),
-        ];
-
-        $this->initialize();
-    }
+    protected bool $connectionAttempted = false;
 
     private function initialize(): void
     {
+        $this->connectionAttempted = true;
         $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
         if ($socket === false) {
@@ -43,7 +31,7 @@ class RconService implements Rcon
 
         $this->socket = $socket;
 
-        if (! @socket_connect($this->socket, $this->config['ip'], $this->config['port'])) {
+        if (! @socket_connect($this->socket, (string) setting('rcon_ip'), (int) setting('rcon_port'))) {
             Log::error('RCON connection failed: ' . socket_strerror(socket_last_error()));
 
             $this->closeConnection();
@@ -66,12 +54,16 @@ class RconService implements Rcon
 
     public function isConnected(): bool
     {
+        if (! $this->connectionAttempted) {
+            $this->initialize();
+        }
+
         return $this->isConnected;
     }
 
     public function sendCommand(string $command, ?array $data = null): bool
     {
-        if (! $this->isConnected) {
+        if (! $this->isConnected()) {
             Log::error('RCON command failed: Not connected');
 
             $this->closeConnection();

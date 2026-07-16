@@ -8,23 +8,35 @@ use Illuminate\Support\Facades\Cache;
 
 class PermissionsService
 {
-    public Collection $permissions;
+    private ?Collection $permissions = null;
 
-    public function __construct()
+    private function permissions(): Collection
     {
-        $data = Cache::remember('website_permissions', now()->addMinutes(30), function () {
+        if ($this->permissions !== null) {
+            return $this->permissions;
+        }
+
+        $data = Cache::remember('website_permissions', now()->addMinutes(30), function (): array {
             return WebsitePermission::all()->pluck('min_rank', 'permission')->toArray();
         });
 
-        $this->permissions = collect($data);
+        return $this->permissions = collect($data);
     }
 
     public function getOrDefault(string $permissionName, bool $default = false): bool
     {
-        if (! $this->permissions->has($permissionName)) {
+        $permissions = $this->permissions();
+
+        if (! $permissions->has($permissionName)) {
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        return auth()->check() && auth()->user()->rank >= (int) $permissions->get($permissionName);
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('website_permissions');
+        app()->forgetInstance(self::class);
     }
 }

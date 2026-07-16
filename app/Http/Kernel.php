@@ -4,6 +4,7 @@ namespace App\Http;
 
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\BannedMiddleware;
+use App\Http\Middleware\ConfigureRuntimeFilesystems;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureEmulatorFeature;
 use App\Http\Middleware\FindRetrosMiddleware;
@@ -54,6 +55,7 @@ class Kernel extends HttpKernel
         ValidatePostSize::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
+        ConfigureRuntimeFilesystems::class,
         SetThemeMiddleware::class,
         InstallationMiddleware::class,
     ];
