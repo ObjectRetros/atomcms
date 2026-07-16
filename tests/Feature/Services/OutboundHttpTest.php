@@ -5,6 +5,7 @@ use App\Rules\GoogleRecaptchaRule;
 use App\Services\FindRetrosService;
 use App\Services\IpLookupService;
 use App\Support\DiscordWebhookUrl;
+use App\Support\PublicHttpUrlResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -34,6 +35,36 @@ test('discord webhook URLs are restricted to official HTTPS endpoints', function
         ->toBeFalse()
         ->and(DiscordWebhookUrl::isValid('https://discord.com/api/webhooks/123/token#fragment'))
         ->toBeFalse();
+});
+
+test('badge image URLs resolve only to public HTTPS destinations', function () {
+    $public = new PublicHttpUrlResolver(static fn (string $host): array => ['93.184.216.34']);
+    $private = new PublicHttpUrlResolver(static fn (string $host): array => ['127.0.0.1']);
+    $mixed = new PublicHttpUrlResolver(static fn (string $host): array => ['93.184.216.34', '10.0.0.1']);
+    $carrierGradeNat = new PublicHttpUrlResolver(static fn (string $host): array => ['100.64.0.1']);
+    $documentation = new PublicHttpUrlResolver(static fn (string $host): array => ['192.0.2.1']);
+    $multicast = new PublicHttpUrlResolver(static fn (string $host): array => ['224.0.0.1']);
+
+    expect($public->resolve('https://images.example.com/badge.gif'))
+        ->not->toBeNull()
+        ->and($public->resolve('https://8.8.8.8/badge.gif'))
+        ->not->toBeNull()
+        ->and($public->resolve('http://images.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($public->resolve('https://images.example.com:8443/badge.gif'))
+        ->toBeNull()
+        ->and($public->resolve('https://user:pass@images.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($private->resolve('https://internal.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($mixed->resolve('https://mixed.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($carrierGradeNat->resolve('https://carrier.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($documentation->resolve('https://documentation.example.com/badge.gif'))
+        ->toBeNull()
+        ->and($multicast->resolve('https://multicast.example.com/badge.gif'))
+        ->toBeNull();
 });
 
 test('findretros uses encoded HTTPS requests and fails open on service errors', function () {
