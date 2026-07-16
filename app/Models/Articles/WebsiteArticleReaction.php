@@ -31,7 +31,11 @@ class WebsiteArticleReaction extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'reaction',
+        'active',
+    ];
 
     public $timestamps = false;
 
@@ -46,15 +50,6 @@ class WebsiteArticleReaction extends Model
             ->where('article_id', $articleId)
             ->where('reaction', $reaction)
             ->first();
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
     }
 
     public function article(): BelongsTo

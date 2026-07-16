@@ -23,6 +23,7 @@ class ReactionService
             $existingReaction->update(['active' => ! $existingReaction->active]);
         } else {
             $article->reactions()->create([
+                'user_id' => $user->id,
                 'reaction' => $reaction,
             ]);
         }

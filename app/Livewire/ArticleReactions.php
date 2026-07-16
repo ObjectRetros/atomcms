@@ -62,6 +62,7 @@ class ArticleReactions extends Component
         }
 
         $this->article->reactions()->create([
+            'user_id' => $user->id,
             'reaction' => $reaction,
         ]);
 

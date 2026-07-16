@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
+use App\Models\User;
 use App\Rules\WebsiteWordfilterRule;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
@@ -23,11 +24,14 @@ class ArticleComments extends Component
 
     public function postComment(): void
     {
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
         $this->validate([
             'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule],
         ]);
 
-        if ($this->article->userHasReachedArticleCommentLimit()) {
+        if ($this->article->userHasReachedArticleCommentLimit($user)) {
             $this->addError('comment', __('You can only comment :amount times per article', ['amount' => setting('max_comment_per_article')]));
 
             return;
@@ -40,7 +44,7 @@ class ArticleComments extends Component
         }
 
         $this->article->comments()->create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'comment' => $this->comment,
         ]);
 

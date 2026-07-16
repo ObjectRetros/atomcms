@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -92,9 +91,9 @@ class WebsiteArticle extends Model
         return $this->hasMany(WebsiteArticleComment::class, 'article_id');
     }
 
-    public function userHasReachedArticleCommentLimit(): bool
+    public function userHasReachedArticleCommentLimit(User $user): bool
     {
-        return $this->comments()->where('user_id', '=', Auth::id())->count() >= (int) setting('max_comment_per_article');
+        return $this->comments()->where('user_id', $user->id)->count() >= (int) setting('max_comment_per_article');
     }
 
     protected static function boot()
