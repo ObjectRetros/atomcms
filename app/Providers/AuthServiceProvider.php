@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+use App\Models\Help\WebsiteHelpCenterTicket;
+use App\Models\Help\WebsiteHelpCenterTicketReply;
 use App\Policies\ActivityPolicy;
+use App\Policies\WebsiteHelpCenterTicketPolicy;
+use App\Policies\WebsiteHelpCenterTicketReplyPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 
@@ -17,6 +21,8 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
         Activity::class => ActivityPolicy::class,
+        WebsiteHelpCenterTicket::class => WebsiteHelpCenterTicketPolicy::class,
+        WebsiteHelpCenterTicketReply::class => WebsiteHelpCenterTicketReplyPolicy::class,
     ];
 
     /**
