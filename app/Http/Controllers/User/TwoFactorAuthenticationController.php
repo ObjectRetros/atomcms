@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,14 +19,14 @@ class TwoFactorAuthenticationController extends Controller
 
     public function store(Request $request, EnableTwoFactorAuthentication $enable): RedirectResponse
     {
-        $enable($request->user());
+        $enable(AuthenticatedUser::from($request));
 
         return redirect()->route('settings.two-factor')->with('success', __('Two-factor authentication has been enabled. Please scan the QR code to continue.'));
     }
 
     public function verify(Request $request): RedirectResponse
     {
-        $confirmed = $request->user()->confirmTwoFactorAuthentication($request->input('code'));
+        $confirmed = AuthenticatedUser::from($request)->confirmTwoFactorAuthentication($request->string('code')->toString());
         if (! $confirmed) {
             return back()->withErrors('Invalid Two Factor Authentication code');
         }
@@ -35,7 +36,7 @@ class TwoFactorAuthenticationController extends Controller
 
     public function destroy(Request $request, DisableTwoFactorAuthentication $disable): RedirectResponse
     {
-        $disable($request->user());
+        $disable(AuthenticatedUser::from($request));
 
         return redirect()->route('settings.two-factor')->with('success', __('Two-factor authentication has been disabled.'));
     }

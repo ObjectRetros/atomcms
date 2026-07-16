@@ -6,6 +6,7 @@ use App\Actions\Badge\CreateDrawnBadge;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Badge\BadgePurchaseRequest;
 use App\Services\SettingsService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -26,7 +27,7 @@ class BadgeController extends Controller
     public function buy(BadgePurchaseRequest $request, CreateDrawnBadge $createDrawnBadge): JsonResponse
     {
         $validated = $request->validated();
-        $badge = $createDrawnBadge->execute($request->user(), [
+        $badge = $createDrawnBadge->execute(AuthenticatedUser::from($request), [
             'badge_data' => (string) $validated['badge_data'],
             'badge_name' => (string) $validated['badge_name'],
             'badge_description' => (string) $validated['badge_description'],

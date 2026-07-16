@@ -33,7 +33,13 @@ class FulfillPackage
         $package->loadMissing('items');
 
         foreach ($package->items as $item) {
-            $quantity = (int) $item->pivot->quantity;
+            $pivot = $item->pivot;
+
+            if ($pivot === null) {
+                throw self::misconfigured($item);
+            }
+
+            $quantity = $pivot->quantity;
 
             match ($item->type) {
                 'currency' => $this->giveCurrency($user, $item, $quantity),

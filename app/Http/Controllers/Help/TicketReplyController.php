@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WebsiteTicketReplyFormRequest;
 use App\Models\Help\WebsiteHelpCenterTicket;
 use App\Models\Help\WebsiteHelpCenterTicketReply;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 
 class TicketReplyController extends Controller
@@ -26,7 +27,7 @@ class TicketReplyController extends Controller
 
         $data = $request->validated();
         $ticket->replies()->create([
-            'user_id' => $request->user()->id,
+            'user_id' => AuthenticatedUser::from($request)->id,
             'content' => $data['content'],
         ]);
 

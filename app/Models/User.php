@@ -30,6 +30,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -424,8 +425,17 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function confirmTwoFactorAuthentication(string $code): bool
     {
-        $codeIsValid = app(TwoFactorAuthenticationProvider::class)
-            ->verify(decrypt($this->two_factor_secret), $code);
+        if ($this->two_factor_secret === null) {
+            return false;
+        }
+
+        try {
+            $secret = decrypt($this->two_factor_secret);
+        } catch (DecryptException) {
+            return false;
+        }
+
+        $codeIsValid = app(TwoFactorAuthenticationProvider::class)->verify($secret, $code);
 
         if (! $codeIsValid) {
             return false;

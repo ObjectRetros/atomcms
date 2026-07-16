@@ -105,19 +105,24 @@ class HomeService
         DB::transaction(function () use ($itemsCollection, $allItems): void {
             $allItems->each(function (UserHomeItem $item) use ($itemsCollection): void {
                 $itemData = $itemsCollection->where('id', $item->id)->first();
+                $homeItem = $item->homeItem;
+
+                if ($homeItem === null) {
+                    return;
+                }
 
                 $item->placed = (bool) ($itemData['placed'] ?? $item->placed);
                 $item->x = (int) ($itemData['x'] ?? $item->x);
                 $item->y = (int) ($itemData['y'] ?? $item->y);
                 $item->z = (int) ($itemData['z'] ?? $item->z);
                 $item->is_reversed = (bool) ($itemData['is_reversed'] ?? $item->is_reversed);
-                $item->theme = $itemData['theme'] ?? $item->homeItem->getDefaultTheme();
+                $item->theme = $itemData['theme'] ?? $homeItem->getDefaultTheme();
 
                 if (! empty($itemData['extra_data'])) {
                     $item->extra_data = strip_tags($itemData['extra_data']);
                 }
 
-                if (! $item->placed && $item->homeItem->type === HomeItemType::Note) {
+                if (! $item->placed && $homeItem->type === HomeItemType::Note) {
                     $item->extra_data = '';
                 }
 

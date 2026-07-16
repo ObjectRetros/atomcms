@@ -4,10 +4,10 @@ namespace App\Services\User;
 
 use App\Data\SessionLogData;
 use App\Models\Session;
+use App\Support\AuthenticatedUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 
 class SessionService
@@ -18,7 +18,7 @@ class SessionService
     public function fetchSessionLogs(Request $request): Collection
     {
         return collect(
-            Auth::user()->sessions,
+            AuthenticatedUser::from($request)->sessions,
         )->map(function ($session) use ($request) {
             $agent = $this->createAgent($session);
 

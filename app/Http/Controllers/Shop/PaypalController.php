@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountTopupFormRequest;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class PaypalController extends Controller
             return $this->orderCreationFailed($response);
         }
 
-        $request->user()->transactions()->create([
+        AuthenticatedUser::from($request)->transactions()->create([
             'transaction_id' => $orderId,
             'amount' => 0,
         ]);
@@ -107,7 +108,7 @@ class PaypalController extends Controller
             'token' => 'required',
         ]);
 
-        $user = $request->user();
+        $user = AuthenticatedUser::from($request);
 
         $transaction = $user->transactions()->where('transaction_id', $request['token'])->first();
         if ($transaction === null) {
@@ -201,7 +202,7 @@ class PaypalController extends Controller
             'token' => 'required',
         ]);
 
-        $transaction = $request->user()->transactions()->where('transaction_id', $request['token'])->first();
+        $transaction = AuthenticatedUser::from($request)->transactions()->where('transaction_id', $request['token'])->first();
         if ($transaction !== null) {
             $transaction->update([
                 'status' => self::STATUS_CANCELLED,

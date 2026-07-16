@@ -42,6 +42,11 @@ class ValidGifBadge implements ValidationRule
     public static function decode(string $value): ?string
     {
         $stripped = preg_replace('#^data:image/\w+;base64,#i', '', $value);
+
+        if ($stripped === null) {
+            return null;
+        }
+
         $decoded = base64_decode($stripped, true);
 
         return $decoded === false ? null : $decoded;

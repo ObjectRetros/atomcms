@@ -41,10 +41,11 @@ class Login extends \Filament\Auth\Pages\Login
         }
 
         $user = Filament::auth()->user();
+        $panel = Filament::getCurrentOrDefaultPanel();
 
         if (
             ($user instanceof FilamentUser) &&
-            (! $user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
+            ($panel === null || ! $user->canAccessPanel($panel))
         ) {
             Filament::auth()->logout();
 

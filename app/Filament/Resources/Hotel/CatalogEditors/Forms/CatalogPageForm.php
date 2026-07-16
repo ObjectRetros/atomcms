@@ -70,6 +70,8 @@ class CatalogPageForm
 
     public static function sanitizeTag(?string $value): string
     {
-        return $value ? strtolower(preg_replace('/[^a-z]/', '', $value)) : '';
+        $sanitized = $value ? preg_replace('/[^a-z]/', '', $value) : null;
+
+        return is_string($sanitized) ? strtolower($sanitized) : '';
     }
 }

@@ -17,6 +17,7 @@ use App\Filament\Traits\TranslatableResource;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -191,7 +192,7 @@ class UserResource extends Resource
                                         Select::make('rank')
                                             ->native(false)
                                             ->label(__('filament::resources.inputs.rank'))
-                                            ->options(Permission::where('id', '<', auth()->user()->rank)->get()->pluck('rank_name', 'id')),
+                                            ->options(Permission::where('id', '<', AuthenticatedUser::current()->rank)->get()->pluck('rank_name', 'id')),
 
                                         Toggle::make('hidden_staff')
                                             ->label(__('filament::resources.inputs.is_hidden'))
