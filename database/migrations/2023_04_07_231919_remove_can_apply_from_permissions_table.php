@@ -14,4 +14,13 @@ return new class extends Migration
             }
         });
     }
+
+    public function down(): void
+    {
+        if (! Schema::hasColumn('permissions', 'can_apply')) {
+            Schema::table('permissions', function (Blueprint $table) {
+                $table->boolean('can_apply')->default(false);
+            });
+        }
+    }
 };

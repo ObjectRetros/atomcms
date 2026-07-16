@@ -10,13 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (columnExists('users', 'referral_code')) {
-                Schema::dropColumns('users', 'referral_code');
-            }
-
-            $table->string('referral_code')->nullable()->unique()->after('home_room');
-        });
+        if (! Schema::hasColumn('users', 'referral_code')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('referral_code')->nullable()->unique()->after('home_room');
+            });
+        }
 
         foreach (User::whereNull('referral_code')->get() as $user) {
             $user->update(['referral_code' => sprintf('%s%s', $user->id, Str::random(8))]);
@@ -25,10 +23,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        if (Schema::hasColumn('users', 'referral_code')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('referral_code');
             });
-        });
+        }
     }
 };

@@ -8,7 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::table('website_permissions')->truncate();
         Schema::table('website_permissions', function (Blueprint $table) {
             $table->renameColumn('key', 'permission');
         });
@@ -19,6 +18,21 @@ return new class extends Migration
 
         Schema::table('website_permissions', function (Blueprint $table) {
             $table->renameColumn('comment', 'description');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('website_permissions', function (Blueprint $table) {
+            $table->renameColumn('description', 'comment');
+        });
+
+        Schema::table('website_permissions', function (Blueprint $table) {
+            $table->renameColumn('min_rank', 'value');
+        });
+
+        Schema::table('website_permissions', function (Blueprint $table) {
+            $table->renameColumn('permission', 'key');
         });
     }
 };

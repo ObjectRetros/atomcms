@@ -12,4 +12,11 @@ return new class extends Migration
             $table->text('value')->change();
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('website_settings', function (Blueprint $table) {
+            $table->string('value')->change();
+        });
+    }
 };
