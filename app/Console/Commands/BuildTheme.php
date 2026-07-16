@@ -12,7 +12,7 @@ class BuildTheme extends Command
 
     protected $description = 'Build a selected theme assets';
 
-    public function handle()
+    public function handle(): int
     {
         $themes = $this->getAvailableThemes();
 
@@ -35,6 +35,7 @@ class BuildTheme extends Command
         return Command::SUCCESS;
     }
 
+    /** @return Collection<int, string> */
     private function getAvailableThemes(): Collection
     {
         $themesPath = resource_path('themes');

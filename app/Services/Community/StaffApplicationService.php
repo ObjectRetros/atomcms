@@ -16,17 +16,18 @@ class StaffApplicationService
         ]);
     }
 
+    /** @return Collection<int, WebsiteOpenPosition> */
     public function fetchOpenPositions(): Collection
     {
         return WebsiteOpenPosition::canApply()->with('permission')->get();
     }
 
-    public function hasUserAppliedForPosition($user, $positionId): bool
+    public function hasUserAppliedForPosition(User $user, int $positionId): bool
     {
         return $user->applications()->where('rank_id', $positionId)->exists();
     }
 
-    public function isPositionOpenForApplication($position): bool
+    public function isPositionOpenForApplication(WebsiteOpenPosition $position): bool
     {
         $currentTime = now();
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class StaffService
 {
+    /** @return Collection<int, Permission> */
     public function fetchStaffPositions(): Collection
     {
         $cacheEnabled = setting('enable_caching') === '1';
@@ -42,6 +43,7 @@ class StaffService
         return $employees;
     }
 
+    /** @return list<int> */
     public function fetchEmployeeIds(): array
     {
         $cacheEnabled = setting('enable_caching') === '1';

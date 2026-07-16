@@ -129,6 +129,11 @@ class CreateNewUser implements CreatesNewUsers
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $inputs
+     *
+     * @return array<string, mixed>
+     */
     private function validate(array $inputs): array
     {
         $rules = [

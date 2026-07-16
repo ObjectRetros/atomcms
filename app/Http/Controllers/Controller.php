@@ -11,6 +11,7 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    /** @param  array<string, mixed>  $args */
     public function jsonResponse(array $args, int $status = 200): JsonResponse
     {
         return response()->json([

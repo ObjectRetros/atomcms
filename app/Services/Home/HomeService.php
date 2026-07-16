@@ -80,6 +80,7 @@ class HomeService
         });
     }
 
+    /** @param  array{backgroundId?: int, items?: list<array<string, mixed>>}  $data */
     public function saveItems(User $user, array $data): void
     {
         if (isset($data['backgroundId'])) {

@@ -12,7 +12,7 @@ class AtomSetupCommand extends Command
 
     protected $description = 'Takes you through a basic setup, allowing you to define general settings';
 
-    private function progressInfo(int $step)
+    private function progressInfo(int $step): void
     {
         $this->info(sprintf('Step %s/13', $step));
         $this->newLine();

@@ -3,17 +3,18 @@
 namespace App\Services\Community\RareValues;
 
 use App\Models\Community\RareValue\WebsiteRareValueCategory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class RareValueCategoriesService
 {
+    /** @return Collection<int, WebsiteRareValueCategory> */
     public function fetchAllCategories(): Collection
     {
         return WebsiteRareValueCategory::all();
     }
 
-    public function fetchCategoriesByPriority(): Builder|Collection
+    /** @return Collection<int, WebsiteRareValueCategory> */
+    public function fetchCategoriesByPriority(): Collection
     {
         return WebsiteRareValueCategory::orderBy('priority')->with('furniture')->get();
     }
@@ -23,6 +24,7 @@ class RareValueCategoriesService
         return WebsiteRareValueCategory::orderBy('priority')->whereId($id)->with('furniture')->first();
     }
 
+    /** @return Collection<int, WebsiteRareValueCategory> */
     public function searchCategories(string $searchTerm): Collection
     {
         return WebsiteRareValueCategory::orderBy('priority')->whereHas('furniture', function ($query) use ($searchTerm) {

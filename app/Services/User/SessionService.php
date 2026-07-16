@@ -2,6 +2,8 @@
 
 namespace App\Services\User;
 
+use App\Data\SessionLogData;
+use App\Models\Session;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -10,6 +12,9 @@ use Jenssegers\Agent\Agent;
 
 class SessionService
 {
+    /**
+     * @return Collection<int, SessionLogData>
+     */
     public function fetchSessionLogs(Request $request): Collection
     {
         return collect(
@@ -17,20 +22,20 @@ class SessionService
         )->map(function ($session) use ($request) {
             $agent = $this->createAgent($session);
 
-            return (object) [
-                'agent' => [
+            return new SessionLogData(
+                agent: [
                     'is_desktop' => $agent->isDesktop(),
                     'platform' => $agent->platform(),
                     'browser' => $agent->browser(),
                 ],
-                'ip_address' => $session->ip_address,
-                'is_current_device' => $session->id === $request->session()->getId(),
-                'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
-            ];
+                ipAddress: $session->ip_address,
+                isCurrentDevice: $session->id === $request->session()->getId(),
+                lastActive: Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+            );
         });
     }
 
-    protected function createAgent($session): Agent
+    protected function createAgent(Session $session): Agent
     {
         return tap(new Agent, function ($agent) use ($session) {
             $agent->setUserAgent($session->user_agent);

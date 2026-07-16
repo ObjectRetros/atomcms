@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LogoGeneratorRequest;
 use App\Models\Miscellaneous\WebsiteSetting;
 use App\Services\SettingsService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class LogoGeneratorController extends Controller
 {
-    public function index()
+    public function index(): RedirectResponse|View
     {
         if (! hasPermission('generate_logo')) {
             return to_route('me.show')->with([
@@ -21,7 +24,7 @@ class LogoGeneratorController extends Controller
         return view('logo-generator');
     }
 
-    public function store(LogoGeneratorRequest $request)
+    public function store(LogoGeneratorRequest $request): JsonResponse
     {
         $file = $request->file('logo');
         $directory = 'assets/images/generated-logos';

@@ -162,7 +162,7 @@ class RedirectIfTwoFactorAuthenticatable
             : redirect()->route('two-factor.login');
     }
 
-    private function convertUserPassword(User $user, string $password)
+    private function convertUserPassword(User $user, string $password): void
     {
         if ($user->password == md5($password)) {
             $user->update([
@@ -171,6 +171,7 @@ class RedirectIfTwoFactorAuthenticatable
         }
     }
 
+    /** @return array<string, mixed> */
     private function validate(Request $request): array
     {
         $rules = [];

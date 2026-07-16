@@ -11,6 +11,7 @@ use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class AccountSettingsFormRequest extends FormRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         $rules = [

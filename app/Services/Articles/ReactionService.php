@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class ReactionService
 {
+    /** @return array{success: bool, added?: bool, username?: string} */
     public function toggleReaction(WebsiteArticle $article, User $user, Request $request): array
     {
         $reaction = $request->get('reaction');

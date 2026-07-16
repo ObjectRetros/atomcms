@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 
 class HousekeepingPermissionsService
 {
+    /** @var Collection<string, int> */
     public Collection $permissions;
 
     public function __construct()

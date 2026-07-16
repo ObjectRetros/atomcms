@@ -10,9 +10,11 @@ use Throwable;
 
 class SettingsService
 {
+    /** @var Collection<string, mixed>|null */
     private ?Collection $cachedSettings = null;
 
-    protected function settings()
+    /** @return Collection<string, mixed> */
+    protected function settings(): Collection
     {
         if ($this->cachedSettings !== null) {
             return $this->cachedSettings;
@@ -51,7 +53,8 @@ class SettingsService
         }
     }
 
-    private function fetchSettings()
+    /** @return Collection<string, mixed> */
+    private function fetchSettings(): Collection
     {
         try {
             if (! Schema::hasTable('website_settings')) {

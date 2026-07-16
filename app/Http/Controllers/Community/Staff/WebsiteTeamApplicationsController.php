@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Community\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -48,7 +49,7 @@ class WebsiteTeamApplicationsController extends Controller
         ]);
     }
 
-    public function store(Request $request, WebsiteOpenPosition $position)
+    public function store(Request $request, WebsiteOpenPosition $position): RedirectResponse
     {
         abort_unless($position->position_kind === 'team', 404);
 

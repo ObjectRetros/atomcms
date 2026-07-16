@@ -11,6 +11,7 @@ class RegisterFormRequest extends FormRequest
 {
     protected $errorBag = 'register';
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

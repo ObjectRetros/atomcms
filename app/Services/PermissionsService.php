@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class PermissionsService
 {
+    /** @var Collection<string, int> */
     public Collection $permissions;
 
     public function __construct()

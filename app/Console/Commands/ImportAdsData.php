@@ -55,6 +55,7 @@ class ImportAdsData extends Command
         return true;
     }
 
+    /** @return list<string> */
     private function getImageFiles(string $adsPath): array
     {
         return array_filter(scandir($adsPath), function ($file) use ($adsPath) {
@@ -65,6 +66,7 @@ class ImportAdsData extends Command
         });
     }
 
+    /** @param  list<string>  $files */
     private function processFiles(array $files): void
     {
         // Get existing images to avoid duplicates

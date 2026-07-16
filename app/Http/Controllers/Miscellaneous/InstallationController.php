@@ -8,18 +8,21 @@ use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
 use App\Services\InstallationService;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class InstallationController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('installation.index');
     }
 
-    public function storeInstallationKey(Request $request)
+    public function storeInstallationKey(Request $request): RedirectResponse
     {
         $request->validate([
             'installation_key' => ['required', 'string', 'max:255', new ValidateInstallationKeyRule],
@@ -33,16 +36,16 @@ class InstallationController extends Controller
         return to_route('installation.show-step', 1);
     }
 
-    public function showStep($currentStep)
+    public function showStep(int $currentStep): View
     {
-        $settings = $this->getSettingsForStep((int) $currentStep);
+        $settings = $this->getSettingsForStep($currentStep);
 
         return view('installation.step-' . $currentStep, [
             'settings' => $settings,
         ]);
     }
 
-    public function saveStepSettings(Request $request)
+    public function saveStepSettings(Request $request): RedirectResponse
     {
         $this->updateSettings($request);
 
@@ -51,14 +54,14 @@ class InstallationController extends Controller
         return to_route('installation.show-step', WebsiteInstallation::first()->step);
     }
 
-    public function previousStep()
+    public function previousStep(): RedirectResponse
     {
         WebsiteInstallation::first()->decrement('step');
 
         return to_route('installation.show-step', WebsiteInstallation::first()->step);
     }
 
-    public function restartInstallation()
+    public function restartInstallation(): RedirectResponse
     {
         WebsiteInstallation::first()->update([
             'step' => 0,
@@ -73,7 +76,7 @@ class InstallationController extends Controller
         return to_route('installation.index');
     }
 
-    public function completeInstallation()
+    public function completeInstallation(): RedirectResponse
     {
         // Clear all caches before marking as complete
         Cache::forget('website_permissions');
@@ -103,7 +106,8 @@ class InstallationController extends Controller
         // Cache will be automatically cleared by WebsiteSetting model events
     }
 
-    private function getSettingsForStep(int $step)
+    /** @return Collection<int, WebsiteSetting> */
+    private function getSettingsForStep(int $step): Collection
     {
         $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), (int) ceil(WebsiteSetting::count() / 4));
 

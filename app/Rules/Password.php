@@ -85,7 +85,7 @@ class Password implements Rule
     /**
      * Set the minimum length of the password.
      */
-    public function length(int $length)
+    public function length(int $length): static
     {
         $this->length = $length;
 
