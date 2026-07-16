@@ -16,14 +16,9 @@ class WebsitePermissionSeeder extends Seeder
                 'description' => 'Min rank to bypass vpn blocker check',
             ],
             [
-                'permission' => 'view_server_logs',
-                'min_rank' => '7',
-                'description' => 'Minimum required rank to access the log viewer',
-            ],
-            [
                 'permission' => 'housekeeping_access',
                 'min_rank' => '7',
-                'description' => 'Minimum required rank to access the log viewer',
+                'description' => 'Minimum required rank to access housekeeping',
             ],
             [
                 'permission' => 'delete_article_comments',

@@ -10,7 +10,6 @@ use App\Http\Middleware\FindRetrosMiddleware;
 use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
 use App\Http\Middleware\InstallationMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
-use App\Http\Middleware\LogViewerMiddleware;
 use App\Http\Middleware\MaintenanceMiddleware;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -103,7 +102,6 @@ class Kernel extends HttpKernel
         'check.ban' => BannedMiddleware::class,
         'findretros.redirect' => FindRetrosMiddleware::class,
         'vpn.checker' => VPNCheckerMiddleware::class,
-        'log.viewer' => LogViewerMiddleware::class,
         'force.staff.2fa' => ForceStaffTwoFactorMiddleware::class,
         'emulator.feature' => EnsureEmulatorFeature::class,
     ];
