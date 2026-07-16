@@ -3,7 +3,9 @@
 namespace App\Rules;
 
 use Closure;
+use ErrorException;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Throwable;
 
 class ValidGifBadge implements ValidationRule
 {
@@ -29,7 +31,7 @@ class ValidGifBadge implements ValidationRule
             return;
         }
 
-        $info = @getimagesizefromstring($decoded);
+        $info = $this->imageInfo($decoded);
 
         if ($info === false || $info['mime'] !== 'image/gif' || $info[0] !== self::WIDTH || $info[1] !== self::HEIGHT) {
             $fail('The badge must be a 40x40 GIF image.');
@@ -45,5 +47,21 @@ class ValidGifBadge implements ValidationRule
         $decoded = base64_decode($stripped, true);
 
         return $decoded === false ? null : $decoded;
+    }
+
+    /** @return array<int|string, int|string>|false */
+    private function imageInfo(string $bytes): array|false
+    {
+        set_error_handler(static function (int $severity, string $message): never {
+            throw new ErrorException($message, severity: $severity);
+        });
+
+        try {
+            return getimagesizefromstring($bytes);
+        } catch (Throwable) {
+            return false;
+        } finally {
+            restore_error_handler();
+        }
     }
 }

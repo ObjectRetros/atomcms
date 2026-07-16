@@ -4,6 +4,7 @@ namespace App\Services\Parsers;
 
 use App\Services\Badge\FlashExternalTexts;
 use App\Services\Badge\NitroExternalTexts;
+use App\Support\BadgeCode;
 
 /**
  * Reads and writes a badge's name/description across the client text files -
@@ -26,6 +27,8 @@ class ExternalTextsParser
      */
     public function getBadgeData(string $code): array
     {
+        $code = BadgeCode::ensure($code);
+
         return [
             'image' => file_exists($this->badgeImagePath($code)) ? $this->getBadgeImageUrl($code) : null,
             'nitro' => $this->nitroTexts->find($code),
@@ -39,16 +42,18 @@ class ExternalTextsParser
      */
     public function updateNitroBadgeTexts(string $code, string $title = '', string $description = ''): void
     {
-        $this->nitroTexts->add($code, $title, $description);
+        $this->nitroTexts->add(BadgeCode::ensure($code), $title, $description);
     }
 
     public function updateFlashBadgeTexts(string $code, string $title = '', string $description = ''): void
     {
-        $this->flashTexts->add($code, $title, $description);
+        $this->flashTexts->add(BadgeCode::ensure($code), $title, $description);
     }
 
     public function getBadgeImageUrl(string $code): string
     {
+        $code = BadgeCode::ensure($code);
+
         return url(sprintf('%s/c_images/album1584/%s.gif', $this->clientPath(), $code));
     }
 
