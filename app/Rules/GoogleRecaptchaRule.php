@@ -2,9 +2,10 @@
 
 namespace App\Rules;
 
+use App\Support\OutboundHttp;
 use Closure;
-use GuzzleHttp\Client;
 use Illuminate\Contracts\Validation\InvokableRule;
+use Illuminate\Http\Client\ConnectionException;
 
 class GoogleRecaptchaRule implements InvokableRule
 {
@@ -15,27 +16,27 @@ class GoogleRecaptchaRule implements InvokableRule
             return;
         }
 
-        $client = new Client;
-
-        $response = $client->request(
-            'POST', 'https://www.google.com/recaptcha/api/siteverify', [
-                'form_params' => [
+        try {
+            $response = OutboundHttp::request()
+                ->asForm()
+                ->post('https://www.google.com/recaptcha/api/siteverify', [
                     'secret' => config('habbo.site.recaptcha_secret_key'),
                     'response' => $value,
                     'remoteip' => request()->ip(),
-                ],
-            ],
-        );
+                ]);
+        } catch (ConnectionException) {
+            $fail(__('The Google recaptcha could not be verified. Please try again.'));
 
-        if ($response->getStatusCode() !== 200) {
+            return;
+        }
+
+        if (! $response->successful()) {
             $fail(__('The Google recaptcha was not successful.'));
 
             return;
         }
 
-        $body = json_decode((string) $response->getBody());
-
-        if (! $body->success) {
+        if ($response->json('success') !== true) {
             $fail(__('The Google recaptcha was not successful.'));
         }
     }
