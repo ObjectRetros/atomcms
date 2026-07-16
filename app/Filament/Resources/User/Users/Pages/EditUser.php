@@ -15,6 +15,7 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class EditUser extends EditRecord
@@ -61,17 +62,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        $rcon = app(Rcon::class);
-
-        if (! $user->online) {
-            DB::transaction(function () use ($user, $data) {
-                $this->treatChangedCurrenciesWithoutRcon($user, $data);
-            });
-
-            return;
-        }
-
-        if ($user->online && ! $rcon->isConnected()) {
+        if ($user->online && ! app(Rcon::class)->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -80,16 +71,30 @@ class EditUser extends EditRecord
 
             $this->halt();
         }
+    }
 
-        DB::transaction(function () use ($user, $data, $rcon) {
-            if ($data['credits'] != $user->credits) {
-                app(SendCurrency::class)->execute($user, CurrencyTypes::Credits, -$user->credits + $data['credits']);
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $rcon = app(Rcon::class);
+
+        return DB::transaction(function () use ($record, $data, $rcon): Model {
+            if (! $record->online) {
+                $this->treatChangedCurrenciesWithoutRcon($record, $data);
+
+                return parent::handleRecordUpdate($record, $data);
             }
 
-            $this->checkUsernameChangedPermission($user, $data, $rcon);
-            $this->treatChangedCurrencies($user, $data);
-            $this->treatChangedUserRank($user, $data, $rcon);
-            $this->treatChangedUserMotto($user, $data, $rcon);
+            if ($data['credits'] != $record->credits) {
+                app(SendCurrency::class)->execute($record, CurrencyTypes::Credits, -$record->credits + $data['credits']);
+            }
+
+            $this->checkUsernameChangedPermission($record, $data, $rcon);
+            $this->treatChangedCurrencies($record, $data);
+            $this->treatChangedUserRank($record, $data, $rcon);
+            $this->treatChangedUserMotto($record, $data, $rcon);
+
+            // The emulator persists these fields when the deferred RCON commands run.
+            return parent::handleRecordUpdate($record, Arr::except($data, ['credits', 'rank', 'motto']));
         });
     }
 
@@ -204,8 +209,6 @@ class EditUser extends EditRecord
         }
 
         $rcon->alertUser($user, __('You have been disconnected because your rank has been changed. Please re-enter the hotel.'));
-        sleep(2);
-
         $rcon->disconnectUser($user);
         $rcon->setRank($user, $data['rank']);
     }

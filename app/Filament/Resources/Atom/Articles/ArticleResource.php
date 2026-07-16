@@ -9,7 +9,6 @@ use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
 use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\Articles\WebsiteArticle;
-use Exception;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -102,22 +101,6 @@ class ArticleResource extends Resource
                                 ->onIcon('heroicon-s-check')
                                 ->offIcon('heroicon-s-x-mark')
                                 ->default(true)
-                                ->live()
-                                ->afterStateUpdated(function (string $operation, $state, $record) {
-                                    if ($operation !== 'edit' || is_null($record)) {
-                                        return;
-                                    }
-
-                                    try {
-                                        if ($state) {
-                                            $record->restore();
-                                        } else {
-                                            $record->delete();
-                                        }
-                                    } catch (Exception $e) {
-                                        report($e);
-                                    }
-                                })
                                 ->formatStateUsing(function ($record) {
                                     if (is_null($record)) {
                                         return true;
@@ -187,7 +170,7 @@ class ArticleResource extends Resource
                 ->state(fn ($record) => is_null($record->deleted_at))
                 ->disabled(),
 
-            ToggleColumn::make('allow_comments')
+            ToggleColumn::make('can_comment')
                 ->label(__('filament::resources.columns.allow_comments'))
                 ->onIcon('heroicon-s-check')
                 ->toggleable()
