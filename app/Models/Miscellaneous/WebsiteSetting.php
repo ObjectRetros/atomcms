@@ -3,6 +3,7 @@
 namespace App\Models\Miscellaneous;
 
 use App\Services\SettingsService;
+use App\Support\CommunityCache;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,7 +30,13 @@ class WebsiteSetting extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => SettingsService::clearCache());
-        static::deleted(fn () => SettingsService::clearCache());
+        static::saved(function (): void {
+            SettingsService::clearCache();
+            CommunityCache::forgetAll();
+        });
+        static::deleted(function (): void {
+            SettingsService::clearCache();
+            CommunityCache::forgetAll();
+        });
     }
 }

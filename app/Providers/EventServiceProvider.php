@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Community\Staff\WebsiteTeam as StaffWebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
+use App\Models\Game\Permission;
 use App\Models\User;
+use App\Observers\CommunityCacheObserver;
 use App\Observers\UserObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -23,7 +27,10 @@ class EventServiceProvider extends ServiceProvider
     ];
 
     protected $observers = [
-        User::class => [UserObserver::class],
+        User::class => [UserObserver::class, CommunityCacheObserver::class],
+        Permission::class => [CommunityCacheObserver::class],
+        StaffWebsiteTeam::class => [CommunityCacheObserver::class],
+        WebsiteTeam::class => [CommunityCacheObserver::class],
     ];
 
     /**
