@@ -7,7 +7,6 @@ use App\Enums\HomeItemType;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeService
@@ -168,23 +167,9 @@ class HomeService
             return null;
         }
 
-        $cacheKey = "user_{$user->id}_widget_{$item->id}_html";
-        $cacheDuration = in_array($item->widget_type, ['my-rating', 'my-guestbook']) ? 0 : 300;
+        $user = $this->loadWidgetData($user, $item);
 
-        $render = function () use ($user, $item, $viewName): string {
-            $user = $this->loadWidgetData($user, $item);
-
-            return view($viewName, compact('item', 'user'))->render();
-        };
-
-        return $cacheDuration > 0
-            ? Cache::remember($cacheKey, $cacheDuration, $render)
-            : $render();
-    }
-
-    public function clearWidgetCache(User $user, UserHomeItem $widget): void
-    {
-        Cache::forget("user_{$user->id}_widget_{$widget->id}_html");
+        return view($viewName, compact('item', 'user'))->render();
     }
 
     private function loadWidgetData(User $user, UserHomeItem $item): User
