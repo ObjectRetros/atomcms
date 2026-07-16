@@ -2,13 +2,13 @@
 
 namespace App\Models\Help;
 
+use App\Casts\PurifiedHtml;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -44,6 +44,13 @@ class WebsiteHelpCenterTicket extends Model
 
     public $timestamps = false;
 
+    protected function casts(): array
+    {
+        return [
+            'content' => PurifiedHtml::class,
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -77,10 +84,5 @@ class WebsiteHelpCenterTicket extends Model
     public function isOpen()
     {
         return $this->open || hasPermission('manage_website_tickets');
-    }
-
-    public function getContentAttribute($value)
-    {
-        return Purify::clean($value);
     }
 }
