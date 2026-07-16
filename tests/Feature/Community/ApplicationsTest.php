@@ -53,7 +53,12 @@ test('a user can apply for an open staff position once', function () {
         ->assertRedirect(route('staff-applications.index'))
         ->assertSessionHas('success');
 
-    expect(WebsiteStaffApplications::where('user_id', $this->user->id)->count())->toBe(1);
+    $application = WebsiteStaffApplications::where('user_id', $this->user->id)->first();
+
+    expect($application)
+        ->not->toBeNull()
+        ->and($application->application_key)
+        ->toBe("rank:{$this->user->id}:{$position->permission_id}");
 
     $this->actingAs($this->user)
         ->post(route('staff-applications.store', $position), [
@@ -93,4 +98,33 @@ test('a team position rejects the rank application flow', function () {
             'content' => 'Wrong flow for this position kind.',
         ])
         ->assertNotFound();
+});
+
+test('an application cannot be submitted outside the open period', function () {
+    $position = openRankPosition();
+    $position->update(['apply_to' => now()->subMinute()]);
+
+    $this->actingAs($this->user)
+        ->get(route('staff-applications.show', $position))
+        ->assertNotFound();
+
+    $this->actingAs($this->user)
+        ->post(route('staff-applications.store', $position), [
+            'content' => 'This position has already closed.',
+        ])
+        ->assertNotFound();
+
+    expect(WebsiteStaffApplications::where('user_id', $this->user->id)->exists())->toBeFalse();
+});
+
+test('application content has a bounded size', function () {
+    $position = openTeamPosition();
+
+    $this->actingAs($this->user)
+        ->post(route('team-applications.store', $position), [
+            'content' => str_repeat('a', 5001),
+        ])
+        ->assertSessionHasErrors('content');
+
+    expect(WebsiteStaffApplications::where('user_id', $this->user->id)->exists())->toBeFalse();
 });

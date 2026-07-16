@@ -11,9 +11,14 @@ class StaffApplicationFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['required', 'string'],
+            'content' => ['required', 'string', 'min:10', 'max:5000'],
             'g-recaptcha-response' => [new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
         ];
+    }
+
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
     }
 }

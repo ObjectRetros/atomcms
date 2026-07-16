@@ -94,4 +94,12 @@ class WebsiteOpenPosition extends Model
     {
         return $query->where('apply_from', '<=', now())->where('apply_to', '>', now());
     }
+
+    public function isAcceptingApplications(): bool
+    {
+        return $this->apply_from !== null
+            && $this->apply_to !== null
+            && $this->apply_from->isPast()
+            && $this->apply_to->isFuture();
+    }
 }
