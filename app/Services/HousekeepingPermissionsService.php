@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\WebsiteHousekeepingPermission;
 use Illuminate\Support\Collection;
 
@@ -14,12 +15,15 @@ class HousekeepingPermissionsService
         $this->permissions = WebsiteHousekeepingPermission::all()->pluck('min_rank', 'permission');
     }
 
-    public function getOrDefault(string $permissionName, bool $default = false): bool
+    public function getOrDefault(string $permissionName, bool $default = false, ?User $user = null): bool
     {
         if (! $this->permissions->has($permissionName)) {
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        $user ??= auth()->user();
+
+        return $user instanceof User
+            && $user->rank >= (int) $this->permissions->get($permissionName);
     }
 }

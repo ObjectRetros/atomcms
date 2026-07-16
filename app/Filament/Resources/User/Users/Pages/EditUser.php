@@ -9,6 +9,7 @@ use App\Emulator\Data\Feature;
 use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
+use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -50,8 +51,9 @@ class EditUser extends EditRecord
     {
         $user = $this->getRecord();
         $data = $this->form->getState();
+        $actor = auth()->user();
 
-        if ($data['rank'] > auth()->user()->rank) {
+        if (! $actor instanceof User || $actor->cannot('update', $user) || (int) $data['rank'] >= $actor->rank) {
             Notification::make()
                 ->danger()
                 ->title(__('You cannot edit this user!'))
@@ -91,6 +93,15 @@ class EditUser extends EditRecord
             $this->treatChangedUserRank($user, $data, $rcon);
             $this->treatChangedUserMotto($user, $data, $rcon);
         });
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (! hasHousekeepingPermission('reset_user_password', auth()->user())) {
+            unset($data['password']);
+        }
+
+        return $data;
     }
 
     private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void

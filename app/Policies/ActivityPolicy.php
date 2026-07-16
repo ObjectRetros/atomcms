@@ -12,12 +12,12 @@ class ActivityPolicy
 
     public function viewAny(User $user): bool
     {
-        return hasHousekeepingPermission('view_activity_logs');
+        return hasHousekeepingPermission('view_activity_logs', $user);
     }
 
     public function view(User $user, Activity $activity): bool
     {
-        return hasHousekeepingPermission('view_activity_logs');
+        return hasHousekeepingPermission('view_activity_logs', $user);
     }
 
     public function create(User $user): bool

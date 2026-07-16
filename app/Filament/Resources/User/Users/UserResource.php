@@ -19,6 +19,7 @@ use App\Models\Game\Permission;
 use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -119,7 +120,7 @@ class UserResource extends Resource
                                 Select::make('team_id')
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.team_id'))
-                                    ->options(WebsiteTeam::all()->pluck('rank_name', 'id'))
+                                    ->options(fn () => WebsiteTeam::query()->pluck('rank_name', 'id'))
                                     ->columnSpanFull(),
                             ])->columns(['sm' => 2]),
 
@@ -184,6 +185,7 @@ class UserResource extends Resource
                                             ->dehydrated(false)
                                             ->password(),
                                     ])->collapsible()
+                                    ->visible(fn (): bool => hasHousekeepingPermission('reset_user_password', Filament::auth()->user()))
                                     ->columns(['sm' => 2])
                                     ->collapsed(),
 
@@ -192,7 +194,10 @@ class UserResource extends Resource
                                         Select::make('rank')
                                             ->native(false)
                                             ->label(__('filament::resources.inputs.rank'))
-                                            ->options(Permission::where('id', '<', auth()->user()->rank)->get()->pluck('rank_name', 'id')),
+                                            ->options(fn () => Permission::query()
+                                                ->where('id', '<', Filament::auth()->user()->rank)
+                                                ->pluck('rank_name', 'id'))
+                                            ->required(),
 
                                         Toggle::make('is_hidden')
                                             ->label(__('filament::resources.inputs.is_hidden'))
@@ -206,7 +211,12 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query();
+        $query = static::getModel()::query();
+        $actor = Filament::auth()->user();
+
+        return $actor instanceof User
+            ? $query->where('rank', '<', $actor->rank)
+            : $query->whereRaw('1 = 0');
     }
 
     public static function table(Table $table): Table

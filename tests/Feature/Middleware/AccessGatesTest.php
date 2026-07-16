@@ -51,6 +51,20 @@ test('maintenance sends guests to the maintenance page', function () {
     $this->get(route('welcome'))->assertRedirect(route('maintenance.show'));
 });
 
+test('maintenance does not allow arbitrary guest posts', function () {
+    installHotel();
+    setSetting('maintenance_enabled', '1');
+
+    $this->post(route('register'), [])->assertRedirect(route('maintenance.show'));
+});
+
+test('the housekeeping login remains available during maintenance', function () {
+    installHotel();
+    setSetting('maintenance_enabled', '1');
+
+    $this->get('/housekeeping/login')->assertOk();
+});
+
 test('staff above the maintenance rank bypass maintenance', function () {
     installHotel();
     setSetting('maintenance_enabled', '1');

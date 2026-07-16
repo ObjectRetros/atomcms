@@ -37,11 +37,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\Activitylog\LogOptions;
@@ -55,8 +55,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property int $two_factor_confirmed
- * @property string|null $two_factor_confirmed_at
+ * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $mail
  * @property string $mail_verified
  * @property int $account_created
@@ -217,6 +216,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return [
             'email_verified_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'hidden_staff' => 'boolean',
             'online' => 'boolean',
@@ -394,22 +394,6 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->get();
     }
 
-    public function confirmTwoFactorAuthentication($code): bool
-    {
-        $codeIsValid = app(TwoFactorAuthenticationProvider::class)
-            ->verify(decrypt($this->two_factor_secret), $code);
-
-        if (! $codeIsValid) {
-            return false;
-        }
-
-        $this->update([
-            'two_factor_confirmed' => true,
-        ]);
-
-        return true;
-    }
-
     public function hasAppliedForPosition(int $rankId): bool
     {
         return $this->applications()->where('rank_id', '=', $rankId)->exists();
@@ -428,7 +412,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return hasHousekeepingPermission('can_access_housekeeping');
+        return hasHousekeepingPermission('can_access_housekeeping', $this);
     }
 
     public function getActivitylogOptions(): LogOptions

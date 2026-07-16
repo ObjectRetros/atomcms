@@ -16,10 +16,15 @@
             </x-slot:under-title>
 
             <!-- 2FA enabled, we display the QR code : -->
-            @if (auth()->user()->two_factor_confirmed)
+            @if (auth()->user()->hasEnabledTwoFactorAuthentication())
                 <form action="{{ route('user.two-factor.disable') }}" method="post">
                     @csrf
                     @method('delete')
+
+                    <x-form.label for="current_password">
+                        {{ __('Current password') }}
+                    </x-form.label>
+                    <x-form.input classes="mb-3" name="current_password" type="password" required />
 
                     <x-form.danger-button>
                         {{ __('Disable 2FA') }}
@@ -68,7 +73,7 @@
                         </x-slot:info>
                     </x-form.label>
 
-                    <x-form.input classes="mb-3" name="code" placeholder="{{ __('Code') }}" />
+                    <x-form.input errorBag="confirmTwoFactorAuthentication" classes="mb-3" name="code" placeholder="{{ __('Code') }}" />
 
                     @if (setting('google_recaptcha_enabled'))
                         <div class="g-recaptcha" data-sitekey="{{ config('habbo.site.recaptcha_site_key') }}"></div>
@@ -96,6 +101,12 @@
 
                     <form action="{{ route('user.two-factor.enable') }}" method="post" class="mt-8">
                         @csrf
+
+                        <x-form.label for="current_password">
+                            {{ __('Current password') }}
+                        </x-form.label>
+                        <x-form.input classes="mb-3" name="current_password" type="password" required />
+
                         <x-form.secondary-button>
                             {{ __('Activate 2FA') }}
                         </x-form.secondary-button>
