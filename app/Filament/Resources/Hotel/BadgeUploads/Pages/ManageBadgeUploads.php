@@ -17,7 +17,8 @@ class ManageBadgeUploads extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    public TemporaryUploadedFile|string|null $badge_file = null;
+    /** @var array<int, TemporaryUploadedFile|string>|TemporaryUploadedFile|string|null */
+    public TemporaryUploadedFile|array|string|null $badge_file = null;
 
     protected static string $resource = BadgeUploadResource::class;
 
