@@ -17,12 +17,18 @@ class ImportAdsData extends Command
 
     private const ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'gif'];
 
-    public function handle(SettingsService $settingsService): void
+    public function handle(SettingsService $settingsService): int
     {
         $adsPath = $settingsService->getOrDefault('ads_path_filesystem');
 
-        if (! is_string($adsPath) || ! $this->validatePath($adsPath)) {
-            return;
+        if (! is_string($adsPath)) {
+            $this->validatePath(null);
+
+            return self::FAILURE;
+        }
+
+        if (! $this->validatePath($adsPath)) {
+            return self::FAILURE;
         }
 
         $files = $this->getImageFiles($adsPath);
@@ -30,12 +36,14 @@ class ImportAdsData extends Command
         if (empty($files)) {
             $this->warn('No valid image files found in the ads directory.');
 
-            return;
+            return self::SUCCESS;
         }
 
         $this->processFiles($files);
 
         $this->info('Ads data import completed successfully.');
+
+        return self::SUCCESS;
     }
 
     private function validatePath(?string $adsPath): bool
