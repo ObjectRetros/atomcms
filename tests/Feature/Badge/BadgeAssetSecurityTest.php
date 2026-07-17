@@ -27,7 +27,9 @@ function badgeImageBytes(string $format = 'png', int $width = 40, int $height = 
 
 test('badge codes cannot traverse the badge directory', function () {
     expect(fn () => BadgeCode::filename('../outside'))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => BadgeCode::filename('SAFE_CODE-1'))->not->toThrow(InvalidArgumentException::class);
+        ->and(fn () => BadgeCode::filename('SAFE_CODE-1'))->not->toThrow(InvalidArgumentException::class)
+        ->and(fn () => BadgeCode::filename('100000_' . str_repeat('A', 26)))->not->toThrow(InvalidArgumentException::class)
+        ->and(fn () => BadgeCode::filename(str_repeat('A', 65)))->toThrow(InvalidArgumentException::class);
 });
 
 test('remote badge images reject non-https addresses before sending', function () {

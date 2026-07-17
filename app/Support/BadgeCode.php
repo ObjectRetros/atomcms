@@ -10,8 +10,8 @@ final class BadgeCode
     {
         $code = trim($code);
 
-        if (! preg_match('/\A[A-Za-z0-9_-]{1,32}\z/', $code)) {
-            throw new InvalidArgumentException('Badge codes may only contain letters, numbers, underscores, and hyphens.');
+        if (! preg_match('/\A[A-Za-z0-9_-]{1,64}\z/', $code)) {
+            throw new InvalidArgumentException('Badge codes must be 1 to 64 characters and may only contain letters, numbers, underscores, and hyphens.');
         }
 
         return $code;
