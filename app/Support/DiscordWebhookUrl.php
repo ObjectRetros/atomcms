@@ -23,9 +23,14 @@ final class DiscordWebhookUrl
             || str_ends_with($host, '.discord.com')
             || $host === 'discordapp.com'
             || str_ends_with($host, '.discordapp.com');
+        $hasForbiddenComponents = isset($parts['user'])
+            || isset($parts['pass'])
+            || isset($parts['port'])
+            || isset($parts['query'])
+            || isset($parts['fragment']);
 
         return ($parts['scheme'] ?? null) === 'https'
-            && ! isset($parts['user'], $parts['pass'], $parts['port'], $parts['query'], $parts['fragment'])
+            && ! $hasForbiddenComponents
             && $isDiscordHost
             && preg_match('#^/api(?:/v\d+)?/webhooks/\d+/[A-Za-z0-9._-]+/?$#D', $path) === 1;
     }

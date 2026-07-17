@@ -25,6 +25,14 @@ test('discord webhook URLs are restricted to official HTTPS endpoints', function
         ->and(DiscordWebhookUrl::isValid('https://discord.com.evil.test/api/webhooks/123/token'))
         ->toBeFalse()
         ->and(DiscordWebhookUrl::isValid('https://discord.com@127.0.0.1/api/webhooks/123/token'))
+        ->toBeFalse()
+        ->and(DiscordWebhookUrl::isValid('https://user:pass@discord.com/api/webhooks/123/token'))
+        ->toBeFalse()
+        ->and(DiscordWebhookUrl::isValid('https://discord.com:8443/api/webhooks/123/token'))
+        ->toBeFalse()
+        ->and(DiscordWebhookUrl::isValid('https://discord.com/api/webhooks/123/token?wait=true'))
+        ->toBeFalse()
+        ->and(DiscordWebhookUrl::isValid('https://discord.com/api/webhooks/123/token#fragment'))
         ->toBeFalse();
 });
 
