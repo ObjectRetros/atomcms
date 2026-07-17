@@ -78,6 +78,19 @@ test('a guest cannot post through the public article livewire component', functi
     expect($article->comments()->count())->toBe(0);
 });
 
+test('a guest can read public article comments without seeing the comment form', function () {
+    $article = publishArticle($this->author);
+    $article->update(['can_comment' => true]);
+    $article->comments()->create([
+        'user_id' => $this->reader->id,
+        'comment' => 'Visible to everyone',
+    ]);
+
+    Livewire::test(ArticleComments::class, ['article' => $article])
+        ->assertSee('Visible to everyone')
+        ->assertDontSee('Post a comment');
+});
+
 test('livewire enforces comment ownership when deleting', function () {
     $article = publishArticle($this->author);
     $comment = $article->comments()->create([

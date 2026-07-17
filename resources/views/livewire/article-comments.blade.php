@@ -1,7 +1,7 @@
 @php($theme = setting('theme', 'dusk'))
 
 <div class="space-y-4">
-    @if (auth()->check() && $article->can_comment)
+    @if ($article->can_comment)
         @if (auth()->check() && !$article->userHasReachedArticleCommentLimit())
             <x-content.content-card icon="hotel-icon">
                 <x-slot:title>
