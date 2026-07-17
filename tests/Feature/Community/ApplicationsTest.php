@@ -117,6 +117,27 @@ test('an application cannot be submitted outside the open period', function () {
     expect(WebsiteStaffApplications::where('user_id', $this->user->id)->exists())->toBeFalse();
 });
 
+test('a position without date bounds remains open for applications', function () {
+    $position = openRankPosition();
+    $position->update([
+        'apply_from' => null,
+        'apply_to' => null,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('staff-applications.show', $position))
+        ->assertOk();
+
+    $this->actingAs($this->user)
+        ->post(route('staff-applications.store', $position), [
+            'content' => 'I would love to help moderate the hotel.',
+        ])
+        ->assertSessionHas('success');
+
+    expect($position->fresh()->isAcceptingApplications())->toBeTrue()
+        ->and(WebsiteStaffApplications::where('user_id', $this->user->id)->exists())->toBeTrue();
+});
+
 test('application content has a bounded size', function () {
     $position = openTeamPosition();
 

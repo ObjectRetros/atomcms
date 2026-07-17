@@ -4,6 +4,7 @@ namespace App\Models\Community\Staff;
 
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -90,16 +91,24 @@ class WebsiteOpenPosition extends Model
         return $this->hasMany(WebsiteStaffApplications::class, 'rank_id', 'permission_id');
     }
 
-    public function scopeCanApply($query)
+    public function scopeCanApply(Builder $query): Builder
     {
-        return $query->where('apply_from', '<=', now())->where('apply_to', '>', now());
+        $now = now();
+
+        return $query
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('apply_from')
+                ->orWhere('apply_from', '<=', $now))
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('apply_to')
+                ->orWhere('apply_to', '>', $now));
     }
 
     public function isAcceptingApplications(): bool
     {
-        return $this->apply_from !== null
-            && $this->apply_to !== null
-            && $this->apply_from->isPast()
-            && $this->apply_to->isFuture();
+        $now = now();
+
+        return ($this->apply_from === null || $this->apply_from->lessThanOrEqualTo($now))
+            && ($this->apply_to === null || $this->apply_to->greaterThan($now));
     }
 }
