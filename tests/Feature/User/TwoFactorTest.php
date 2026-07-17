@@ -44,6 +44,16 @@ test('an invalid code is rejected', function () {
     expect((bool) $this->user->fresh()->two_factor_confirmed)->toBeFalse();
 });
 
+test('an empty code is rejected without a server error', function () {
+    $this->actingAs($this->user)->post(route('user.two-factor.enable'));
+
+    $this->actingAs($this->user)
+        ->post(route('two-factor.verify'), ['code' => ''])
+        ->assertSessionHasErrors();
+
+    expect((bool) $this->user->fresh()->two_factor_confirmed)->toBeFalse();
+});
+
 test('two-factor authentication can be disabled', function () {
     $this->actingAs($this->user)->post(route('user.two-factor.enable'));
 

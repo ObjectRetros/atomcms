@@ -422,8 +422,12 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->get();
     }
 
-    public function confirmTwoFactorAuthentication(string $code): bool
+    public function confirmTwoFactorAuthentication(?string $code): bool
     {
+        if ($code === null) {
+            return false;
+        }
+
         $codeIsValid = app(TwoFactorAuthenticationProvider::class)
             ->verify(decrypt($this->two_factor_secret), $code);
 
