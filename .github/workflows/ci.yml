@@ -31,9 +31,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
-          php-version: '8.5'
+          php-version: "8.5"
           extensions: sockets, gd, mbstring, pdo_mysql, bcmath, intl, zip
           coverage: none
 
@@ -81,7 +81,17 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install dependencies
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: "8.5"
+          coverage: none
+
+      - name: Install PHP build dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts
+        env:
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ github.token }}"}}'
+
+      - name: Install frontend dependencies
         run: npm ci --ignore-scripts
 
       - name: Security advisories
@@ -122,9 +132,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
-          php-version: '8.5'
+          php-version: "8.5"
           extensions: sockets, gd, mbstring, pdo_mysql, bcmath, intl, zip
           coverage: none
 

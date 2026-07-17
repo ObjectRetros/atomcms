@@ -10,7 +10,7 @@ updates:
     groups:
       composer-dependencies:
         patterns:
-          - '*'
+          - "*"
 
   - package-ecosystem: npm
     directory: /
@@ -21,7 +21,7 @@ updates:
     groups:
       frontend-dependencies:
         patterns:
-          - '*'
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
@@ -32,9 +32,9 @@ updates:
     groups:
       github-actions:
         patterns:
-          - '*'
+          - "*"
 
-  - package-ecosystem: docker
+  - package-ecosystem: docker-compose
     directory: /
     target-branch: dev
     schedule:
