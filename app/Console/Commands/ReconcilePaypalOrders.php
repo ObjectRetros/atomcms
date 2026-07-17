@@ -23,6 +23,7 @@ class ReconcilePaypalOrders extends Command
             ->whereNull('credited_at')
             ->whereNotIn('status', [WebsitePaypalTransaction::STATUS_CANCELLED, WebsitePaypalTransaction::STATUS_REVIEW])
             ->where('created_at', '>=', now()->subDays(30))
+            ->orderBy('last_reconciled_at')
             ->oldest()
             ->limit($limit)
             ->get();
@@ -36,6 +37,10 @@ class ReconcilePaypalOrders extends Command
                 Log::warning('PayPal order reconciliation failed.', [
                     'order_id' => $transaction->transaction_id,
                     'exception_class' => $exception::class,
+                ]);
+            } finally {
+                WebsitePaypalTransaction::whereKey($transaction->getKey())->update([
+                    'last_reconciled_at' => now(),
                 ]);
             }
         }

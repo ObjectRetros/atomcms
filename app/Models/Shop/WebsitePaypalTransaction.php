@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property string|null $capture_id
  * @property Carbon|null $credited_at
+ * @property Carbon|null $last_reconciled_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User $user
@@ -56,6 +57,7 @@ class WebsitePaypalTransaction extends Model
         'amount',
         'currency',
         'credited_at',
+        'last_reconciled_at',
     ];
 
     protected function casts(): array
@@ -63,6 +65,7 @@ class WebsitePaypalTransaction extends Model
         return [
             'amount' => 'integer',
             'credited_at' => 'datetime',
+            'last_reconciled_at' => 'datetime',
         ];
     }
 

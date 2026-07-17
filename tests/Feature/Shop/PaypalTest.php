@@ -237,6 +237,36 @@ test('reconciliation captures an approved order when the buyer never returns', f
         ->and($user->transactions()->where('transaction_id', 'ORDER-7')->value('capture_id'))->toBe('CAPTURE-7');
 });
 
+test('reconciliation rotates past abandoned orders', function () {
+    installHotel();
+
+    $user = User::factory()->create();
+    $oldest = paypalTransaction($user, 'ORDER-ABANDONED-1');
+    $newest = paypalTransaction($user, 'ORDER-ABANDONED-2');
+
+    $oldest->forceFill(['created_at' => now()->subMinute()])->save();
+
+    $gateway = Mockery::mock(PaypalGateway::class);
+    $gateway->shouldReceive('showOrder')
+        ->once()
+        ->with('ORDER-ABANDONED-1')
+        ->andReturn(['id' => 'ORDER-ABANDONED-1', 'status' => 'CREATED']);
+    $gateway->shouldReceive('showOrder')
+        ->once()
+        ->with('ORDER-ABANDONED-2')
+        ->andReturn(['id' => 'ORDER-ABANDONED-2', 'status' => 'CREATED']);
+    $this->app->instance(PaypalGateway::class, $gateway);
+
+    $this->artisan('paypal:reconcile --limit=1')->assertSuccessful();
+
+    expect($oldest->refresh()->last_reconciled_at)->not->toBeNull()
+        ->and($newest->refresh()->last_reconciled_at)->toBeNull();
+
+    $this->artisan('paypal:reconcile --limit=1')->assertSuccessful();
+
+    expect($newest->refresh()->last_reconciled_at)->not->toBeNull();
+});
+
 test('a pending order created before the money migration is reconciled safely', function () {
     installHotel();
     config(['habbo.paypal.currency' => 'USD']);

@@ -44,6 +44,7 @@ return new class extends Migration
             $table->unsignedBigInteger('amount')->change();
             $table->string('capture_id')->nullable()->unique()->after('transaction_id');
             $table->timestamp('credited_at')->nullable()->after('currency');
+            $table->timestamp('last_reconciled_at')->nullable()->after('credited_at')->index();
             $table->index(['status', 'created_at']);
         });
 
@@ -70,8 +71,9 @@ return new class extends Migration
 
         Schema::table('website_paypal_transactions', function (Blueprint $table) {
             $table->dropUnique(['capture_id']);
+            $table->dropIndex(['last_reconciled_at']);
             $table->dropIndex(['status', 'created_at']);
-            $table->dropColumn(['capture_id', 'credited_at']);
+            $table->dropColumn(['capture_id', 'credited_at', 'last_reconciled_at']);
             $table->float('amount')->change();
         });
 
