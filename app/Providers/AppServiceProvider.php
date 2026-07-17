@@ -13,6 +13,7 @@ use App\Services\SettingsService;
 use App\Services\ViteService;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
@@ -84,13 +85,27 @@ class AppServiceProvider extends ServiceProvider
             $table->paginated([10, 25, 50]);
         });
 
-        $settingsService = app(SettingsService::class);
-        $badgePath = $settingsService->getOrDefault('badge_path_filesystem', '/var/www/gamedata/c_images/album1584');
-        Config::set('filesystems.disks.badges.root', $badgePath);
-
-        $adsPath = $settingsService->getOrDefault('ads_path_filesystem', '/var/www/gamedata/custom');
-        Config::set('filesystems.disks.ads.root', $adsPath);
+        $this->configureFilesystemDisks();
 
         WebsiteDrawBadge::observe(WebsiteDrawBadgeObserver::class);
+    }
+
+    private function configureFilesystemDisks(): void
+    {
+        $badgePath = '/var/www/gamedata/c_images/album1584';
+        $adsPath = '/var/www/gamedata/custom';
+
+        try {
+            $settings = app(SettingsService::class);
+            $badgePath = $settings->getOrDefault('badge_path_filesystem', $badgePath);
+            $adsPath = $settings->getOrDefault('ads_path_filesystem', $adsPath);
+        } catch (QueryException $exception) {
+            if (! $this->app->runningInConsole()) {
+                throw $exception;
+            }
+        }
+
+        Config::set('filesystems.disks.badges.root', $badgePath);
+        Config::set('filesystems.disks.ads.root', $adsPath);
     }
 }
