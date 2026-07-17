@@ -111,11 +111,6 @@ class UserResource extends Resource
                                     ->label(__('filament::resources.inputs.referral_code'))
                                     ->disabled(),
 
-                                TextInput::make('referrer_code')
-                                    ->label(__('filament::resources.inputs.referrer_code'))
-                                    ->nullable()
-                                    ->maxLength(15),
-
                                 Select::make('team_id')
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.team_id'))

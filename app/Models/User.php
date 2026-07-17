@@ -199,7 +199,6 @@ class User extends Authenticatable implements FilamentUser, HasName
         'ip_current',
         'home_room',
         'referral_code',
-        'referrer_code',
         'extra_rank',
         'team_id',
         'hidden_staff',
