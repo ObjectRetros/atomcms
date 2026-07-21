@@ -1,4 +1,5 @@
-import Swiper, { Autoplay, Pagination } from "swiper";
+import Swiper from "swiper";
+import { Autoplay, Pagination } from "swiper/modules";
 
 const AtomSliders = {
     init() {
