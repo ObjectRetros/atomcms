@@ -74,3 +74,36 @@ test('a visitor can leave a home message', function () {
 
     expect($this->owner->receivedHomeMessages()->count())->toBe(1);
 });
+
+test('profile widgets reflect user changes immediately', function () {
+    $this->owner->update(['motto' => 'The original motto']);
+
+    $widget = HomeItem::create([
+        'name' => 'My Profile',
+        'type' => HomeItemType::Widget,
+        'currency_type' => CurrencyTypes::Duckets,
+        'price' => 25,
+        'image' => 'widgets/profile.png',
+        'enabled' => true,
+        'order' => 0,
+    ]);
+    $placedWidget = $this->owner->homeItems()->create([
+        'home_item_id' => $widget->id,
+        'placed' => true,
+        'theme' => 'default',
+    ]);
+
+    $this->getJson(route('home.widget-content', [$this->owner->username, $placedWidget->id]))
+        ->assertOk()
+        ->assertJsonPath('content', fn (string $content): bool => str_contains($content, 'The original motto'));
+
+    $this->owner->update(['motto' => 'A freshly updated motto']);
+
+    $this->getJson(route('home.widget-content', [$this->owner->username, $placedWidget->id]))
+        ->assertOk()
+        ->assertJsonPath(
+            'content',
+            fn (string $content): bool => str_contains($content, 'A freshly updated motto')
+                && ! str_contains($content, 'The original motto'),
+        );
+});
