@@ -14,7 +14,6 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
-    <link rel="stylesheet" href="{{ asset('assets/css/flowbite.min.css') }}" />
     <script src="{{ asset('assets/js/popper.min.js') }}"></script>
     <script src="{{ asset('assets/js/tippy-bundle.umd.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('assets/css/scale.min.css') }}"/>
