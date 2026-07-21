@@ -72,8 +72,12 @@
         </x-content.content-card>
     </div>
 
-    {{-- TODO: Selfhost --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    ></script>
     <script>
         function logoGenerator() {
             return {
@@ -168,5 +172,4 @@
         }
     </script>
 </x-app-layout>
-
 
