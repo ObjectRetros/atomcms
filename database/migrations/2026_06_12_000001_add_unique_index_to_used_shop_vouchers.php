@@ -19,6 +19,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('website_used_shop_vouchers', function (Blueprint $table) {
+            $table->index('user_id');
+        });
+
+        Schema::table('website_used_shop_vouchers', function (Blueprint $table) {
             $table->dropUnique(['user_id', 'voucher_id']);
         });
     }

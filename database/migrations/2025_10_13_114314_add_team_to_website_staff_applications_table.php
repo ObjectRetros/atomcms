@@ -34,15 +34,21 @@ return new class extends Migration
 
     public function down(): void
     {
-        if ($this->indexExists('website_staff_applications', 'website_staff_applications_user_team_unique')) {
-            Schema::table('website_staff_applications', function (Blueprint $table) {
-                $table->dropUnique('website_staff_applications_user_team_unique');
-            });
-        }
-
         if ($this->foreignKeyExists('website_staff_applications', 'website_staff_applications_team_id_foreign')) {
             Schema::table('website_staff_applications', function (Blueprint $table) {
                 $table->dropForeign('website_staff_applications_team_id_foreign');
+            });
+        }
+
+        if ($this->indexExists('website_staff_applications', 'website_staff_applications_user_team_unique')) {
+            if (! $this->indexExists('website_staff_applications', 'website_staff_applications_user_id_index')) {
+                Schema::table('website_staff_applications', function (Blueprint $table) {
+                    $table->index('user_id');
+                });
+            }
+
+            Schema::table('website_staff_applications', function (Blueprint $table) {
+                $table->dropUnique('website_staff_applications_user_team_unique');
             });
         }
 

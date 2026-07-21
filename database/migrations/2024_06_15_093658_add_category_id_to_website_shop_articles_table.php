@@ -13,4 +13,11 @@ return new class extends Migration
             $table->foreignIdFor(WebsiteShopCategory::class)->after('id')->nullable();
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('website_shop_articles', function (Blueprint $table) {
+            $table->dropColumn('website_shop_category_id');
+        });
+    }
 };

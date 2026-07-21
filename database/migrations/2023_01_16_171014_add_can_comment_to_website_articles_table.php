@@ -8,12 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('website_articles', function (Blueprint $table) {
-            if (columnExists('website_articles', 'can_comment')) {
-                Schema::dropColumns('website_articles', 'can_comment');
-            }
+        if (! Schema::hasColumn('website_articles', 'can_comment')) {
+            Schema::table('website_articles', function (Blueprint $table) {
+                $table->boolean('can_comment')->default(true)->after('image');
+            });
+        }
+    }
 
-            $table->boolean('can_comment')->default(true)->after('image');
+    public function down(): void
+    {
+        Schema::table('website_articles', function (Blueprint $table) {
+            $table->dropColumn('can_comment');
         });
     }
 };
