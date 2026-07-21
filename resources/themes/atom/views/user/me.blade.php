@@ -73,11 +73,12 @@
                 </div>
 
                 @if (auth()->user()->referrals?->referrals_total >= (int) setting('referrals_needed'))
-                    <a href="{{ route('claim.referral-reward') }}" class="text-decoration-none">
+                    <form method="POST" action="{{ route('claim.referral-reward') }}">
+                        @csrf
                         <x-form.secondary-button classes="mt-2">
                             {{ __('Claim your referrals reward!') }}
                         </x-form.secondary-button>
-                    </a>
+                    </form>
                 @else
                     <button disabled class="mt-2 w-full rounded bg-gray-400 p-2 text-white dark:bg-gray-900">
                         {{ sprintf(__('You need to refer :needed more users, before being able to claim your reward', ['needed' =>auth()->user()->referralsNeeded() ?? 0]),auth()->user()->referrals->referrals_total ?? 0) }}

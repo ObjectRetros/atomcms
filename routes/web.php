@@ -88,7 +88,9 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
     Route::middleware('auth')->group(function () {
         Route::prefix('user')->group(function () {
             Route::get('/me', MeController::class)->name('me.show');
-            Route::get('/claim/referral-reward', ReferralController::class)->name('claim.referral-reward');
+            Route::post('/claim/referral-reward', ReferralController::class)
+                ->middleware('throttle:5,1')
+                ->name('claim.referral-reward');
 
             // User settings routes
             Route::prefix('settings')->group(function () {
