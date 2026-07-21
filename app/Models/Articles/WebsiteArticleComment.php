@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * @property int $id
@@ -44,10 +43,5 @@ class WebsiteArticleComment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function canBeDeleted(): bool
-    {
-        return $this->user_id === Auth::id() || hasPermission('delete_article_comments');
     }
 }
