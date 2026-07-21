@@ -30,6 +30,14 @@ test('an article page renders', function () {
         ->assertSee('Grand opening');
 });
 
+test('articles with the same title receive unique slugs', function () {
+    $firstArticle = publishArticle($this->author);
+    $secondArticle = publishArticle($this->author);
+
+    expect($firstArticle->slug)->toBe('grand-opening')
+        ->and($secondArticle->slug)->toBe('grand-opening-1');
+});
+
 test('a reader can comment and remove their own comment', function () {
     $article = publishArticle($this->author);
 

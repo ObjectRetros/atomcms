@@ -72,8 +72,7 @@ class WebsiteArticle extends Model
         return SlugOptions::create()
             ->generateSlugsFrom('title')
             ->saveSlugsTo('slug')
-            ->usingSeparator('-')
-            ->allowDuplicateSlugs();
+            ->usingSeparator('-');
     }
 
     /** @return BelongsTo<User, $this> */
