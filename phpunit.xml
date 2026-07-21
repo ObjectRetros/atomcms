@@ -9,9 +9,15 @@
   <php>
     <env name="APP_ENV" value="testing"/>
     <env name="APP_KEY" value="base64:dGVzdGluZy10ZXN0aW5nLXRlc3RpbmctdGVzdGluZy0="/>
+    <env name="APP_DEBUG" value="false"/>
     <env name="BCRYPT_ROUNDS" value="4"/>
     <env name="CACHE_DRIVER" value="array"/>
+    <env name="DB_CONNECTION" value="mariadb"/>
+    <env name="DB_HOST" value="127.0.0.1"/>
+    <env name="DB_PORT" value="3306"/>
     <env name="DB_DATABASE" value="testing"/>
+    <env name="DB_USERNAME" value="root"/>
+    <env name="DB_PASSWORD" value="password"/>
     <env name="MAIL_MAILER" value="array"/>
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="SESSION_DRIVER" value="array"/>
