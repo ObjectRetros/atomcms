@@ -33,7 +33,12 @@ class WebsiteArticleReaction extends Model
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'article_id',
+        'user_id',
+        'reaction',
+        'active',
+    ];
 
     public $timestamps = false;
 
@@ -42,21 +47,21 @@ class WebsiteArticleReaction extends Model
         'article_id',
     ];
 
-    public static function getReaction(int $articleId, int $userId, string $reaction): ?self
+    public static function toggleFor(WebsiteArticle $article, User $user, string $reaction): self
     {
-        return self::where('user_id', $userId)
-            ->where('article_id', $articleId)
-            ->where('reaction', $reaction)
-            ->first();
-    }
+        $record = self::query()->firstOrCreate([
+            'article_id' => $article->id,
+            'user_id' => $user->id,
+            'reaction' => $reaction,
+        ], [
+            'active' => true,
+        ]);
 
-    public static function boot()
-    {
-        parent::boot();
+        if (! $record->wasRecentlyCreated) {
+            $record->update(['active' => ! $record->active]);
+        }
 
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
+        return $record;
     }
 
     /** @return BelongsTo<WebsiteArticle, $this> */

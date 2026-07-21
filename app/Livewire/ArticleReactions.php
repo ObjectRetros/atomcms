@@ -52,18 +52,7 @@ class ArticleReactions extends Component
             return;
         }
 
-        $existingReaction = WebsiteArticleReaction::getReaction($this->article->id, $user->id, $reaction);
-
-        if ($existingReaction) {
-            $existingReaction->update(['active' => ! $existingReaction->active]);
-            $this->dispatch('reactions:loaded');
-
-            return;
-        }
-
-        $this->article->reactions()->create([
-            'reaction' => $reaction,
-        ]);
+        WebsiteArticleReaction::toggleFor($this->article, $user, $reaction);
 
         $this->dispatch('reactions:loaded');
     }

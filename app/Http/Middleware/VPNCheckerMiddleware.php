@@ -57,7 +57,7 @@ class VPNCheckerMiddleware
         }
 
         if ($this->isThreat($apiResponse)) {
-            WebsiteIpBlacklist::create(['ip_address' => $ip, 'asn' => null]);
+            WebsiteIpBlacklist::firstOrCreate(['ip_address' => $ip], ['asn' => null]);
 
             return $this->restrict();
         }

@@ -1,8 +1,9 @@
 @php($theme = setting('theme', 'dusk'))
+@php($viewer = auth()->user())
 
 <div class="space-y-4">
     @if ($article->can_comment)
-        @if (auth()->check() && !$article->userHasReachedArticleCommentLimit())
+        @if ($viewer && !$article->userHasReachedArticleCommentLimit($viewer))
             <x-content.content-card icon="hotel-icon">
                 <x-slot:title>
                     {{ __('Post a comment') }}

@@ -4,6 +4,7 @@ namespace App\Services\Articles;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,7 +12,10 @@ class CommentService
 {
     public function store(string $comment, WebsiteArticle $article): mixed
     {
-        if ($article->userHasReachedArticleCommentLimit()) {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 403);
+
+        if ($article->userHasReachedArticleCommentLimit($user)) {
             return redirect()->back()->withErrors([
                 'message' => __('You can only comment :amount times per article', ['amount' => setting('max_comment_per_article')]),
             ]);
@@ -24,7 +28,7 @@ class CommentService
         }
 
         return $article->comments()->create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'comment' => $comment,
         ]);
     }

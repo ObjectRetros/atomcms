@@ -72,7 +72,8 @@ test('a reader can toggle a reaction', function () {
         ->post(route('article.toggle-reaction', $article->slug), ['reaction' => 'like'])
         ->assertOk();
 
-    expect($article->reactions()->count())->toBe(1);
+    expect($article->reactions()->count())->toBe(1)
+        ->and($article->reactions()->first()->user_id)->toBe($this->reader->id);
 
     $this->actingAs($this->reader)
         ->post(route('article.toggle-reaction', $article->slug), ['reaction' => 'like'])
