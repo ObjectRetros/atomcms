@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property string|null $application_key
  * @property int $user_id
  * @property int|null $rank_id
  * @property int|null $team_id
@@ -52,6 +53,7 @@ class WebsiteStaffApplications extends Model
 
     protected $fillable = [
         'user_id',
+        'application_key',
         'rank_id',
         'team_id',
         'content',

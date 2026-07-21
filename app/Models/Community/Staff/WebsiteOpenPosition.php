@@ -103,6 +103,22 @@ class WebsiteOpenPosition extends Model
      */
     public function scopeCanApply(Builder $query): Builder
     {
-        return $query->where('apply_from', '<=', now())->where('apply_to', '>', now());
+        $now = now();
+
+        return $query
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('apply_from')
+                ->orWhere('apply_from', '<=', $now))
+            ->where(fn (Builder $query): Builder => $query
+                ->whereNull('apply_to')
+                ->orWhere('apply_to', '>', $now));
+    }
+
+    public function isAcceptingApplications(): bool
+    {
+        $now = now();
+
+        return ($this->apply_from === null || $this->apply_from->lessThanOrEqualTo($now))
+            && ($this->apply_to === null || $this->apply_to->greaterThan($now));
     }
 }
