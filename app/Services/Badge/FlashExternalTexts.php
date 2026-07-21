@@ -128,5 +128,4 @@ class FlashExternalTexts
 
         return is_string($path) && $path !== '' ? $path : null;
     }
-
 }
