@@ -1,5 +1,5 @@
 import "./bootstrap";
-import "./external/flowbite";
+import { initFlowbite, initPopovers } from "flowbite";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -16,6 +16,9 @@ ThemeSwitcher.init();
 AtomSliders.init();
 Alpine.plugin(Focus);
 Alpine.start();
+
+document.addEventListener("turbolinks:load", () => initFlowbite());
+document.addEventListener("reactions:loaded", () => initPopovers());
 
 console.log(
     "%cAtom CMS%c\n\nAtom CMS is a CMS for made for the community to enjoy. You can join our wonderful community at https://discord.gg/rX3aShUHdg\n\n",

@@ -1,5 +1,5 @@
 import "./bootstrap";
-import "./external/flowbite";
+import { initFlowbite, initPopovers } from "flowbite";
 
 import Alpine from "alpinejs";
 import Focus from "@alpinejs/focus";
@@ -14,6 +14,9 @@ import "../../../js/components/HomeManager.js";
 
 Alpine.plugin(Focus);
 Alpine.start();
+
+document.addEventListener("turbolinks:load", () => initFlowbite());
+document.addEventListener("reactions:loaded", () => initPopovers());
 
 // Swiper Initialization
 document.addEventListener("DOMContentLoaded", function () {
