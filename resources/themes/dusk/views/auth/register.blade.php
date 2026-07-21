@@ -132,7 +132,7 @@
             if (!username) return;
 
             try {
-                const response = await fetch(`/api/user/${username}`);
+                const response = await fetch(`/api/user/${encodeURIComponent(username)}`);
                 if (!response.ok) {
                     console.error('Failed to fetch avatar');
                     return;

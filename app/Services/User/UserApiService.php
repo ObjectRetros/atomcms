@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Cache;
 
 class UserApiService
 {
-    /** @param  list<string>  $columns */
-    public function fetchUser(string $username, array $columns): ?User
+    public function fetchUser(string $username): ?User
     {
-        return User::select($columns)->where('username', $username)->first();
+        return User::query()
+            ->select(['username', 'motto', 'look'])
+            ->where('username', $username)
+            ->first();
     }
 
     /**
