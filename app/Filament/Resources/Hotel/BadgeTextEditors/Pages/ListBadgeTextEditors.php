@@ -41,7 +41,7 @@ class ListBadgeTextEditors extends ListRecords
         ];
     }
 
-    public function exportToJson(SettingsService $settingsService)
+    public function exportToJson(SettingsService $settingsService): void
     {
         $jsonPath = $settingsService->getOrDefault('nitro_external_texts_file');
 
@@ -65,12 +65,27 @@ class ListBadgeTextEditors extends ListRecords
             return;
         }
 
-        $jsonData = json_decode(file_get_contents($jsonPath), true);
+        $contents = file_get_contents($jsonPath);
+        $jsonData = $contents === false ? null : json_decode($contents, true);
+
+        if (! is_array($jsonData)) {
+            Notification::make()
+                ->title('Export Failed')
+                ->body('The JSON file could not be read or contains invalid data.')
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         $badges = WebsiteBadge::all();
         $badgeKeys = $badges->pluck('badge_key')->toArray();
 
         foreach ($jsonData as $key => $value) {
+            if (! is_string($key)) {
+                continue;
+            }
+
             if (
                 (str_starts_with($key, 'badge_desc_') || str_starts_with($key, 'badge_name_')) &&
                 ! in_array(str_replace(['badge_desc_', 'badge_name_'], '', $key), $badgeKeys)
@@ -110,7 +125,7 @@ class ListBadgeTextEditors extends ListRecords
         }
     }
 
-    public function createBackup(SettingsService $settingsService)
+    public function createBackup(SettingsService $settingsService): void
     {
         $jsonPath = $settingsService->getOrDefault('nitro_external_texts_file');
 

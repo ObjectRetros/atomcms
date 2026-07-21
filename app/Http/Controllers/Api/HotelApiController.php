@@ -15,6 +15,7 @@ class HotelApiController extends Controller
 {
     public function __construct(private readonly UserApiService $userApiService) {}
 
+    /** @param  list<string>  $columns */
     public function fetchUser(string $username, array $columns = ['username', 'motto', 'look']): UserResource
     {
         return new UserResource($this->userApiService->fetchUser($username, $columns));

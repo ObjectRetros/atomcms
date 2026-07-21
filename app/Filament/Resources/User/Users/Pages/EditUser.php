@@ -9,13 +9,16 @@ use App\Emulator\Data\Feature;
 use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
+use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class EditUser extends EditRecord
 {
@@ -36,22 +39,16 @@ class EditUser extends EditRecord
         );
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        return Emulator::supports(Feature::EmulatorUserSettings)
-            ? static::getModel()::query()->with(['settings'])
-            : static::getModel()::query();
-    }
-
     /**
      * @throws Halt
      */
     protected function beforeSave(): void
     {
-        $user = $this->getRecord();
-        $data = $this->form->getState();
+        $user = $this->userRecord($this->getRecord());
+        $data = $this->getSchema('form')?->getState()
+            ?? throw new LogicException('The user edit form schema is not registered.');
 
-        if ($data['rank'] > auth()->user()->rank) {
+        if ($data['rank'] > AuthenticatedUser::current()->rank) {
             Notification::make()
                 ->danger()
                 ->title(__('You cannot edit this user!'))
@@ -61,17 +58,7 @@ class EditUser extends EditRecord
             $this->halt();
         }
 
-        $rcon = app(Rcon::class);
-
-        if (! $user->online) {
-            DB::transaction(function () use ($user, $data) {
-                $this->treatChangedCurrenciesWithoutRcon($user, $data);
-            });
-
-            return;
-        }
-
-        if ($user->online && ! $rcon->isConnected()) {
+        if ($user->online && ! app(Rcon::class)->isConnected()) {
             Notification::make()
                 ->danger()
                 ->title(__('RCON is not enabled!'))
@@ -80,8 +67,20 @@ class EditUser extends EditRecord
 
             $this->halt();
         }
+    }
 
-        DB::transaction(function () use ($user, $data, $rcon) {
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $user = $this->userRecord($record);
+        $rcon = app(Rcon::class);
+
+        return DB::transaction(function () use ($user, $data, $rcon): Model {
+            if (! $user->online) {
+                $this->treatChangedCurrenciesWithoutRcon($user, $data);
+
+                return parent::handleRecordUpdate($user, $data);
+            }
+
             if ($data['credits'] != $user->credits) {
                 app(SendCurrency::class)->execute($user, CurrencyTypes::Credits, -$user->credits + $data['credits']);
             }
@@ -90,10 +89,14 @@ class EditUser extends EditRecord
             $this->treatChangedCurrencies($user, $data);
             $this->treatChangedUserRank($user, $data, $rcon);
             $this->treatChangedUserMotto($user, $data, $rcon);
+
+            // The emulator persists these fields when the deferred RCON commands run.
+            return parent::handleRecordUpdate($user, Arr::except($data, ['credits', 'rank', 'motto']));
         });
     }
 
-    private function treatChangedCurrenciesWithoutRcon(Model $user, array $data): void
+    /** @param array<string, mixed> $data */
+    private function treatChangedCurrenciesWithoutRcon(User $user, array $data): void
     {
         $currencies = app(CurrencyRepository::class);
 
@@ -117,7 +120,7 @@ class EditUser extends EditRecord
      *
      * @return list<array{CurrencyTypes, int, int}>
      */
-    private function changedCurrencies(Model $user, array $data): array
+    private function changedCurrencies(User $user, array $data): array
     {
         $currencies = app(CurrencyRepository::class);
         $changes = [];
@@ -138,13 +141,14 @@ class EditUser extends EditRecord
         return $changes;
     }
 
-    private function checkUsernameChangedPermission(Model $user, array $data, Rcon $rcon): void
+    /** @param array<string, mixed> $data */
+    private function checkUsernameChangedPermission(User $user, array $data, Rcon $rcon): void
     {
         if (! Emulator::supports(Feature::NameChangePermission)) {
             return;
         }
 
-        if ($data['allow_change_username'] == $user->settings->can_change_name) {
+        if ($user->settings === null || $data['allow_change_username'] == $user->settings->can_change_name) {
             return;
         }
 
@@ -162,7 +166,8 @@ class EditUser extends EditRecord
         $this->updateNameChangePermission($user, $data);
     }
 
-    private function updateNameChangePermission(Model $user, array $data): void
+    /** @param array<string, mixed> $data */
+    private function updateNameChangePermission(User $user, array $data): void
     {
         if (! Emulator::supports(Feature::NameChangePermission) || $user->settings === null) {
             return;
@@ -171,19 +176,21 @@ class EditUser extends EditRecord
         $user->settings->update(['can_change_name' => ($data['allow_change_username'] ?? false) ? '1' : '0']);
     }
 
-    private function treatChangedCurrencies(Model $user, array $data): void
+    /** @param array<string, mixed> $data */
+    private function treatChangedCurrencies(User $user, array $data): void
     {
         foreach ($this->changedCurrencies($user, $data) as [$type, $current, $updated]) {
             app(SendCurrency::class)->execute($user, $type, $updated - $current);
         }
     }
 
-    private function treatChangedUserRank(Model $user, array $data, Rcon $rcon): void
+    /** @param array<string, mixed> $data */
+    private function treatChangedUserRank(User $user, array $data, Rcon $rcon): void
     {
         if ($data['rank'] == $user->rank) {
             return;
         }
-        if ($data['rank'] > auth()->user()->rank) {
+        if ($data['rank'] > AuthenticatedUser::current()->rank) {
             return;
         }
 
@@ -204,13 +211,12 @@ class EditUser extends EditRecord
         }
 
         $rcon->alertUser($user, __('You have been disconnected because your rank has been changed. Please re-enter the hotel.'));
-        sleep(2);
-
         $rcon->disconnectUser($user);
         $rcon->setRank($user, $data['rank']);
     }
 
-    private function treatChangedUserMotto(Model $user, array $data, Rcon $rcon): void
+    /** @param array<string, mixed> $data */
+    private function treatChangedUserMotto(User $user, array $data, Rcon $rcon): void
     {
         if ($data['motto'] == $user->motto) {
             return;
@@ -234,5 +240,14 @@ class EditUser extends EditRecord
 
         $rcon->setMotto($user, $data['motto']);
         $rcon->alertUser($user, __('Your motto has been changed by a staff member.'));
+    }
+
+    private function userRecord(Model $record): User
+    {
+        if (! $record instanceof User) {
+            throw new LogicException('The user editor received an unsupported model.');
+        }
+
+        return $record;
     }
 }

@@ -17,6 +17,7 @@ use App\Filament\Traits\TranslatableResource;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -32,7 +33,6 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -81,21 +81,21 @@ class UserResource extends Resource
                                 DateTimePicker::make('account_created')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->account_created)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->account_created)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.created_at')),
 
                                 DateTimePicker::make('last_login')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_login)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->last_login)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_login')),
 
                                 DateTimePicker::make('last_online')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_online)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->last_online)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_online')),
 
@@ -192,9 +192,9 @@ class UserResource extends Resource
                                         Select::make('rank')
                                             ->native(false)
                                             ->label(__('filament::resources.inputs.rank'))
-                                            ->options(Permission::where('id', '<', auth()->user()->rank)->get()->pluck('rank_name', 'id')),
+                                            ->options(Permission::where('id', '<', AuthenticatedUser::current()->rank)->get()->pluck('rank_name', 'id')),
 
-                                        Toggle::make('is_hidden')
+                                        Toggle::make('hidden_staff')
                                             ->label(__('filament::resources.inputs.is_hidden'))
                                             ->default(false),
                                     ])->collapsible()
@@ -206,7 +206,13 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query();
+        $query = parent::getEloquentQuery();
+
+        if (Emulator::supports(Feature::EmulatorUserSettings)) {
+            $query->with('settings');
+        }
+
+        return $query;
     }
 
     public static function table(Table $table): Table
@@ -241,7 +247,7 @@ class UserResource extends Resource
 
                 IconColumn::make('online')
                     ->label(__('filament::resources.columns.online'))
-                    ->icon(fn (Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (User $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'danger' => false,
                         'success' => true,
@@ -276,7 +282,12 @@ class UserResource extends Resource
         ]));
     }
 
-    public static function fillWithOutsideData(Model $record, array $formData): array
+    /**
+     * @param  array<string, mixed>  $formData
+     *
+     * @return array<string, mixed>
+     */
+    public static function fillWithOutsideData(User $record, array $formData): array
     {
         $formData['currency_0'] = $record->currency('duckets');
         $formData['currency_5'] = $record->currency('diamonds');

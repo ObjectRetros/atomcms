@@ -15,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class WebsiteShopCategoryResource extends Resource
 {
@@ -105,7 +106,7 @@ class WebsiteShopCategoryResource extends Resource
                 Actions\BulkActionGroup::make([
                     Actions\DeleteBulkAction::make()
                         ->before(function (Actions\DeleteBulkAction $action, Collection $records): void {
-                            if ($records->contains(fn (WebsiteShopCategory $record): bool => $record->packages()->exists())) {
+                            if ($records->contains(fn (Model $record): bool => $record instanceof WebsiteShopCategory && $record->packages()->exists())) {
                                 self::notifyHasPackages();
 
                                 $action->cancel();
@@ -142,6 +143,8 @@ class WebsiteShopCategoryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('is_active', true)->count() ?: null;
+        $activeCategories = static::getModel()::where('is_active', true)->count();
+
+        return $activeCategories > 0 ? (string) $activeCategories : null;
     }
 }

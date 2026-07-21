@@ -32,15 +32,16 @@ class BadgePage extends Page
 
     protected static string $translateIdentifier = 'badge-resource';
 
-    public $badgeWasPreviouslyCreated;
+    public bool $badgeWasPreviouslyCreated = false;
 
+    /** @var array<string, mixed> */
     public ?array $data = [];
 
     public static string $roleName = 'badge_page';
 
     public static function canAccess(): bool
     {
-        return auth()->user()->can('view::admin::' . static::$roleName);
+        return auth()->user()?->can('view::admin::' . static::$roleName) ?? false;
     }
 
     public function getTitle(): string|Htmlable
@@ -60,7 +61,7 @@ class BadgePage extends Page
                             ->label(__('filament::resources.inputs.badge_code'))
                             ->helperText(__('filament::resources.helpers.badge_code_helper'))
                             ->afterStateUpdated(function (?string $state, Set $set) {
-                                $set('code', strtoupper($state));
+                                $set('code', is_string($state) ? strtoupper($state) : null);
                             })
                             ->suffixAction(fn (): PageAction => PageAction::make('search')->icon('heroicon-o-magnifying-glass')->action(fn () => $this->searchBadgesByCode()),
                             ),
@@ -69,7 +70,7 @@ class BadgePage extends Page
                             ->label(__('filament::resources.inputs.badge_image'))
                             ->placeholder('...')
                             ->autocomplete()
-                            ->visible(fn (Get $get) => isset($this->data['image']) ?? false)
+                            ->visible(fn (Get $get) => isset($this->data['image']))
                             ->prefixAction(
                                 fn (?string $state): PageAction => PageAction::make('visit')
                                     ->icon('heroicon-s-arrow-top-right-on-square')
@@ -87,12 +88,12 @@ class BadgePage extends Page
                         TextInput::make('nitro.title')
                             ->label(__('filament::resources.inputs.badge_title'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['nitro']['title']) ?? false),
+                            ->visible(fn () => isset($this->data['nitro']['title'])),
 
                         TextInput::make('nitro.description')
                             ->label(__('filament::resources.inputs.badge_description'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['nitro']['description']) ?? false),
+                            ->visible(fn () => isset($this->data['nitro']['description'])),
                     ]),
 
                 Section::make('Flash Texts')
@@ -102,12 +103,12 @@ class BadgePage extends Page
                         TextInput::make('flash.title')
                             ->label(__('filament::resources.inputs.badge_title'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['flash']['title']) ?? false),
+                            ->visible(fn () => isset($this->data['flash']['title'])),
 
                         TextInput::make('flash.description')
                             ->label(__('filament::resources.inputs.badge_description'))
                             ->placeholder('...')
-                            ->visible(fn () => isset($this->data['flash']['description']) ?? false),
+                            ->visible(fn () => isset($this->data['flash']['description'])),
                     ]),
             ])
             ->statePath('data');
@@ -115,10 +116,13 @@ class BadgePage extends Page
 
     private function searchBadgesByCode(): void
     {
-        $badgeCode = $this->form->getState()['code'] ?? null;
+        $badgeCode = $this->data['code'] ?? null;
 
         if (empty($badgeCode)) {
-            $this->notify('danger', __('filament::resources.notifications.badge_code_required'));
+            Notification::make()
+                ->danger()
+                ->title(__('filament::resources.notifications.badge_code_required'))
+                ->send();
 
             return;
         }
@@ -161,6 +165,13 @@ class BadgePage extends Page
         ];
     }
 
+    /**
+     * @return array{
+     *     image: string,
+     *     nitro: array{title: string, description: string},
+     *     flash: array{title: string, description: string}
+     * }
+     */
     private function getDefaultDataBehavior(
         ?string $badgeImageUrl = null,
         ?string $nitroTitle = null,
@@ -181,7 +192,7 @@ class BadgePage extends Page
         ];
     }
 
-    public function create()
+    public function create(): void
     {
         $nitroEnabled = config('hotel.client.nitro.enabled');
         $flashEnabled = config('hotel.client.flash.enabled');
@@ -237,7 +248,13 @@ class BadgePage extends Page
             return;
         }
 
-        $this->data['image'] = $externalTextsParser->getBadgeImageUrl($this->data['code']);
+        $badgeCode = $this->data['code'] ?? null;
+
+        if (! is_string($badgeCode)) {
+            return;
+        }
+
+        $this->data['image'] = $externalTextsParser->getBadgeImageUrl($badgeCode);
         $this->badgeWasPreviouslyCreated = true;
 
         Notification::make()

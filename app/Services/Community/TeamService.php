@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class TeamService
 {
+    /** @return Collection<int, WebsiteTeam> */
     public function fetchTeams(): Collection
     {
         $cacheEnabled = setting('enable_caching') === '1';

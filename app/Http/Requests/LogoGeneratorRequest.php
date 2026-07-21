@@ -11,6 +11,7 @@ class LogoGeneratorRequest extends FormRequest
         return hasPermission('generate_logo');
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

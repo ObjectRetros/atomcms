@@ -46,7 +46,8 @@ class CameraWeb extends Model
         'timestamp' => 'datetime',
     ];
 
-    public function scopePeriod(Builder $query, $period): void
+    /** @param Builder<static> $query */
+    public function scopePeriod(Builder $query, string $period): void
     {
         if ($period == 'today') {
             $query->where('timestamp', '>=', Carbon::today()->timestamp);
@@ -61,16 +62,19 @@ class CameraWeb extends Model
         }
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Room, $this> */
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
 
+    /** @return Attribute<string, never> */
     public function formattedDate(): Attribute
     {
         return new Attribute(

@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\WebsiteHousekeepingPermission;
 use Illuminate\Support\Collection;
 
 class HousekeepingPermissionsService
 {
+    /** @var Collection<string, int> */
     public Collection $permissions;
 
     public function __construct()
@@ -20,6 +22,9 @@ class HousekeepingPermissionsService
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        $user = auth()->user();
+
+        return $user instanceof User
+            && $user->rank >= (int) $this->permissions->get($permissionName);
     }
 }

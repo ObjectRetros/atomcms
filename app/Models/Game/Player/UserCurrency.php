@@ -31,6 +31,7 @@ class UserCurrency extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

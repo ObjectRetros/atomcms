@@ -26,20 +26,30 @@ class ImportBadgeData extends Command
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(): int
     {
         $jsonPath = $this->settingsService->getOrDefault('nitro_external_texts_file');
 
+        if (! is_string($jsonPath)) {
+            $this->validateJsonFile(null);
+
+            return self::FAILURE;
+        }
+
         if (! $this->validateJsonFile($jsonPath)) {
-            return;
+            return self::FAILURE;
         }
 
         try {
             $this->processBadgeData($jsonPath);
             $this->info('Badge data imported successfully.');
+
+            return self::SUCCESS;
         } catch (Exception $e) {
             Log::error('Failed to import badge data: ' . $e->getMessage());
             $this->error('Failed to import badge data. Check the logs for details.');
+
+            return self::FAILURE;
         }
     }
 

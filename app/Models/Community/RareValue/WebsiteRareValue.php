@@ -48,11 +48,13 @@ class WebsiteRareValue extends Model
         ];
     }
 
+    /** @return BelongsTo<WebsiteRareValueCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(WebsiteRareValueCategory::class, 'category_id');
     }
 
+    /** @return BelongsTo<CatalogItem, $this> */
     public function item(): BelongsTo
     {
         return $this->belongsTo(CatalogItem::class, 'item_id', 'item_ids');

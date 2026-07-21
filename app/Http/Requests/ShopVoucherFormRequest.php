@@ -8,6 +8,7 @@ use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class ShopVoucherFormRequest extends FormRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

@@ -10,11 +10,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Auth\Pages\Login
 {
-    public $username = '';
+    public string $username = '';
 
     public function authenticate(): ?LoginResponse
     {
@@ -26,10 +27,7 @@ class Login extends \Filament\Auth\Pages\Login
                     'seconds' => $exception->secondsUntilAvailable,
                     'minutes' => ceil($exception->secondsUntilAvailable / 60),
                 ]))
-                ->body(array_key_exists('body', __('filament-panels::pages/auth/login.notifications.throttled') ?: []) ? __('filament-panels::pages/auth/login.notifications.throttled.body', [
-                    'seconds' => $exception->secondsUntilAvailable,
-                    'minutes' => ceil($exception->secondsUntilAvailable / 60),
-                ]) : null)
+                ->body($this->throttledNotificationBody($exception))
                 ->danger()
                 ->send();
 
@@ -43,10 +41,11 @@ class Login extends \Filament\Auth\Pages\Login
         }
 
         $user = Filament::auth()->user();
+        $panel = Filament::getCurrentOrDefaultPanel();
 
         if (
             ($user instanceof FilamentUser) &&
-            (! $user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
+            ($panel === null || ! $user->canAccessPanel($panel))
         ) {
             Filament::auth()->logout();
 
@@ -65,6 +64,23 @@ class Login extends \Filament\Auth\Pages\Login
         ]);
     }
 
+    private function throttledNotificationBody(TooManyRequestsException $exception): ?string
+    {
+        $key = 'filament-panels::pages/auth/login.notifications.throttled.body';
+
+        if (! Lang::has($key)) {
+            return null;
+        }
+
+        $body = __($key, [
+            'seconds' => $exception->secondsUntilAvailable,
+            'minutes' => ceil($exception->secondsUntilAvailable / 60),
+        ]);
+
+        return is_string($body) ? $body : null;
+    }
+
+    /** @return array<int, Component> */
     protected function getFormSchema(): array
     {
         return [

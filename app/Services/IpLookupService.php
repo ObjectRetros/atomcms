@@ -10,7 +10,8 @@ class IpLookupService
 
     public function __construct(private string $apiKey) {}
 
-    public function ipLookup(string $ip)
+    /** @return array<string, mixed> */
+    public function ipLookup(string $ip): array
     {
         $response = Http::acceptJson()->get(sprintf('%s/%s?api-key=%s', $this->baseUrl, $ip, $this->apiKey));
 

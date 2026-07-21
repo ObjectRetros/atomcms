@@ -8,24 +8,27 @@ use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
 use App\Services\InstallationService;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class InstallationController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         return view('installation.index');
     }
 
-    public function storeInstallationKey(Request $request)
+    public function storeInstallationKey(Request $request): RedirectResponse
     {
         $request->validate([
             'installation_key' => ['required', 'string', 'max:255', new ValidateInstallationKeyRule],
         ]);
 
-        WebsiteInstallation::first()->update([
+        $this->installation()->update([
             'step' => 1,
             'user_ip' => $request->ip(),
         ]);
@@ -33,34 +36,44 @@ class InstallationController extends Controller
         return to_route('installation.show-step', 1);
     }
 
-    public function showStep($currentStep)
+    public function showStep(int $currentStep): View
     {
-        $settings = $this->getSettingsForStep((int) $currentStep);
+        $settings = $this->getSettingsForStep($currentStep);
+        $view = match ($currentStep) {
+            1 => 'installation.step-1',
+            2 => 'installation.step-2',
+            3 => 'installation.step-3',
+            4 => 'installation.step-4',
+            5 => 'installation.step-5',
+            default => throw new Exception('Step does not exist'),
+        };
 
-        return view('installation.step-' . $currentStep, [
+        return view($view, [
             'settings' => $settings,
         ]);
     }
 
-    public function saveStepSettings(Request $request)
+    public function saveStepSettings(Request $request): RedirectResponse
     {
         $this->updateSettings($request);
 
-        WebsiteInstallation::first()->increment('step');
+        $installation = $this->installation();
+        $installation->increment('step');
 
-        return to_route('installation.show-step', WebsiteInstallation::first()->step);
+        return to_route('installation.show-step', $installation->step);
     }
 
-    public function previousStep()
+    public function previousStep(): RedirectResponse
     {
-        WebsiteInstallation::first()->decrement('step');
+        $installation = $this->installation();
+        $installation->decrement('step');
 
-        return to_route('installation.show-step', WebsiteInstallation::first()->step);
+        return to_route('installation.show-step', $installation->step);
     }
 
-    public function restartInstallation()
+    public function restartInstallation(): RedirectResponse
     {
-        WebsiteInstallation::first()->update([
+        $this->installation()->update([
             'step' => 0,
             'installation_key' => Str::uuid(),
             'user_ip' => null,
@@ -73,7 +86,7 @@ class InstallationController extends Controller
         return to_route('installation.index');
     }
 
-    public function completeInstallation()
+    public function completeInstallation(): RedirectResponse
     {
         // Clear all caches before marking as complete
         Cache::forget('website_permissions');
@@ -103,9 +116,16 @@ class InstallationController extends Controller
         // Cache will be automatically cleared by WebsiteSetting model events
     }
 
-    private function getSettingsForStep(int $step)
+    private function installation(): WebsiteInstallation
     {
-        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), (int) ceil(WebsiteSetting::count() / 4));
+        return WebsiteInstallation::query()->oldest('id')->firstOrFail();
+    }
+
+    /** @return Collection<int, WebsiteSetting> */
+    private function getSettingsForStep(int $step): Collection
+    {
+        $chunkSize = max(1, (int) ceil(WebsiteSetting::count() / 4));
+        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), $chunkSize);
 
         $settings = match ($step) {
             1 => $settingsData[0] ?? [],

@@ -4,6 +4,7 @@ namespace App\Models\Community\Teams;
 
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,17 +56,24 @@ class WebsiteTeam extends Model
         'staff_background',
     ];
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'team_id', 'id');
     }
 
+    /** @return HasMany<WebsiteOpenPosition, $this> */
     public function openPositions(): HasMany
     {
         return $this->hasMany(WebsiteOpenPosition::class, 'team_id', 'id');
     }
 
-    public function scopeVisible($query)
+    /**
+     * @param  Builder<static>  $query
+     *
+     * @return Builder<static>
+     */
+    public function scopeVisible(Builder $query): Builder
     {
         return $query->where('hidden_rank', false);
     }

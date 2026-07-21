@@ -13,6 +13,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      * Validate and update the given user's profile information.
      *
      * @param  mixed  $user
+     * @param  array<string, mixed>  $input
      */
     public function update($user, array $input): void
     {
@@ -43,6 +44,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      * Update the given verified user's profile information.
      *
      * @param  mixed  $user
+     * @param  array<string, mixed>  $input
      */
     protected function updateVerifiedUser($user, array $input): void
     {

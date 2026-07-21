@@ -34,11 +34,13 @@ class WebsiteArticleComment extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
+    /** @return BelongsTo<WebsiteArticle, $this> */
     public function article(): BelongsTo
     {
         return $this->belongsTo(WebsiteArticle::class, 'article_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

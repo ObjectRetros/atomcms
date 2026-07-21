@@ -8,6 +8,7 @@ use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class StaffApplicationFormRequest extends FormRequest
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

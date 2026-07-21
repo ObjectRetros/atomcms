@@ -28,10 +28,8 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        $ip = request()->ip();
-
-        $this->ensureRegistrationAllowed($ip);
-        $this->validate($input);
+        $ip = $this->registrationIp(request()->ip());
+        $input = $this->validate($input);
 
         $user = $this->createUser($input, $ip);
 
@@ -40,19 +38,19 @@ class CreateNewUser implements CreatesNewUsers
 
         if (setting('enable_discord_webhook') === '1') {
             // After the response, so registration never waits on Discord.
-            SendRegisteredUserWebhook::dispatchAfterResponse($user->username, $user->ip_register, $user->mail);
+            SendRegisteredUserWebhook::dispatchAfterResponse($user->username, $user->ip_register, $input['mail']);
         }
 
         return $user;
     }
 
-    private function ensureRegistrationAllowed(?string $ip): void
+    private function registrationIp(?string $ip): string
     {
         if ((setting('disable_registration') ?: '0') == '1') {
             throw ValidationException::withMessages(['registration' => __('Registration is disabled.')]);
         }
 
-        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
+        if (! is_string($ip) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6) === false) {
             throw ValidationException::withMessages(['registration' => __('Your IP address seems to be invalid')]);
         }
 
@@ -64,6 +62,8 @@ class CreateNewUser implements CreatesNewUsers
         if ($matchingIpCount >= (int) (setting('max_accounts_per_ip') ?: 99)) {
             throw ValidationException::withMessages(['registration' => __('You have reached the max amount of allowed account')]);
         }
+
+        return $ip;
     }
 
     /**
@@ -129,6 +129,11 @@ class CreateNewUser implements CreatesNewUsers
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $inputs
+     *
+     * @return array{username: string, mail: string, password: string, beta_code?: string, referral_code?: string}
+     */
     private function validate(array $inputs): array
     {
         $rules = [
@@ -136,6 +141,7 @@ class CreateNewUser implements CreatesNewUsers
             'mail' => ['required', 'string', 'email', 'max:255', Rule::unique('users')],
             'password' => $this->passwordRules(),
             'beta_code' => ['sometimes', 'string', new BetaCodeRule],
+            'referral_code' => ['sometimes', 'string', 'max:255'],
             'terms' => ['required', 'accepted'],
             'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule],
             'cf-turnstile-response' => [app(Turnstile::class)],
@@ -146,6 +152,36 @@ class CreateNewUser implements CreatesNewUsers
             'g-recaptcha-response.string' => __('The google recaptcha was submitted with an invalid type'),
         ];
 
-        return Validator::make($inputs, $rules, $messages)->validate();
+        $validated = Validator::make($inputs, $rules, $messages)->validate();
+
+        if (! is_string($validated['username'] ?? null)
+            || ! is_string($validated['mail'] ?? null)
+            || ! is_string($validated['password'] ?? null)) {
+            throw new \UnexpectedValueException('Registration validation returned an invalid payload.');
+        }
+
+        $betaCode = $validated['beta_code'] ?? null;
+        $referralCode = $validated['referral_code'] ?? null;
+
+        if (($betaCode !== null && ! is_string($betaCode))
+            || ($referralCode !== null && ! is_string($referralCode))) {
+            throw new \UnexpectedValueException('Registration validation returned invalid optional values.');
+        }
+
+        $result = [
+            'username' => $validated['username'],
+            'mail' => $validated['mail'],
+            'password' => $validated['password'],
+        ];
+
+        if ($betaCode !== null) {
+            $result['beta_code'] = $betaCode;
+        }
+
+        if ($referralCode !== null) {
+            $result['referral_code'] = $referralCode;
+        }
+
+        return $result;
     }
 }

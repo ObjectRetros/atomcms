@@ -114,12 +114,14 @@ class BanResource extends Resource
                         'ip' => __('filament::resources.common.IP'),
                         'machine' => __('filament::resources.common.Machine'),
                         'super' => __('filament::resources.common.Super'),
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'account' => 'primary',
                         'ip' => 'success',
                         'machine' => 'primary',
                         'super' => 'danger',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('timestamp')
@@ -128,7 +130,7 @@ class BanResource extends Resource
 
                 TextColumn::make('ban_expire')
                     ->label(__('filament::resources.columns.expires_at'))
-                    ->formatStateUsing(fn (string $state): string => $state == 0 ? __('filament::resources.common.Never') : date('Y-m-d H:i', $state)),
+                    ->formatStateUsing(fn (string $state): string => $state === '0' ? __('filament::resources.common.Never') : date('Y-m-d H:i', (int) $state)),
             ])
             ->filters([
                 //

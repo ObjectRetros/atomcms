@@ -21,9 +21,7 @@ class UserAvatarColumn extends Column
             return '';
         }
 
-        $figure = ! $this->figurePointer
-            ? $record->look
-            : data_get($record, $this->figurePointer);
+        $figure = (string) data_get($record, $this->figurePointer ?? 'look', '');
 
         return "{$figureImagerUrl}{$figure}{$this->avatarOptions}";
     }

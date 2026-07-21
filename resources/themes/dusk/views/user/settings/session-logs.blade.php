@@ -44,17 +44,17 @@
                         @forelse ($logs as $log)
                             <tr>
                                 <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-200">
-                                    {{ $log->ip_address }}
+                                    {{ $log->ipAddress }}
                                 </td>
                                 <td class="px-4 py-2 text-gray-200">
-                                    {{ $log->is_current_device ? 'true' : 'false' }}</td>
+                                    {{ $log->isCurrentDevice ? 'true' : 'false' }}</td>
                                 <td class="px-4 py-2 text-gray-200">
                                     {{ $log->agent['is_desktop'] ? 'true' : 'false' }}</td>
                                 <td class="px-4 py-2 text-gray-200">{{ $log->agent['platform'] }}
                                 </td>
                                 <td class="px-4 py-2 text-gray-200">{{ $log->agent['browser'] }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-200">
-                                    {{ $log->last_active }}</td>
+                                    {{ $log->lastActive }}</td>
                             </tr>
                         @empty
                             <tr>

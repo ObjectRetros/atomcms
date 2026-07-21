@@ -18,6 +18,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Collection;
+use LogicException;
 
 class EditCatalogItem extends Page implements HasForms
 {
@@ -31,8 +32,10 @@ class EditCatalogItem extends Page implements HasForms
 
     public ?ItemBase $itemBase = null;
 
+    /** @var array<string, mixed> */
     public array $catalogData = [];
 
+    /** @var array<string, mixed> */
     public array $itemBaseData = [];
 
     public function mount(int $item): void
@@ -42,10 +45,10 @@ class EditCatalogItem extends Page implements HasForms
             ->whereKey((int) $this->record->item_ids)
             ->first();
 
-        $this->catalogForm->fill(CatalogItemFullForm::fillFrom($this->record));
+        $this->catalogFormSchema()->fill(CatalogItemFullForm::fillFrom($this->record));
 
         if ($this->itemBase) {
-            $this->itemBaseForm->fill($this->itemBase->toArray());
+            $this->itemBaseFormSchema()->fill($this->itemBase->toArray());
         }
     }
 
@@ -56,7 +59,7 @@ class EditCatalogItem extends Page implements HasForms
 
     public function getTitle(): string
     {
-        return $this->record?->catalog_name
+        return $this->record->catalog_name
             ? "Edit: {$this->record->catalog_name}"
             : 'Edit catalog item';
     }
@@ -99,7 +102,7 @@ class EditCatalogItem extends Page implements HasForms
             ->label('Save catalog item')
             ->icon('heroicon-m-check')
             ->action(function (): void {
-                $data = $this->catalogForm->getState();
+                $data = $this->catalogFormSchema()->getState();
                 $this->record->update(CatalogItemFullForm::castForSave($data));
 
                 Notification::make()
@@ -120,7 +123,7 @@ class EditCatalogItem extends Page implements HasForms
                     return;
                 }
 
-                $data = $this->itemBaseForm->getState();
+                $data = $this->itemBaseFormSchema()->getState();
                 $this->itemBase->update($data);
 
                 Notification::make()
@@ -130,6 +133,7 @@ class EditCatalogItem extends Page implements HasForms
             });
     }
 
+    /** @return Collection<int, covariant array{room: Room|null, count: int<0, max>}> */
     public function getRoomPlacementsProperty(): Collection
     {
         if (! $this->itemBase) {
@@ -144,44 +148,49 @@ class EditCatalogItem extends Page implements HasForms
             ->with(['room.owner:id,username,look'])
             ->get(['id', 'item_id', 'room_id', 'user_id'])
             ->groupBy('room_id')
-            ->map(fn (Collection $items, int $roomId) => [
-                'room' => $items->first()->room,
-                'count' => $items->count(),
-            ])
+            ->map(function (Collection $items): array {
+                $item = $items->first();
+
+                return [
+                    'room' => $item instanceof Item ? $item->room : null,
+                    'count' => $items->count(),
+                ];
+            })
             ->values();
     }
 
+    /** @return Collection<int, array{user: User, count: int}> */
     public function getOwnerSummaryProperty(): Collection
     {
         if (! $this->itemBase) {
             return collect();
         }
 
-        $userIds = Item::query()
+        $ownerCounts = Item::query()
             ->where('item_id', $this->itemBase->id)
             ->whereNotNull('user_id')
             ->where('user_id', '>', 0)
             ->groupBy('user_id')
-            ->selectRaw('user_id, COUNT(*) as total')
-            ->orderByDesc('total')
+            ->selectRaw('user_id, COUNT(*) as aggregate')
+            ->orderByDesc('aggregate')
             ->limit(200)
-            ->get();
+            ->pluck('aggregate', 'user_id');
 
-        if ($userIds->isEmpty()) {
+        if ($ownerCounts->isEmpty()) {
             return collect();
         }
 
         $users = User::query()
-            ->whereIn('id', $userIds->pluck('user_id'))
+            ->whereIn('id', $ownerCounts->keys())
             ->get(['id', 'username', 'look', 'rank'])
             ->keyBy('id');
 
-        return $userIds
-            ->map(fn ($row) => [
-                'user' => $users->get($row->user_id),
-                'count' => (int) $row->total,
+        return $ownerCounts
+            ->map(fn ($count, $userId) => [
+                'user' => $users->get((int) $userId),
+                'count' => (int) $count,
             ])
-            ->filter(fn ($r) => $r['user'])
+            ->filter(fn (array $row): bool => $row['user'] !== null)
             ->values();
     }
 
@@ -192,5 +201,17 @@ class EditCatalogItem extends Page implements HasForms
         }
 
         return app(FurniIconService::class)->furniIcon($this->itemBase->item_name);
+    }
+
+    private function catalogFormSchema(): Schema
+    {
+        return $this->getSchema('catalogForm')
+            ?? throw new LogicException('The catalog item form schema is not registered.');
+    }
+
+    private function itemBaseFormSchema(): Schema
+    {
+        return $this->getSchema('itemBaseForm')
+            ?? throw new LogicException('The item base form schema is not registered.');
     }
 }

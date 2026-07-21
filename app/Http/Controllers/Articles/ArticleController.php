@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Articles\WebsiteArticle;
 use App\Services\Articles\ArticleService;
 use App\Services\Articles\ReactionService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +49,7 @@ class ArticleController extends Controller
 
     public function toggleReaction(WebsiteArticle $article, Request $request): JsonResponse
     {
-        $response = $this->reactionService->toggleReaction($article, Auth::user(), $request);
+        $response = $this->reactionService->toggleReaction($article, AuthenticatedUser::from($request), $request);
 
         return response()->json($response);
     }

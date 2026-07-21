@@ -2,20 +2,21 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ForceStaffTwoFactorMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || ! setting('force_staff_2fa')) {
+        $user = $request->user();
+
+        if (! $user instanceof User || ! setting('force_staff_2fa')) {
             return $next($request);
         }
 
-        $user = $request->user();
         $urls = [
             'user/settings/two-factor',
             'user/settings/2fa-verify',

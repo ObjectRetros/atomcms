@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Validation\InvokableRule;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,9 @@ class CurrentPasswordRule implements InvokableRule
      */
     public function __invoke(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! Hash::check($value, Auth::user()->password)) {
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! is_string($value) || ! Hash::check($value, $user->password)) {
             $fail('It seems like your current password is wrong.');
         }
     }

@@ -16,6 +16,8 @@ use Filament\Resources\Pages\Page;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 class ManageCatalogEditor extends Page implements HasTable
@@ -32,6 +34,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     /** Server-driven open state. Once rendered, expand/collapse runs client-side
      *  so drag-and-drop isn't interrupted by Livewire morphs. */
+    /** @var array<int, int> */
     public array $initialOpenIds = [];
 
     public function mount(): void
@@ -61,8 +64,10 @@ class ManageCatalogEditor extends Page implements HasTable
 
     /** The recursive tree partial reads pagesByParent on every node; without
      *  this the Cache::remember deserialize fires thousands of times per render. */
+    /** @var Collection<int|string, EloquentCollection<int, CatalogPage>>|null */
     private ?Collection $pagesByParentCache = null;
 
+    /** @return Collection<int|string, EloquentCollection<int, CatalogPage>> */
     public function getPagesByParentProperty(): Collection
     {
         return $this->pagesByParentCache ??= $this->tree()->pagesGroupedByParent();
@@ -75,7 +80,7 @@ class ManageCatalogEditor extends Page implements HasTable
 
     private function findCachedPage(int $id): ?CatalogPage
     {
-        foreach ($this->pagesByParent as $children) {
+        foreach ($this->getPagesByParentProperty() as $children) {
             foreach ($children as $page) {
                 if ($page->id === $id) {
                     return $page;
@@ -86,9 +91,10 @@ class ManageCatalogEditor extends Page implements HasTable
         return null;
     }
 
+    /** @return array<int, CatalogPage> */
     public function getBreadcrumbProperty(): array
     {
-        return $this->tree()->breadcrumb($this->selectedPage);
+        return $this->tree()->breadcrumb($this->getSelectedPageProperty());
     }
 
     public function selectPage(int $pageId): void
@@ -134,6 +140,7 @@ class ManageCatalogEditor extends Page implements HasTable
         $this->searchTerm = '';
     }
 
+    /** @param array<int, mixed> $orderedIds */
     public function reorderPages(int $parentId, array $orderedIds): void
     {
         $this->reorderService()->reorderPages($parentId, $orderedIds);
@@ -153,7 +160,8 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Page moved')->success()->send();
     }
 
-    protected function getTableQuery()
+    /** @return Builder<CatalogItem> */
+    protected function getTableQuery(): Builder
     {
         if (! $this->selectedPageId) {
             return CatalogItem::query()->whereRaw('1=0');
@@ -169,6 +177,7 @@ class ManageCatalogEditor extends Page implements HasTable
         return CatalogItemsTable::configure($table, fn () => $this->selectedPageId);
     }
 
+    /** @param array<int, mixed> $order */
     public function reorderTable(array $order): void
     {
         if (! $this->selectedPageId) {
@@ -179,6 +188,7 @@ class ManageCatalogEditor extends Page implements HasTable
         Notification::make()->title('Items reordered')->success()->send();
     }
 
+    /** @return Collection<int, CatalogItem> */
     public function getLockedItemsProperty(): Collection
     {
         if (! $this->selectedPageId) {
@@ -207,17 +217,23 @@ class ManageCatalogEditor extends Page implements HasTable
         return Action::make('editPage')
             ->label('Edit page')
             ->icon('heroicon-m-pencil-square')
-            ->visible(fn () => (bool) $this->selectedPage)
-            ->modalHeading(fn () => $this->selectedPage ? "Edit: {$this->selectedPage->caption}" : 'Edit page')
+            ->visible(fn () => $this->getSelectedPageProperty() !== null)
+            ->modalHeading(function (): string {
+                $selectedPage = $this->getSelectedPageProperty();
+
+                return $selectedPage ? "Edit: {$selectedPage->caption}" : 'Edit page';
+            })
             ->modalWidth('xl')
             ->form(CatalogPageForm::schema())
-            ->fillForm(fn () => $this->selectedPage?->only(['caption', 'caption_save', 'order_num', 'icon_image']) ?? [])
+            ->fillForm(fn () => $this->getSelectedPageProperty()?->only(['caption', 'caption_save', 'order_num', 'icon_image']) ?? [])
             ->action(function (array $data): void {
-                if (! $this->selectedPage) {
+                $selectedPage = $this->getSelectedPageProperty();
+
+                if (! $selectedPage) {
                     return;
                 }
 
-                $this->selectedPage->update([
+                $selectedPage->update([
                     'caption' => $data['caption'],
                     'caption_save' => CatalogPageForm::sanitizeTag($data['caption_save'] ?? ''),
                     'order_num' => (int) ($data['order_num'] ?? 1),
@@ -235,7 +251,7 @@ class ManageCatalogEditor extends Page implements HasTable
             ->icon('heroicon-m-arrow-path')
             ->color('gray')
             ->tooltip('Re-spaces items at 10, 20, 30… while preserving their order. Useful after bulk changes.')
-            ->visible(fn () => $this->selectedPage && $this->selectedPage->parent_id !== -1)
+            ->visible(fn () => ($selectedPage = $this->getSelectedPageProperty()) !== null && $selectedPage->parent_id !== -1)
             ->action(function (): void {
                 $count = $this->reorderService()->resetItemSpacing((int) $this->selectedPageId);
 
@@ -257,7 +273,7 @@ class ManageCatalogEditor extends Page implements HasTable
             ->requiresConfirmation()
             ->modalHeading('Sort items A→Z')
             ->modalDescription('This rewrites order_number for every item on the page. Continue?')
-            ->visible(fn () => $this->selectedPage && $this->selectedPage->parent_id !== -1)
+            ->visible(fn () => ($selectedPage = $this->getSelectedPageProperty()) !== null && $selectedPage->parent_id !== -1)
             ->action(function (): void {
                 $count = $this->reorderService()->sortItemsAlphabetically((int) $this->selectedPageId);
 

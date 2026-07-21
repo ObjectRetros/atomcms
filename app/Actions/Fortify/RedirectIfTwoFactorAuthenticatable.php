@@ -97,17 +97,13 @@ class RedirectIfTwoFactorAuthenticatable
                 $this->convertUserPassword($user, $request->input('password'));
             }
 
-            if (! $user || ! $this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
+            if (! $user instanceof User || ! $this->guard->getProvider()->validateCredentials($user, ['password' => $request->password])) {
                 $this->fireFailedEvent($request, $user);
 
                 $this->throwFailedAuthenticationException($request);
             }
 
             $this->validate($request);
-
-            $user = User::select('id', 'password', 'rank')
-                ->where('username', '=', $request->input('username'))
-                ->first();
 
             if (setting('maintenance_enabled') === '1' && setting('min_maintenance_login_rank') > $user->rank) {
                 throw ValidationException::withMessages([
@@ -162,7 +158,7 @@ class RedirectIfTwoFactorAuthenticatable
             : redirect()->route('two-factor.login');
     }
 
-    private function convertUserPassword(User $user, string $password)
+    private function convertUserPassword(User $user, string $password): void
     {
         if ($user->password == md5($password)) {
             $user->update([
@@ -171,6 +167,7 @@ class RedirectIfTwoFactorAuthenticatable
         }
     }
 
+    /** @return array<string, mixed> */
     private function validate(Request $request): array
     {
         $rules = [];

@@ -3,6 +3,7 @@
 namespace App\Models\Articles;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WebsiteArticleReaction extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
@@ -57,11 +59,13 @@ class WebsiteArticleReaction extends Model
         });
     }
 
+    /** @return BelongsTo<WebsiteArticle, $this> */
     public function article(): BelongsTo
     {
         return $this->belongsTo(WebsiteArticle::class, 'article_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

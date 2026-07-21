@@ -8,6 +8,7 @@ use App\Models\Home\HomeCategory;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -57,7 +58,7 @@ class ShopController extends Controller
 
     public function balance(): JsonResponse
     {
-        $user = Auth::user();
+        $user = AuthenticatedUser::current();
 
         return $this->jsonResponse([
             'balance' => [

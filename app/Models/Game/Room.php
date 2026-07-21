@@ -110,11 +110,13 @@ class Room extends Model
 {
     protected $guarded = ['id'];
 
+    /** @return HasOne<Guild, $this> */
     public function guild(): HasOne
     {
         return $this->hasOne(Guild::class, 'room_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id', 'id');

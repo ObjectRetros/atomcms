@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Miscellaneous\WebsitePermission;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class PermissionsService
 {
+    /** @var Collection<string, int> */
     public Collection $permissions;
 
     public function __construct()
@@ -25,6 +27,9 @@ class PermissionsService
             return $default;
         }
 
-        return auth()->check() && auth()->user()->rank >= (int) $this->permissions->get($permissionName);
+        $user = auth()->user();
+
+        return $user instanceof User
+            && $user->rank >= (int) $this->permissions->get($permissionName);
     }
 }

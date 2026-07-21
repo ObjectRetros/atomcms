@@ -4,7 +4,9 @@ namespace App\Models\Community\Staff;
 
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +46,7 @@ use Illuminate\Support\Carbon;
  */
 class WebsiteOpenPosition extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $table = 'website_open_positions';
@@ -75,22 +78,30 @@ class WebsiteOpenPosition extends Model
         });
     }
 
+    /** @return BelongsTo<Permission, $this> */
     public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'permission_id');
     }
 
+    /** @return BelongsTo<WebsiteTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(WebsiteTeam::class, 'team_id');
     }
 
+    /** @return HasMany<WebsiteStaffApplications, $this> */
     public function applications(): HasMany
     {
         return $this->hasMany(WebsiteStaffApplications::class, 'rank_id', 'permission_id');
     }
 
-    public function scopeCanApply($query)
+    /**
+     * @param  Builder<static>  $query
+     *
+     * @return Builder<static>
+     */
+    public function scopeCanApply(Builder $query): Builder
     {
         return $query->where('apply_from', '<=', now())->where('apply_to', '>', now());
     }

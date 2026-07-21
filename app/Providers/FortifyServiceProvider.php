@@ -81,7 +81,7 @@ class FortifyServiceProvider extends ServiceProvider
         ];
     }
 
-    private function authenticate()
+    private function authenticate(): void
     {
         Fortify::authenticateThrough(function () {
             return array_filter([

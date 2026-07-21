@@ -36,7 +36,15 @@ class ItemController extends Controller
     {
         $item = $user->homeItems()->defaultRelationships()->find($itemId);
 
-        if (! $item) {
+        if ($item === null) {
+            return $this->jsonResponse([
+                'message' => __('Home item not found.'),
+            ], 404);
+        }
+
+        $homeItem = $item->homeItem;
+
+        if ($homeItem === null) {
             return $this->jsonResponse([
                 'message' => __('Home item not found.'),
             ], 404);
@@ -45,7 +53,7 @@ class ItemController extends Controller
         $item->setWidgetContent($user);
 
         return $this->jsonResponse([
-            'name' => $item->homeItem->name,
+            'name' => $homeItem->name,
             'widget_type' => $item->widget_type,
             'content' => $item->content,
         ]);

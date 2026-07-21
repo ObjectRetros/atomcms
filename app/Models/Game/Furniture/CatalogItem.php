@@ -56,6 +56,7 @@ class CatalogItem extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<ItemBase, $this> */
     public function itemBase(): BelongsTo
     {
         return $this->belongsTo(ItemBase::class, 'item_ids', 'id');

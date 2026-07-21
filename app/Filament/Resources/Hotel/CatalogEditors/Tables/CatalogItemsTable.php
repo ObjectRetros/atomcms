@@ -134,7 +134,9 @@ class CatalogItemsTable
                         ->orderBy('caption')
                         ->limit(50)
                         ->pluck('caption', 'id'))
-                    ->getOptionLabelUsing(fn ($value) => CatalogPage::find($value)?->caption),
+                    ->getOptionLabelUsing(fn (int|string|null $value): ?string => $value === null
+                        ? null
+                        : CatalogPage::query()->find((int) $value)?->caption),
             ])
             ->action(function (Collection $records, array $data) use ($reorder): void {
                 $moved = $reorder->moveItemsToPage((int) $data['page_id'], $records->pluck('id')->all());

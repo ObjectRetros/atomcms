@@ -98,7 +98,7 @@ class ArticleReactions extends Component
             : collect();
 
         $usedReactionNames = $articleReactions->pluck('name')->values();
-        $availableReactions = collect(config('habbo.reactions'))
+        $availableReactions = collect((array) config('habbo.reactions', []))
             ->reject(fn ($reaction) => $usedReactionNames->contains($reaction) || $myReactions->contains($reaction))
             ->values();
 

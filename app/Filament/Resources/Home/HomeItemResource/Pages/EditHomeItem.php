@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Home\HomeItemResource\Pages;
 
 use App\Filament\Resources\Home\HomeItemResource;
+use App\Models\Home\HomeItem;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
 
 class EditHomeItem extends EditRecord
 {
@@ -16,7 +16,7 @@ class EditHomeItem extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->action(function (Model $record): void {
+                ->action(function (HomeItem $record): void {
                     if ($record->userHomeItems()->exists()) {
                         Notification::make()
                             ->danger()

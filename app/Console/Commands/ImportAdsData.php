@@ -17,12 +17,18 @@ class ImportAdsData extends Command
 
     private const ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'gif'];
 
-    public function handle(SettingsService $settingsService): void
+    public function handle(SettingsService $settingsService): int
     {
         $adsPath = $settingsService->getOrDefault('ads_path_filesystem');
 
+        if (! is_string($adsPath)) {
+            $this->validatePath(null);
+
+            return self::FAILURE;
+        }
+
         if (! $this->validatePath($adsPath)) {
-            return;
+            return self::FAILURE;
         }
 
         $files = $this->getImageFiles($adsPath);
@@ -30,12 +36,14 @@ class ImportAdsData extends Command
         if (empty($files)) {
             $this->warn('No valid image files found in the ads directory.');
 
-            return;
+            return self::SUCCESS;
         }
 
         $this->processFiles($files);
 
         $this->info('Ads data import completed successfully.');
+
+        return self::SUCCESS;
     }
 
     private function validatePath(?string $adsPath): bool
@@ -55,16 +63,24 @@ class ImportAdsData extends Command
         return true;
     }
 
+    /** @return list<string> */
     private function getImageFiles(string $adsPath): array
     {
-        return array_filter(scandir($adsPath), function ($file) use ($adsPath) {
+        $files = scandir($adsPath);
+
+        if ($files === false) {
+            return [];
+        }
+
+        return array_values(array_filter($files, function (string $file) use ($adsPath): bool {
             $filePath = $adsPath . DIRECTORY_SEPARATOR . $file;
 
             return is_file($filePath) &&
                    in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS);
-        });
+        }));
     }
 
+    /** @param  list<string>  $files */
     private function processFiles(array $files): void
     {
         // Get existing images to avoid duplicates

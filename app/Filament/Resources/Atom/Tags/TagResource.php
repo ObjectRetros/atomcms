@@ -15,10 +15,12 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -42,6 +44,7 @@ class TagResource extends Resource
             ->components(static::getForm());
     }
 
+    /** @return array<int, Component> */
     public static function getForm(): array
     {
         return [
@@ -83,6 +86,7 @@ class TagResource extends Resource
             ]);
     }
 
+    /** @return array<int, Column> */
     public static function getTable(): array
     {
         return [

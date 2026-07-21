@@ -127,6 +127,7 @@ class UserSetting extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
