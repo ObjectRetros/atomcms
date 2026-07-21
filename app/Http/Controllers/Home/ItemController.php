@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Home;
 
+use App\Exceptions\HomePurchaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Home\BuyHomeItemRequest;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Http\JsonResponse;
+use Throwable;
 
 class ItemController extends Controller
 {
@@ -20,10 +22,16 @@ class ItemController extends Controller
 
         try {
             $item = $this->homeService->buyItem($user, $data['item_id'], $data['quantity']);
-        } catch (\Throwable $exception) {
+        } catch (HomePurchaseException $exception) {
             return $this->jsonResponse([
                 'message' => $exception->getMessage(),
             ], 400);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->jsonResponse([
+                'message' => __('An error occurred while buying this item.'),
+            ], 500);
         }
 
         return $this->jsonResponse([

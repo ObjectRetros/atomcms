@@ -4,11 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\WebsiteBadge;
 use App\Services\SettingsService;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ImportBadgeData extends Command
 {
@@ -45,8 +44,8 @@ class ImportBadgeData extends Command
             $this->info('Badge data imported successfully.');
 
             return self::SUCCESS;
-        } catch (Exception $e) {
-            Log::error('Failed to import badge data: ' . $e->getMessage());
+        } catch (Throwable $exception) {
+            report($exception);
             $this->error('Failed to import badge data. Check the logs for details.');
 
             return self::FAILURE;

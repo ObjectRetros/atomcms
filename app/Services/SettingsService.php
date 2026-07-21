@@ -6,7 +6,6 @@ use App\Models\Miscellaneous\WebsiteSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Throwable;
 
 class SettingsService
 {
@@ -53,24 +52,16 @@ class SettingsService
 
     private function isInstallationIncomplete(): bool
     {
-        try {
-            return ! app(InstallationService::class)->isComplete();
-        } catch (Throwable) {
-            return true;
-        }
+        return ! app(InstallationService::class)->isComplete();
     }
 
     /** @return Collection<string, mixed> */
     private function fetchSettings(): Collection
     {
-        try {
-            if (! Schema::hasTable('website_settings')) {
-                return collect();
-            }
-
-            return WebsiteSetting::query()->pluck('value', 'key');
-        } catch (Throwable) {
+        if (! Schema::hasTable('website_settings')) {
             return collect();
         }
+
+        return WebsiteSetting::query()->pluck('value', 'key');
     }
 }
