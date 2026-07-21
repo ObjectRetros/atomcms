@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * @property int $id
@@ -52,10 +51,5 @@ class WebsiteHelpCenterTicketReply extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function canDeleteReply(): bool
-    {
-        return $this->user_id === Auth::id() || hasPermission('delete_website_ticket_replies');
     }
 }

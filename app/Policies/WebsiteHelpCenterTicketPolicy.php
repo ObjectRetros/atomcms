@@ -37,4 +37,9 @@ class WebsiteHelpCenterTicketPolicy
         return $ticket->user_id === $user->id
             || $this->permissions->allows($user, 'delete_website_tickets');
     }
+
+    public function reply(User $user, WebsiteHelpCenterTicket $ticket): bool
+    {
+        return (bool) $ticket->open && $this->update($user, $ticket);
+    }
 }
