@@ -91,11 +91,11 @@
             </x-slot:under-title>
 
             <div class="text-sm text-center py-2 px-4 rounded bg-gray-100 text-black dark:text-gray-100 dark:bg-gray-700">
-                {{ __('Current balance: $:balance', ['balance' => auth()->user()->website_balance]) }}
+                {{ __('Current balance: :balance', ['balance' => \App\Support\StorefrontMoney::format(auth()->user()->website_balance)]) }}
             </div>
 
-            @if(config('paypal.live.client_id') && config('paypal.live.client_secret'))
-                <form action="{{ route('paypal.process-transaction') }}" method="GET" class="mt-3">
+            @if(\App\Support\PaypalConfiguration::isConfigured())
+                <form action="{{ route('paypal.process-transaction') }}" method="POST" class="mt-3">
                     @csrf
 
                     <x-form.input name="amount" type="number" value="0" placeholder="amount" />

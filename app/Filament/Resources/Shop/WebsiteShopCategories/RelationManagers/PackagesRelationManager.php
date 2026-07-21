@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Shop\WebsiteShopCategories\RelationManagers;
 
+use App\Support\StorefrontMoney;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -49,7 +50,7 @@ class PackagesRelationManager extends RelationManager
 
                 TextColumn::make('price')
                     ->sortable()
-                    ->formatStateUsing(fn (int $state): string => '$' . number_format($state / 100, 2)),
+                    ->formatStateUsing(fn (int $state): string => StorefrontMoney::format($state)),
 
                 TextColumn::make('items_count')
                     ->counts('items')

@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Data\RconResponse;
 use App\Enums\CurrencyTypes;
 use App\Models\User;
 
@@ -16,7 +17,7 @@ interface Rcon
     /**
      * @param  array<string, mixed>|null  $data
      */
-    public function sendCommand(string $command, ?array $data = null): bool;
+    public function sendCommand(string $command, ?array $data = null): RconResponse;
 
     public function sendGift(User $user, int $itemId, string $message = 'Here is a gift.'): void;
 

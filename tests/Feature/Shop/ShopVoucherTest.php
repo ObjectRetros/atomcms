@@ -11,7 +11,7 @@ test('a shop voucher credits the balance and can only be redeemed once', functio
 
     WebsiteShopVoucher::create([
         'code' => 'WELCOME',
-        'amount' => 50,
+        'amount' => 5000,
         'max_uses' => 100,
         'use_count' => 0,
     ]);
@@ -20,13 +20,13 @@ test('a shop voucher credits the balance and can only be redeemed once', functio
         ->post(route('shop.use-voucher'), ['code' => 'WELCOME'])
         ->assertSessionHas('success');
 
-    expect((int) $user->fresh()->website_balance)->toBe($startBalance + 50);
+    expect((int) $user->fresh()->website_balance)->toBe($startBalance + 5000);
 
     $this->actingAs($user)
         ->post(route('shop.use-voucher'), ['code' => 'WELCOME'])
         ->assertSessionHasErrors('message');
 
-    expect((int) $user->fresh()->website_balance)->toBe($startBalance + 50)
+    expect((int) $user->fresh()->website_balance)->toBe($startBalance + 5000)
         ->and($user->usedShopVouchers()->count())->toBe(1);
 });
 
@@ -38,7 +38,7 @@ test('an expired voucher is rejected', function () {
 
     WebsiteShopVoucher::create([
         'code' => 'EXPIRED',
-        'amount' => 25,
+        'amount' => 2500,
         'max_uses' => 100,
         'use_count' => 0,
         'expires_at' => now()->subDay(),

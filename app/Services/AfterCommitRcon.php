@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Rcon;
+use App\Data\RconResponse;
 use App\Enums\CurrencyTypes;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -22,16 +23,14 @@ class AfterCommitRcon implements Rcon
     }
 
     /**
-     * The send is deferred, so the returned bool reflects the connection
-     * state now rather than the eventual write result.
+     * Low-level commands are request-response operations and therefore execute
+     * immediately. Typed convenience commands remain deferred until commit.
      *
      * @param  array<string, mixed>|null  $data
      */
-    public function sendCommand(string $command, ?array $data = null): bool
+    public function sendCommand(string $command, ?array $data = null): RconResponse
     {
-        $this->defer(fn () => $this->inner->sendCommand($command, $data));
-
-        return $this->inner->isConnected();
+        return $this->inner->sendCommand($command, $data);
     }
 
     public function sendGift(User $user, int $itemId, string $message = 'Here is a gift.'): void
