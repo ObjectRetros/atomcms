@@ -3,6 +3,7 @@
 use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Help\WebsiteHelpCenterTicket;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 function createTicket(User $user): WebsiteHelpCenterTicket
 {
@@ -33,6 +34,26 @@ test('a user can submit a ticket', function () {
         ->assertSessionHas('success');
 
     expect($this->user->tickets()->count())->toBe(1);
+});
+
+test('ticket rich text is sanitized before it is stored', function () {
+    $category = WebsiteHelpCenterCategory::firstOrCreate(['name' => 'General'], ['content' => 'General questions']);
+
+    $this->actingAs($this->user)
+        ->post(route('help-center.ticket.store'), [
+            'category_id' => $category->id,
+            'title' => 'Something unsafe happened',
+            'content' => '<p>A useful description.</p><script>alert("unsafe")</script>',
+        ])
+        ->assertSessionHas('success');
+
+    $storedContent = DB::table('website_help_center_tickets')
+        ->where('user_id', $this->user->id)
+        ->value('content');
+
+    expect($storedContent)
+        ->toContain('<p>A useful description.</p>')
+        ->not->toContain('<script>');
 });
 
 test('a user can view and close their own ticket', function () {
