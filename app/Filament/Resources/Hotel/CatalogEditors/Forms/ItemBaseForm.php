@@ -8,7 +8,7 @@ use Filament\Schemas\Components\Grid;
 
 class ItemBaseForm
 {
-    /** @return array<int, Component|Forms\Components\Component> */
+    /** @return array<int, Component> */
     public static function schema(): array
     {
         return [

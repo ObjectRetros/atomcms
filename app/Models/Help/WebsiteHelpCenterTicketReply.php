@@ -2,12 +2,11 @@
 
 namespace App\Models\Help;
 
+use App\Casts\PurifiedHtml;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -35,23 +34,22 @@ class WebsiteHelpCenterTicketReply extends Model
 {
     protected $guarded = ['id'];
 
+    protected function casts(): array
+    {
+        return [
+            'content' => PurifiedHtml::class,
+        ];
+    }
+
+    /** @return BelongsTo<WebsiteHelpCenterTicket, $this> */
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(WebsiteHelpCenterTicket::class, 'ticket_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function canDeleteReply()
-    {
-        return $this->user_id === Auth::id() || hasPermission('delete_website_ticket_replies');
-    }
-
-    public function getContentAttribute($value)
-    {
-        return Purify::clean($value);
     }
 }

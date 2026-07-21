@@ -3,10 +3,12 @@
 namespace App\Actions\Shop;
 
 use App\Contracts\Rcon;
+use App\Exceptions\RconConnectionException;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
+use App\Support\StorefrontMoney;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -27,6 +29,7 @@ class PurchaseShopPackage
         $recipient = $this->resolveRecipient($buyer, $package, $receiver);
 
         $this->ensurePurchasable($buyer, $recipient, $package);
+        $this->prepareRecipient($recipient);
 
         $this->fulfil($buyer, $recipient, $package);
 
@@ -49,6 +52,17 @@ class PurchaseShopPackage
 
     private function ensurePurchasable(User $buyer, User $recipient, WebsiteShopPackage $package): void
     {
+        $this->ensurePackageEligibility($recipient, $package, $buyer);
+
+        $this->ensureWithinPurchaseLimit($buyer, $package);
+
+        if ($buyer->website_balance < $package->price) {
+            throw new ShopPurchaseException($this->insufficientMessage($buyer, $package->price));
+        }
+    }
+
+    private function ensurePackageEligibility(User $recipient, WebsiteShopPackage $package, User $buyer): void
+    {
         if (! $package->isAvailable()) {
             throw new ShopPurchaseException(__('This package is no longer available'));
         }
@@ -64,47 +78,78 @@ class PurchaseShopPackage
                 ? __('Your rank is too high to purchase this package')
                 : __("The recipient's rank is too high to receive this package"));
         }
+    }
 
-        if (! $this->rcon->isConnected() && $recipient->online) {
+    private function prepareRecipient(User $recipient): void
+    {
+        if (! $recipient->online) {
+            return;
+        }
+
+        try {
+            // Arcturus currently reports HABBO_NOT_FOUND even after delivering
+            // alertuser, so this response is intentionally best-effort.
+            $this->rcon->sendCommand('alertuser', [
+                'user_id' => $recipient->id,
+                'message' => __('You are being disconnected so your package can be delivered safely. Please wait for the purchase to finish before reconnecting.'),
+            ]);
+
+            $this->rcon->sendCommand('disconnect', [
+                'user_id' => $recipient->id,
+                'username' => $recipient->username,
+            ]);
+        } catch (RconConnectionException) {
             throw new ShopPurchaseException(__('Please logout before purchasing a package'));
         }
 
-        $this->ensureWithinPurchaseLimit($buyer, $package);
-
-        if ($buyer->website_balance < $package->priceInDollars()) {
-            throw new ShopPurchaseException($this->insufficientMessage($buyer, $package->priceInDollars()));
+        if ($recipient->refresh()->online) {
+            throw new ShopPurchaseException(__('Please logout before purchasing a package'));
         }
     }
 
     /**
-     * Charge, decrement stock and deliver atomically. The limit and stock are
-     * re-checked under the buyer's row lock so concurrent requests cannot
-     * exceed either.
+     * Deliver, decrement stock and charge in one transaction. The buyer,
+     * recipient and package locks serialize balance, limit and stock checks.
      */
     private function fulfil(User $buyer, User $recipient, WebsiteShopPackage $package): void
     {
-        $price = $package->priceInDollars();
-
-        DB::transaction(function () use ($buyer, $recipient, $package, $price): void {
+        DB::transaction(function () use ($buyer, $recipient, $package): void {
             $locked = $this->lockUsers($buyer, $recipient);
             $lockedBuyer = $locked->get($buyer->id);
             $lockedRecipient = $locked->get($recipient->id);
+            $lockedPackage = WebsiteShopPackage::whereKey($package->id)->lockForUpdate()->first();
 
-            if (! $lockedBuyer || ! $lockedRecipient || $lockedBuyer->website_balance < $price) {
-                throw new ShopPurchaseException($this->insufficientMessage($lockedBuyer ?? $buyer, $price));
+            if (! $lockedBuyer || ! $lockedRecipient) {
+                throw new ShopPurchaseException(__('The buyer or recipient is no longer available'));
             }
 
-            $this->ensureWithinPurchaseLimit($lockedBuyer, $package);
+            if (! $lockedPackage) {
+                throw new ShopPurchaseException(__('This package is no longer available'));
+            }
+
+            $price = $lockedPackage->price;
+
+            if ($lockedBuyer->website_balance < $price) {
+                throw new ShopPurchaseException($this->insufficientMessage($lockedBuyer, $price));
+            }
+
+            if ($lockedRecipient->online) {
+                throw new ShopPurchaseException(__('Please logout before purchasing a package'));
+            }
+
+            $this->ensurePackageEligibility($lockedRecipient, $lockedPackage, $lockedBuyer);
+            $this->ensureWithinPurchaseLimit($lockedBuyer, $lockedPackage);
+
+            $lockedPackage->load('items');
+            $this->fulfillPackage->execute($lockedRecipient, $lockedPackage);
+
+            $this->takeStock($lockedPackage);
 
             $lockedBuyer->decrement('website_balance', $price);
 
-            $this->takeStock($package);
-
-            $this->fulfillPackage->execute($lockedRecipient, $package);
-
             WebsiteShopPurchase::create([
                 'user_id' => $lockedBuyer->id,
-                'website_shop_package_id' => $package->id,
+                'website_shop_package_id' => $lockedPackage->id,
                 'gifted_to' => $lockedRecipient->is($lockedBuyer) ? null : $lockedRecipient->id,
             ]);
         });
@@ -136,13 +181,11 @@ class PurchaseShopPackage
             return;
         }
 
-        $taken = WebsiteShopPackage::whereKey($package->id)
-            ->where('stock', '>', 0)
-            ->decrement('stock');
-
-        if ($taken === 0) {
+        if ($package->stock <= 0) {
             throw new ShopPurchaseException(__('This package is out of stock'));
         }
+
+        $package->decrement('stock');
     }
 
     /**
@@ -157,10 +200,10 @@ class PurchaseShopPackage
             ->keyBy('id');
     }
 
-    private function insufficientMessage(User $buyer, float $price): string
+    private function insufficientMessage(User $buyer, int $price): string
     {
-        return __('You need to top-up your account with another $:amount to purchase this package', [
-            'amount' => $price - $buyer->website_balance,
+        return __('You need to top-up your account with another :amount to purchase this package', [
+            'amount' => StorefrontMoney::format($price - $buyer->website_balance),
         ]);
     }
 

@@ -82,6 +82,33 @@ extension=intl
 
 ## 📦 Installation
 
+### Quick Setup (Recommended)
+
+One command installs everything - dependencies, the bundled Arcturus Morningstar 3.5.5 base database with an up-to-date catalog, app key, storage link, migrations, seeders and your theme's assets:
+
+```bash
+git clone https://github.com/ObjectRetros/atomcms.git
+cd atomcms
+
+composer setup
+```
+
+The installer prompts for your database credentials, offers to create the database if it doesn't exist, and imports the Arcturus base SQL automatically (skipped if the tables already exist). On Windows it connects the questions directly to the console even though Composer cannot allocate a child-process TTY. It then asks which theme you want (atom or dusk), activates it and builds its assets. When it finishes, serve the site and visit `/installation` to configure your hotel.
+
+Useful variations:
+
+```bash
+php artisan atom:install                            # Re-run just the installer (no dependency install)
+php artisan atom:install --sql=/path/to/db.sql      # Use your own Arcturus dump (.sql or .sql.gz)
+php artisan atom:install --catalog-sql=/path/to.sql # Use your own catalog dump on top of the base
+php artisan atom:install --skip-catalog             # Keep the stock catalog from the base database
+php artisan atom:install --skip-arcturus            # Skip the base database + catalog import entirely
+php artisan atom:install --theme=dusk               # Pick the theme without being asked
+php artisan atom:install --skip-build               # Skip building theme assets (npm run build:atom|dusk)
+```
+
+Prefer to do it step by step? Follow the manual guides below.
+
 ### Windows Setup
 
 ```bash

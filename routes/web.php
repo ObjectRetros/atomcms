@@ -88,7 +88,9 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
     Route::middleware('auth')->group(function () {
         Route::prefix('user')->group(function () {
             Route::get('/me', MeController::class)->name('me.show');
-            Route::get('/claim/referral-reward', ReferralController::class)->name('claim.referral-reward');
+            Route::post('/claim/referral-reward', ReferralController::class)
+                ->middleware('throttle:5,1')
+                ->name('claim.referral-reward');
 
             // User settings routes
             Route::prefix('settings')->group(function () {
@@ -101,9 +103,11 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::get('/session-logs', [AccountSettingsController::class, 'sessionLogs'])->name('settings.session-logs');
 
                 Route::get('/two-factor', [TwoFactorAuthenticationController::class, 'index'])->name('settings.two-factor');
-                Route::post('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('user.two-factor.enable');
-                Route::post('/2fa-verify', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
-                Route::delete('/user/settings/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->name('user.two-factor.disable');
+                Route::middleware('throttle:two-factor-settings')->group(function () {
+                    Route::post('/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('user.two-factor.enable');
+                    Route::post('/two-factor-authentication/confirm', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
+                    Route::delete('/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->name('user.two-factor.disable');
+                });
             });
         });
 
@@ -200,7 +204,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Paypal routes
         Route::controller(PaypalController::class)->prefix('paypal')->group(function () {
-            Route::get('/process-transaction', 'process')->name('paypal.process-transaction');
+            Route::post('/process-transaction', 'process')->name('paypal.process-transaction')->middleware('throttle:10,1');
             Route::get('/successful-transaction', 'successful')->name('paypal.successful-transaction');
             Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');
         });

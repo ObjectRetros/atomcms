@@ -2,7 +2,11 @@
 
 namespace App\Services\Badge;
 
+use App\Services\Files\AtomicFileWriter;
 use App\Services\SettingsService;
+use App\Support\BadgeCode;
+use JsonException;
+use RuntimeException;
 
 /**
  * Maintains the badge name/description entries in the Nitro external texts
@@ -10,13 +14,17 @@ use App\Services\SettingsService;
  */
 class NitroExternalTexts
 {
-    public function __construct(private readonly SettingsService $settings) {}
+    public function __construct(
+        private readonly SettingsService $settings,
+        private readonly AtomicFileWriter $files,
+    ) {}
 
     /**
      * @return array{title: string, description: string}|null null when the badge has no entries
      */
     public function find(string $badgeCode): ?array
     {
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $texts = $this->read();
 
         $name = $texts["badge_name_{$badgeCode}"] ?? null;
@@ -34,6 +42,7 @@ class NitroExternalTexts
 
     public function add(string $badgeCode, ?string $name, ?string $description): void
     {
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $this->rewrite(fn (array $texts): array => array_merge($texts, [
             "badge_name_{$badgeCode}" => $name,
             "badge_desc_{$badgeCode}" => $description,
@@ -42,31 +51,36 @@ class NitroExternalTexts
 
     public function remove(string $badgeCode): void
     {
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $this->rewrite(function (array $texts) use ($badgeCode): array {
             unset($texts["badge_name_{$badgeCode}"], $texts["badge_desc_{$badgeCode}"]);
 
             return $texts;
-        });
+        }, required: false);
     }
 
     /**
      * @param  callable(array<string, mixed>): array<string, mixed>  $mutate
      */
-    private function rewrite(callable $mutate): void
+    private function rewrite(callable $mutate, bool $required = true): void
     {
         $path = $this->path();
 
         if (! $path || ! file_exists($path) || ! is_writable($path)) {
+            if ($required) {
+                throw new RuntimeException('The Nitro external texts file is not writable.');
+            }
+
             return;
         }
 
-        $texts = json_decode((string) file_get_contents($path), true);
-
-        if (! is_array($texts)) {
-            return;
-        }
-
-        file_put_contents($path, json_encode($mutate($texts), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $this->files->update(
+            $path,
+            fn (string $contents): string => json_encode(
+                $mutate($this->decode($contents, $path)),
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+            ) . "\n",
+        );
     }
 
     /**
@@ -76,13 +90,33 @@ class NitroExternalTexts
     {
         $path = $this->path();
 
-        if (! $path || ! file_exists($path)) {
+        if ($path === null) {
             return [];
         }
 
-        $texts = json_decode((string) file_get_contents($path), true);
+        $contents = file_get_contents($path);
 
-        return is_array($texts) ? $texts : [];
+        if ($contents === false) {
+            throw new RuntimeException("Unable to read Nitro external texts: {$path}");
+        }
+
+        return $this->decode($contents, $path);
+    }
+
+    /** @return array<string, mixed> */
+    private function decode(string $contents, string $path): array
+    {
+        try {
+            $texts = json_decode($contents, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new RuntimeException("Nitro external texts contain invalid JSON: {$path}", previous: $exception);
+        }
+
+        if (! is_object($texts)) {
+            throw new RuntimeException("Nitro external texts must contain a JSON object: {$path}");
+        }
+
+        return get_object_vars($texts);
     }
 
     private function path(): ?string

@@ -4,52 +4,49 @@ namespace App\Services\Home;
 
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\HomeItemType;
+use App\Exceptions\HomePurchaseException;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeService
 {
     public function __construct(private readonly CurrencyRepository $currencies) {}
 
-    /**
-     * @throws \Exception
-     */
     private function ensurePurchaseIsAllowed(User $user, HomeItem $item, int $quantity, int $totalPrice): void
     {
         if ($user->online) {
-            throw new \Exception(__('You must be offline to buy this item.'));
+            throw new HomePurchaseException(__('You must be offline to buy this item.'));
         }
 
         if (! $item->enabled) {
-            throw new \Exception(__('This item is not available for purchase.'));
+            throw new HomePurchaseException(__('This item is not available for purchase.'));
         }
 
         if ($item->hasExceededPurchaseLimit()) {
-            throw new \Exception(__('This item exceeded the purchase limit.'));
+            throw new HomePurchaseException(__('This item exceeded the purchase limit.'));
         }
 
         if ($item->limit !== null && ($item->total_bought + $quantity) > $item->limit) {
-            throw new \Exception(__("You can't buy more than :max of this item.", [
+            throw new HomePurchaseException(__("You can't buy more than :max of this item.", [
                 'max' => $item->limit - $item->total_bought,
             ]));
         }
 
         if ($totalPrice > $this->currencies->balance($user, $item->currency_type)) {
-            throw new \Exception(__("You don't have enough :currency to buy this item.", [
+            throw new HomePurchaseException(__("You don't have enough :currency to buy this item.", [
                 'currency' => strtolower(__($item->currency_type->name)),
             ]));
         }
 
         if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget])
             && $user->homeItems()->where('home_item_id', $item->id)->exists()) {
-            throw new \Exception(__('You already have this item in your inventory.'));
+            throw new HomePurchaseException(__('You already have this item in your inventory.'));
         }
 
         if (in_array($item->type, [HomeItemType::Background, HomeItemType::Widget]) && $quantity > 1) {
-            throw new \Exception(__('You can buy this item only once.'));
+            throw new HomePurchaseException(__('You can buy this item only once.'));
         }
     }
 
@@ -71,7 +68,7 @@ class HomeService
             $this->ensurePurchaseIsAllowed($lockedUser, $item, $quantity, $totalPrice);
 
             if (! $this->currencies->deduct($lockedUser, $item->currency_type, $totalPrice)) {
-                throw new \Exception(__('Insufficient balance.'));
+                throw new HomePurchaseException(__('Insufficient balance.'));
             }
 
             $lockedUser->giveHomeItem($item, $quantity);
@@ -80,6 +77,7 @@ class HomeService
         });
     }
 
+    /** @param  array{backgroundId?: int, items?: list<array<string, mixed>>}  $data */
     public function saveItems(User $user, array $data): void
     {
         if (isset($data['backgroundId'])) {
@@ -104,19 +102,24 @@ class HomeService
         DB::transaction(function () use ($itemsCollection, $allItems): void {
             $allItems->each(function (UserHomeItem $item) use ($itemsCollection): void {
                 $itemData = $itemsCollection->where('id', $item->id)->first();
+                $homeItem = $item->homeItem;
+
+                if ($homeItem === null) {
+                    return;
+                }
 
                 $item->placed = (bool) ($itemData['placed'] ?? $item->placed);
                 $item->x = (int) ($itemData['x'] ?? $item->x);
                 $item->y = (int) ($itemData['y'] ?? $item->y);
                 $item->z = (int) ($itemData['z'] ?? $item->z);
                 $item->is_reversed = (bool) ($itemData['is_reversed'] ?? $item->is_reversed);
-                $item->theme = $itemData['theme'] ?? $item->homeItem->getDefaultTheme();
+                $item->theme = $itemData['theme'] ?? $homeItem->getDefaultTheme();
 
                 if (! empty($itemData['extra_data'])) {
                     $item->extra_data = strip_tags($itemData['extra_data']);
                 }
 
-                if (! $item->placed && $item->homeItem->type === HomeItemType::Note) {
+                if (! $item->placed && $homeItem->type === HomeItemType::Note) {
                     $item->extra_data = '';
                 }
 
@@ -168,23 +171,9 @@ class HomeService
             return null;
         }
 
-        $cacheKey = "user_{$user->id}_widget_{$item->id}_html";
-        $cacheDuration = in_array($item->widget_type, ['my-rating', 'my-guestbook']) ? 0 : 300;
+        $user = $this->loadWidgetData($user, $item);
 
-        $render = function () use ($user, $item, $viewName): string {
-            $user = $this->loadWidgetData($user, $item);
-
-            return view($viewName, compact('item', 'user'))->render();
-        };
-
-        return $cacheDuration > 0
-            ? Cache::remember($cacheKey, $cacheDuration, $render)
-            : $render();
-    }
-
-    public function clearWidgetCache(User $user, UserHomeItem $widget): void
-    {
-        Cache::forget("user_{$user->id}_widget_{$widget->id}_html");
+        return view($viewName, compact('item', 'user'))->render();
     }
 
     private function loadWidgetData(User $user, UserHomeItem $item): User

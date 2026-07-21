@@ -3,98 +3,173 @@
 namespace App\Services;
 
 use App\Contracts\Rcon;
+use App\Data\RconResponse;
 use App\Enums\CurrencyTypes;
+use App\Exceptions\RconConnectionException;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use Socket;
+use JsonException;
 
 class RconService implements Rcon
 {
-    protected ?Socket $socket = null;
-
-    protected bool $isConnected = false;
-
-    /**
-     * @var array{ip: mixed, port: int}
-     */
-    protected array $config;
-
-    public function __construct()
-    {
-        $this->config = [
-            'ip' => setting('rcon_ip'),
-            'port' => (int) setting('rcon_port'),
-        ];
-
-        $this->initialize();
-    }
-
-    private function initialize(): void
-    {
-        $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-        if ($socket === false) {
-            Log::error('RCON initialization failed: ' . socket_strerror(socket_last_error()));
-
-            $this->closeConnection();
-
-            return;
-        }
-
-        $this->socket = $socket;
-
-        if (! @socket_connect($this->socket, $this->config['ip'], $this->config['port'])) {
-            Log::error('RCON connection failed: ' . socket_strerror(socket_last_error()));
-
-            $this->closeConnection();
-
-            return;
-        }
-
-        $this->isConnected = true;
-    }
-
-    private function closeConnection(): void
-    {
-        if ($this->socket) {
-            socket_close($this->socket);
-        }
-
-        $this->socket = null;
-        $this->isConnected = false;
-    }
+    public function __construct(
+        private readonly ?string $host = null,
+        private readonly ?int $port = null,
+    ) {}
 
     public function isConnected(): bool
     {
-        return $this->isConnected;
+        try {
+            $socket = $this->connect();
+            fclose($socket);
+
+            return true;
+        } catch (RconConnectionException) {
+            return false;
+        }
     }
 
-    public function sendCommand(string $command, ?array $data = null): bool
+    public function sendCommand(string $command, ?array $data = null): RconResponse
     {
-        if (! $this->isConnected) {
-            Log::error('RCON command failed: Not connected');
-
-            $this->closeConnection();
-
-            return false;
-        }
-
         $payload = json_encode(['key' => $command, 'data' => $data], JSON_THROW_ON_ERROR);
+        $socket = $this->connect();
 
-        if (! @socket_write($this->socket, $payload, strlen($payload))) {
-            Log::error("RCON command ($command) failed: " . socket_strerror(socket_last_error($this->socket)));
+        try {
+            $this->write($socket, $payload);
+            stream_socket_shutdown($socket, STREAM_SHUT_WR);
 
-            $this->closeConnection();
+            $response = stream_get_contents($socket);
+            $metadata = stream_get_meta_data($socket);
 
-            return false;
+            if ($metadata['timed_out']) {
+                throw new RconConnectionException("RCON command '{$command}' timed out waiting for a response");
+            }
+
+            if ($response === false || trim($response) === '') {
+                throw new RconConnectionException("RCON command '{$command}' returned an empty response");
+            }
+
+            return $this->parseResponse($command, $response);
+        } finally {
+            fclose($socket);
+        }
+    }
+
+    /**
+     * Arcturus accepts one JSON request per TCP connection and closes the
+     * connection after writing its response.
+     *
+     * @return resource
+     */
+    private function connect()
+    {
+        $errorCode = 0;
+        $errorMessage = '';
+        $timeout = max(0.1, (float) config('habbo.rcon.connect_timeout_seconds', 1));
+        $socket = @stream_socket_client(
+            $this->endpoint(),
+            $errorCode,
+            $errorMessage,
+            $timeout,
+            STREAM_CLIENT_CONNECT,
+        );
+
+        if ($socket === false) {
+            throw new RconConnectionException("Unable to connect to RCON: {$errorMessage} ({$errorCode})");
         }
 
-        return true;
+        $readTimeout = max(0.1, (float) config('habbo.rcon.read_timeout_seconds', 2));
+        $seconds = (int) $readTimeout;
+        $microseconds = (int) (($readTimeout - $seconds) * 1_000_000);
+        stream_set_timeout($socket, $seconds, $microseconds);
+
+        return $socket;
+    }
+
+    private function endpoint(): string
+    {
+        $host = trim($this->host ?? (string) setting('rcon_ip'));
+        $port = $this->port ?? (int) setting('rcon_port');
+
+        if ($host === '' || $port < 1 || $port > 65535) {
+            throw new RconConnectionException('RCON host or port is not configured correctly');
+        }
+
+        $formattedHost = str_contains($host, ':') && ! str_starts_with($host, '[')
+            ? "[{$host}]"
+            : $host;
+
+        return "tcp://{$formattedHost}:{$port}";
+    }
+
+    /**
+     * @param  resource  $socket
+     */
+    private function write($socket, string $payload): void
+    {
+        $written = 0;
+        $length = strlen($payload);
+
+        while ($written < $length) {
+            $bytes = fwrite($socket, substr($payload, $written));
+
+            if ($bytes === false || $bytes === 0) {
+                throw new RconConnectionException('RCON connection closed before the command was fully written');
+            }
+
+            $written += $bytes;
+        }
+    }
+
+    private function parseResponse(string $command, string $response): RconResponse
+    {
+        try {
+            $decoded = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new RconConnectionException("RCON command '{$command}' returned malformed JSON", previous: $exception);
+        }
+
+        if (
+            ! is_array($decoded)
+            || ! isset($decoded['status'], $decoded['message'])
+            || ! is_int($decoded['status'])
+            || ! is_string($decoded['message'])
+        ) {
+            throw new RconConnectionException("RCON command '{$command}' returned an invalid response");
+        }
+
+        return new RconResponse($decoded['status'], $decoded['message']);
+    }
+
+    /**
+     * Typed RCON helpers are fire-and-forget operations. Preserve that contract
+     * while retaining transport and emulator failures in the application log.
+     *
+     * @param  array<string, mixed>|null  $data
+     */
+    private function dispatchCommand(string $command, ?array $data = null): void
+    {
+        try {
+            $response = $this->sendCommand($command, $data);
+
+            if (! $response->successful()) {
+                Log::warning('RCON command was rejected by the emulator', [
+                    'command' => $command,
+                    'status' => $response->status,
+                    'message' => $response->message,
+                ]);
+            }
+        } catch (RconConnectionException $exception) {
+            Log::error('RCON command failed', [
+                'command' => $command,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     public function sendGift(User $user, int $itemId, string $message = 'Here is a gift.'): void
     {
-        $this->sendCommand('sendgift', [
+        $this->dispatchCommand('sendgift', [
             'user_id' => $user->id,
             'itemid' => $itemId,
             'message' => $message,
@@ -104,7 +179,7 @@ class RconService implements Rcon
     public function giveCurrency(User $user, CurrencyTypes $currency, int $amount): void
     {
         if ($currency === CurrencyTypes::Credits) {
-            $this->sendCommand('givecredits', [
+            $this->dispatchCommand('givecredits', [
                 'user_id' => $user->id,
                 'credits' => $amount,
             ]);
@@ -112,7 +187,7 @@ class RconService implements Rcon
             return;
         }
 
-        $this->sendCommand('givepoints', [
+        $this->dispatchCommand('givepoints', [
             'user_id' => $user->id,
             'points' => $amount,
             'type' => $currency,
@@ -121,7 +196,7 @@ class RconService implements Rcon
 
     public function giveBadge(User $user, string $badge): void
     {
-        $this->sendCommand('givebadge', [
+        $this->dispatchCommand('givebadge', [
             'user_id' => $user->id,
             'badge' => $badge,
         ]);
@@ -129,7 +204,7 @@ class RconService implements Rcon
 
     public function setMotto(User $user, string $motto): void
     {
-        $this->sendCommand('setmotto', [
+        $this->dispatchCommand('setmotto', [
             'user_id' => $user->id,
             'motto' => $motto,
         ]);
@@ -137,12 +212,12 @@ class RconService implements Rcon
 
     public function updateWordFilter(): void
     {
-        $this->sendCommand('updatewordfilter');
+        $this->dispatchCommand('updatewordfilter');
     }
 
     public function disconnectUser(User $user): void
     {
-        $this->sendCommand('disconnect', [
+        $this->dispatchCommand('disconnect', [
             'user_id' => $user->id,
             'username' => $user->username,
         ]);
@@ -150,7 +225,7 @@ class RconService implements Rcon
 
     public function setRank(User $user, int $rank): void
     {
-        $this->sendCommand('setrank', [
+        $this->dispatchCommand('setrank', [
             'user_id' => $user->id,
             'rank' => $rank,
         ]);
@@ -158,12 +233,12 @@ class RconService implements Rcon
 
     public function updateCatalog(): void
     {
-        $this->sendCommand('updatecatalog');
+        $this->dispatchCommand('updatecatalog');
     }
 
     public function alertUser(User $user, string $message): void
     {
-        $this->sendCommand('alertuser', [
+        $this->dispatchCommand('alertuser', [
             'user_id' => $user->id,
             'message' => $message,
         ]);
@@ -171,7 +246,7 @@ class RconService implements Rcon
 
     public function forwardUser(User $user, int $roomId): void
     {
-        $this->sendCommand('forwarduser', [
+        $this->dispatchCommand('forwarduser', [
             'user_id' => $user->id,
             'room_id' => $roomId,
         ]);
@@ -179,7 +254,7 @@ class RconService implements Rcon
 
     public function updateConfig(User $user, string $command): void
     {
-        $this->sendCommand('executecommand', [
+        $this->dispatchCommand('executecommand', [
             'user_id' => $user->id,
             'command' => $command,
         ]);

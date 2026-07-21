@@ -15,8 +15,8 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Livewire\Component;
 
 class HomeCategoryResource extends Resource
 {
@@ -58,11 +58,11 @@ class HomeCategoryResource extends Resource
             ->columns([
                 TextColumn::make('id')
                     ->label(__('filament::resources.columns.id'))
-                    ->visible(fn (Component $livewire): bool => ! $livewire->isTableReordering),
+                    ->visible(fn (HasTable $livewire): bool => ! $livewire->isTableReordering()),
 
                 TextColumn::make('order')
                     ->label(__('filament::resources.columns.order'))
-                    ->visible(fn (Component $livewire): bool => $livewire->isTableReordering),
+                    ->visible(fn (HasTable $livewire): bool => $livewire->isTableReordering()),
 
                 ImageColumn::make('icon')
                     ->disk('public')

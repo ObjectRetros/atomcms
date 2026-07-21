@@ -53,11 +53,13 @@ class Ban extends Model
 
     public $timestamps = false;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function staff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_staff_id');

@@ -6,40 +6,34 @@ use App\Contracts\Rcon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountSettingsFormRequest;
 use App\Services\User\SessionService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly Rcon $rconService) {}
-
     public function edit(): View
     {
         return view('user.settings.account', [
-            'user' => Auth::user()->load('settings:allow_name_change'),
+            'user' => AuthenticatedUser::current()->load('settings:allow_name_change'),
         ]);
     }
 
-    public function sessionLogs(Request $request): View
+    public function sessionLogs(Request $request, SessionService $sessionService): View
     {
-        $sessions = $this->sessionService->fetchSessionLogs($request);
+        $sessions = $sessionService->fetchSessionLogs($request);
 
         return view('user.settings.session-logs', [
             'logs' => $sessions,
         ]);
     }
 
-    public function update(AccountSettingsFormRequest $request): RedirectResponse
+    public function update(AccountSettingsFormRequest $request, Rcon $rcon): RedirectResponse
     {
-        $user = Auth::user();
+        $user = AuthenticatedUser::from($request);
 
-        if ($user === null) {
-            return redirect()->back()->withErrors('User not found');
-        }
-
-        if (! $this->rconService->isConnected() && $user->online) {
+        if (! $rcon->isConnected() && $user->online) {
             return back()->withErrors('You must be offline to change your account settings');
         }
 
@@ -51,7 +45,7 @@ class AccountSettingsController extends Controller
         $motto = (string) $request->input('motto');
 
         if ($user->motto !== $motto) {
-            $this->rconService->setMotto($user, $motto);
+            $rcon->setMotto($user, $motto);
             $user->update(['motto' => $motto]);
         }
 

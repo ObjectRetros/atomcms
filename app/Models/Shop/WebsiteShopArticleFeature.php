@@ -29,6 +29,7 @@ class WebsiteShopArticleFeature extends Model
 {
     protected $guarded = ['id'];
 
+    /** @return BelongsTo<WebsiteShopArticle, $this> */
     public function article(): BelongsTo
     {
         return $this->belongsTo(WebsiteShopArticle::class, 'article_id', 'id');

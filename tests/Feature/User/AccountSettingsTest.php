@@ -7,6 +7,22 @@ beforeEach(function () {
     installHotel();
 });
 
+test('security and economy fields cannot be mass assigned', function () {
+    $user = new User;
+
+    $user->fill([
+        'username' => 'AllowedName',
+        'website_balance' => 500,
+        'machine_id' => 'attacker-controlled',
+        'two_factor_secret' => 'attacker-controlled',
+    ]);
+
+    expect($user->username)->toBe('AllowedName')
+        ->and($user->isDirty('website_balance'))->toBeFalse()
+        ->and($user->isDirty('machine_id'))->toBeFalse()
+        ->and($user->isDirty('two_factor_secret'))->toBeFalse();
+});
+
 test('an offline user can update their motto', function () {
     $user = User::factory()->create(['motto' => 'Old motto', 'online' => '0']);
 
@@ -70,6 +86,20 @@ test('a user can change their password with their current one', function () {
         ->assertSessionHas('success');
 
     expect(Hash::check('N3wSecret!pass', $user->refresh()->password))->toBeTrue();
+});
+
+test('a user cannot change to a weak password', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->put(route('settings.password.update'), [
+            'current_password' => 'password',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
 });
 
 test('a wrong current password is rejected', function () {

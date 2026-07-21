@@ -26,6 +26,8 @@ use App\Models\User\Ban;
 use App\Models\User\ClaimedReferralLog;
 use App\Models\User\Referral;
 use App\Models\User\UserReferral;
+use App\Services\HousekeepingPermissionsService;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
@@ -37,11 +39,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Fortify\TwoFactorAuthenticationProvider;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\Activitylog\LogOptions;
@@ -55,8 +57,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property int $two_factor_confirmed
- * @property string|null $two_factor_confirmed_at
+ * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $mail
  * @property string $mail_verified
  * @property int $account_created
@@ -78,7 +79,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $machine_id
  * @property int $home_room
  * @property string|null $referral_code
- * @property int $website_balance
+ * @property int $website_balance Storefront balance in the configured currency's minor unit
  * @property string|null $secret_key
  * @property string|null $pincode
  * @property int|null $extra_rank
@@ -174,28 +175,45 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    use HasApiTokens, HasFactory, HasHome, LogsActivity, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory;
+
+    use HasHome, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     public $timestamps = false;
 
-    /**
-     * Economy and security columns are only ever written through dedicated
-     * paths (increment(), forceFill()), never mass-assignment - guard them so a
-     * stray fill() of request data cannot tamper with balances or 2FA secrets.
-     */
-    protected $guarded = [
-        'id',
-        'website_balance',
-        'pixels',
-        'points',
-        'vip_points',
-        'activity_points',
-        'gotw_points',
-        'machine_id',
-        'pincode',
-        'secret_key',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
+    protected $attributes = [
+        'website_balance' => 0,
+    ];
+
+    protected $fillable = [
+        'username',
+        'real_name',
+        'password',
+        'mail',
+        'mail_verified',
+        'account_created',
+        'account_day_of_birth',
+        'last_login',
+        'last_online',
+        'motto',
+        'look',
+        'gender',
+        'rank',
+        'credits',
+        'online',
+        'auth_ticket',
+        'ip_register',
+        'ip_current',
+        'home_room',
+        'referral_code',
+        'extra_rank',
+        'team_id',
+        'hidden_staff',
+        'two_factor_confirmed',
+        'two_factor_confirmed_at',
     ];
 
     protected $hidden = [
@@ -217,9 +235,11 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return [
             'email_verified_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'hidden_staff' => 'boolean',
             'online' => 'boolean',
+            'website_balance' => 'integer',
         ];
     }
 
@@ -231,6 +251,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserCurrency::class, 'user_id');
     }
 
+    /** @return HasMany<Session, $this> */
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
@@ -243,26 +264,31 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $type === null ? 0 : app(CurrencyRepository::class)->balance($this, $type);
     }
 
+    /** @return HasOne<Permission, $this> */
     public function permission(): HasOne
     {
         return $this->hasOne(Permission::class, 'id', 'rank');
     }
 
+    /** @return HasMany<WebsiteArticle, $this> */
     public function articles(): HasMany
     {
         return $this->hasMany(WebsiteArticle::class);
     }
 
+    /** @return HasOne<UserReferral, $this> */
     public function referrals(): HasOne
     {
         return $this->hasOne(UserReferral::class);
     }
 
+    /** @return HasMany<Referral, $this> */
     public function userReferrals(): HasMany
     {
         return $this->hasMany(Referral::class);
     }
 
+    /** @return HasMany<ClaimedReferralLog, $this> */
     public function claimedReferralLog(): HasMany
     {
         return $this->hasMany(ClaimedReferralLog::class);
@@ -276,11 +302,13 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(UserBadge::class);
     }
 
+    /** @return HasMany<Room, $this> */
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class, 'owner_id');
     }
 
+    /** @return HasMany<MessengerFriendship, $this> */
     public function friends(): HasMany
     {
         return $this->hasMany(MessengerFriendship::class, 'user_one_id');
@@ -290,14 +318,16 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         $referrals = $this->referrals?->referrals_total ?? 0;
 
-        return setting('referrals_needed') - $referrals;
+        return (int) setting('referrals_needed', 5) - $referrals;
     }
 
+    /** @return HasOne<Ban, $this> */
     public function ban(): HasOne
     {
         return $this->hasOne(Ban::class, 'user_id')->where('ban_expire', '>', time())->whereIn('type', ['account', 'super']);
     }
 
+    /** @return HasOne<UserSetting, $this> */
     public function settings(): HasOne
     {
         return $this->hasOne(UserSetting::class);
@@ -308,7 +338,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         $maxAttempts = 5;
 
         for ($i = 0; $i < $maxAttempts; $i++) {
-            $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name')), Str::uuid());
+            $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name', 'Atom')), Str::uuid());
 
             if (! User::where('auth_ticket', $sso)->exists()) {
                 $this->update(['auth_ticket' => $sso]);
@@ -320,26 +350,31 @@ class User extends Authenticatable implements FilamentUser, HasName
         throw new \RuntimeException('Failed to generate unique SSO ticket after ' . $maxAttempts . ' attempts.');
     }
 
+    /** @return HasOne<WebsiteBetaCode, $this> */
     public function betaCode(): HasOne
     {
         return $this->hasOne(WebsiteBetaCode::class);
     }
 
+    /** @return BelongsTo<WebsiteTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(WebsiteTeam::class, 'team_id');
     }
 
+    /** @return HasMany<WebsiteStaffApplications, $this> */
     public function applications(): HasMany
     {
         return $this->hasMany(WebsiteStaffApplications::class, 'user_id');
     }
 
+    /** @return HasOne<UserSubscription, $this> */
     public function hcSubscription(): HasOne
     {
         return $this->hasOne(UserSubscription::class);
     }
 
+    /** @return HasMany<WebsiteArticleComment, $this> */
     public function articleComments(): HasMany
     {
         return $this->hasMany(WebsiteArticleComment::class);
@@ -353,36 +388,43 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(WebsitePaypalTransaction::class);
     }
 
+    /** @return HasMany<WebsiteUsedShopVoucher, $this> */
     public function usedShopVouchers(): HasMany
     {
         return $this->hasMany(WebsiteUsedShopVoucher::class);
     }
 
+    /** @return HasMany<Item, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(Item::class, 'user_id');
     }
 
+    /** @return HasMany<WebsiteHelpCenterTicket, $this> */
     public function tickets(): HasMany
     {
         return $this->hasMany(WebsiteHelpCenterTicket::class);
     }
 
+    /** @return HasMany<CameraWeb, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(CameraWeb::class);
     }
 
+    /** @return HasMany<ChatlogRoom, $this> */
     public function chatLogs(): HasMany
     {
         return $this->hasMany(ChatlogRoom::class, 'user_from_id');
     }
 
+    /** @return HasMany<ChatlogPrivate, $this> */
     public function chatLogsPrivate(): HasMany
     {
         return $this->hasMany(ChatlogPrivate::class, 'user_from_id');
     }
 
+    /** @return Collection<int, MessengerFriendship> */
     public function getOnlineFriends(int $total = 10): Collection
     {
         return $this->friends()
@@ -392,22 +434,6 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->inRandomOrder()
             ->limit($total)
             ->get();
-    }
-
-    public function confirmTwoFactorAuthentication($code): bool
-    {
-        $codeIsValid = app(TwoFactorAuthenticationProvider::class)
-            ->verify(decrypt($this->two_factor_secret), $code);
-
-        if (! $codeIsValid) {
-            return false;
-        }
-
-        $this->update([
-            'two_factor_confirmed' => true,
-        ]);
-
-        return true;
     }
 
     public function hasAppliedForPosition(int $rankId): bool
@@ -428,7 +454,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return hasHousekeepingPermission('can_access_housekeeping');
+        return app(HousekeepingPermissionsService::class)->allows($this, 'can_access_housekeeping');
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -437,15 +463,6 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->logOnly(['id', 'username', 'motto', 'rank', 'credits'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
-    }
-
-    public function save(array $options = []): bool
-    {
-        if (! $this->isDirty()) {
-            return true;
-        }
-
-        return parent::save($options);
     }
 
     public function hasAppliedForTeam(int $teamId): bool

@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\Support\AuthenticatedUser;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class NitroController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
-        Auth::user()->update([
-            'ip_current' => request()->ip(),
+        $user = AuthenticatedUser::from($request);
+
+        $user->update([
+            'ip_current' => $request->ip(),
         ]);
 
         return view('client.nitro', [
-            'sso' => Auth::user()->ssoTicket(),
+            'sso' => $user->ssoTicket(),
         ]);
     }
 }

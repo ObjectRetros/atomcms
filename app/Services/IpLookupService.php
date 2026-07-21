@@ -2,27 +2,41 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Support\OutboundHttp;
+use Illuminate\Http\Client\ConnectionException;
 
 class IpLookupService
 {
     private string $baseUrl = 'https://api.ipdata.co';
 
-    public function __construct(private string $apiKey) {}
-
-    public function ipLookup(string $ip)
+    /**
+     * @return array<string, mixed>
+     */
+    public function ipLookup(string $ip, string $apiKey): array
     {
-        $response = Http::acceptJson()->get(sprintf('%s/%s?api-key=%s', $this->baseUrl, $ip, $this->apiKey));
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6) === false) {
+            return ['message' => 'Invalid IP address.', 'status' => 422];
+        }
+
+        try {
+            $response = OutboundHttp::request()
+                ->acceptJson()
+                ->get($this->baseUrl . '/' . rawurlencode($ip), ['api-key' => $apiKey]);
+        } catch (ConnectionException) {
+            return ['message' => 'IP reputation service unavailable.', 'status' => 503];
+        }
 
         if (! $response->ok()) {
-            $message = array_key_exists('message', $response->json()) ? $response->json()['message'] : 'Unknown error';
+            $message = $response->json('message');
 
             return [
-                'message' => $message,
+                'message' => is_string($message) ? $message : 'Unknown error',
                 'status' => $response->status(),
             ];
         }
 
-        return $response->json();
+        $payload = $response->json();
+
+        return is_array($payload) ? $payload : ['message' => 'Invalid response.', 'status' => 502];
     }
 }

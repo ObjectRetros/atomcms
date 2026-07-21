@@ -30,6 +30,7 @@ class WebsiteBetaCode extends Model
 {
     protected $guarded = ['id'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

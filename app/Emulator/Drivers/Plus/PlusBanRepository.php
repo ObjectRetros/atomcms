@@ -45,6 +45,9 @@ class PlusBanRepository implements BanRepository
     {
         return $ban === null
             ? null
-            : new BanInfo((string) $ban->reason, (int) $ban->expire);
+            : new BanInfo(
+                (string) data_get($ban, 'reason'),
+                (int) data_get($ban, 'expire'),
+            );
     }
 }

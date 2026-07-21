@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CatalogReorderService
 {
+    /** @param  array<int, mixed>  $orderedIds */
     public function reorderPages(int $parentId, array $orderedIds): void
     {
         $clean = $this->cleanIds($orderedIds);
@@ -59,6 +60,7 @@ class CatalogReorderService
         });
     }
 
+    /** @param  array<int, mixed>  $orderedIds */
     public function reorderItems(int $pageId, array $orderedIds): void
     {
         $clean = $this->cleanIds($orderedIds);
@@ -121,7 +123,11 @@ class CatalogReorderService
         return $items->count();
     }
 
-    /** Appends to the destination page's tail. */
+    /**
+     * Appends to the destination page's tail.
+     *
+     * @param  array<int, mixed>  $itemIds
+     */
     public function moveItemsToPage(int $targetPageId, array $itemIds): int
     {
         $clean = $this->cleanIds($itemIds);
@@ -142,7 +148,11 @@ class CatalogReorderService
         return count($clean);
     }
 
-    /** @return array<int, int> */
+    /**
+     * @param  array<int, mixed>  $ids
+     *
+     * @return list<int>
+     */
     private function cleanIds(array $ids): array
     {
         return array_values(array_unique(array_filter(

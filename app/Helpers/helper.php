@@ -1,10 +1,18 @@
 <?php
 
+use App\Models\User;
 use App\Services\HousekeepingPermissionsService;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
 
 if (! function_exists('setting')) {
+    /**
+     * @template TDefault
+     *
+     * @param  TDefault  $default
+     *
+     * @return string|TDefault
+     */
     function setting(string $key, mixed $default = null): mixed
     {
         return app(SettingsService::class)->getOrDefault($key, $default);
@@ -19,9 +27,9 @@ if (! function_exists('hasPermission')) {
 }
 
 if (! function_exists('hasHousekeepingPermission')) {
-    function hasHousekeepingPermission(string $permission): bool
+    function hasHousekeepingPermission(string $permission, ?User $user = null): bool
     {
-        return app(HousekeepingPermissionsService::class)->getOrDefault($permission);
+        return app(HousekeepingPermissionsService::class)->getOrDefault($permission, user: $user);
     }
 }
 
@@ -29,9 +37,11 @@ if (! function_exists('findMigration')) {
     function findMigration(string $tableName): string
     {
         // Iterate through all migration files in the migrations directory
-        foreach (glob(database_path('migrations/*.php')) as $filename) {
+        foreach (glob(database_path('migrations/*.php')) ?: [] as $filename) {
             // Check if the migration file has the Schema::create() line with the given table name
-            if (str_contains(file_get_contents($filename), "Schema::create('$tableName'")) {
+            $contents = file_get_contents($filename);
+
+            if (is_string($contents) && str_contains($contents, "Schema::create('$tableName'")) {
                 return basename($filename);
             }
         }
@@ -44,11 +54,7 @@ if (! function_exists('findMigration')) {
 if (! function_exists('columnExists')) {
     function columnExists(string $table, string $column): bool
     {
-        try {
-            return Schema::hasColumn($table, $column);
-        } catch (Throwable) {
-            return false;
-        }
+        return Schema::hasColumn($table, $column);
     }
 }
 

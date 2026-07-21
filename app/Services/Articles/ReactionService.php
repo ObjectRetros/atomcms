@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class ReactionService
 {
+    /** @return array{success: bool, added?: bool, username?: string} */
     public function toggleReaction(WebsiteArticle $article, User $user, Request $request): array
     {
         $reaction = $request->get('reaction');
@@ -17,19 +18,11 @@ class ReactionService
             return ['success' => false];
         }
 
-        $existingReaction = WebsiteArticleReaction::getReaction($article->id, $user->id, $reaction);
-
-        if ($existingReaction) {
-            $existingReaction->update(['active' => ! $existingReaction->active]);
-        } else {
-            $article->reactions()->create([
-                'reaction' => $reaction,
-            ]);
-        }
+        $storedReaction = WebsiteArticleReaction::toggleFor($article, $user, $reaction);
 
         return [
             'success' => true,
-            'added' => $existingReaction->active ?? true,
+            'added' => (bool) $storedReaction->active,
             'username' => $user->username,
         ];
     }

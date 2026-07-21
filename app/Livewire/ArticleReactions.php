@@ -52,18 +52,7 @@ class ArticleReactions extends Component
             return;
         }
 
-        $existingReaction = WebsiteArticleReaction::getReaction($this->article->id, $user->id, $reaction);
-
-        if ($existingReaction) {
-            $existingReaction->update(['active' => ! $existingReaction->active]);
-            $this->dispatch('reactions:loaded');
-
-            return;
-        }
-
-        $this->article->reactions()->create([
-            'reaction' => $reaction,
-        ]);
+        WebsiteArticleReaction::toggleFor($this->article, $user, $reaction);
 
         $this->dispatch('reactions:loaded');
     }
@@ -98,7 +87,7 @@ class ArticleReactions extends Component
             : collect();
 
         $usedReactionNames = $articleReactions->pluck('name')->values();
-        $availableReactions = collect(config('habbo.reactions'))
+        $availableReactions = collect((array) config('habbo.reactions', []))
             ->reject(fn ($reaction) => $usedReactionNames->contains($reaction) || $myReactions->contains($reaction))
             ->values();
 

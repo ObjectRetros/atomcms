@@ -4,11 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\WebsiteBadge;
 use App\Services\SettingsService;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ImportBadgeData extends Command
 {
@@ -26,20 +25,30 @@ class ImportBadgeData extends Command
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(): int
     {
         $jsonPath = $this->settingsService->getOrDefault('nitro_external_texts_file');
 
+        if (! is_string($jsonPath)) {
+            $this->validateJsonFile(null);
+
+            return self::FAILURE;
+        }
+
         if (! $this->validateJsonFile($jsonPath)) {
-            return;
+            return self::FAILURE;
         }
 
         try {
             $this->processBadgeData($jsonPath);
             $this->info('Badge data imported successfully.');
-        } catch (Exception $e) {
-            Log::error('Failed to import badge data: ' . $e->getMessage());
+
+            return self::SUCCESS;
+        } catch (Throwable $exception) {
+            report($exception);
             $this->error('Failed to import badge data. Check the logs for details.');
+
+            return self::FAILURE;
         }
     }
 

@@ -132,7 +132,7 @@
             if (!username) return;
 
             try {
-                const response = await fetch(`/api/user/${username}`);
+                const response = await fetch(`/api/user/${encodeURIComponent(username)}`);
                 if (!response.ok) {
                     console.error('Failed to fetch avatar');
                     return;
@@ -156,6 +156,4 @@
         usernameInput.addEventListener('keyup', updateAvatar);
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
 </x-app-layout>

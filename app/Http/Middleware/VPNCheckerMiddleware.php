@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class VPNCheckerMiddleware
 {
+    public function __construct(private readonly IpLookupService $ipLookup) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         if ($this->shouldSkip($request)) {
@@ -37,7 +39,13 @@ class VPNCheckerMiddleware
     private function checkReputation(Request $request, Closure $next): Response
     {
         $ip = $request->ip();
-        $apiResponse = (new IpLookupService(setting('ipdata_api_key')))->ipLookup($ip);
+        $apiKey = setting('ipdata_api_key');
+
+        if (! is_string($ip) || ! is_string($apiKey) || $apiKey === '') {
+            return $next($request);
+        }
+
+        $apiResponse = $this->ipLookup->ipLookup($ip, $apiKey);
         $asn = $apiResponse['asn']['asn'] ?? '';
 
         if ($this->asnListed($asn, WebsiteIpWhitelist::class, 'whitelist_asn')) {
@@ -49,7 +57,7 @@ class VPNCheckerMiddleware
         }
 
         if ($this->isThreat($apiResponse)) {
-            WebsiteIpBlacklist::create(['ip_address' => $ip, 'asn' => null]);
+            WebsiteIpBlacklist::firstOrCreate(['ip_address' => $ip], ['asn' => null]);
 
             return $this->restrict();
         }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Shop\WebsiteShopPackages;
 
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
+use App\Support\StorefrontMoney;
 use BackedEnum;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
@@ -148,7 +149,7 @@ class WebsiteShopPackageResource extends Resource
 
                 Tables\Columns\TextColumn::make('price')
                     ->sortable()
-                    ->formatStateUsing(fn (int $state): string => '$' . number_format($state / 100, 2)),
+                    ->formatStateUsing(fn (int $state): string => StorefrontMoney::format($state)),
 
                 Tables\Columns\TextColumn::make('items_count')
                     ->counts('items')

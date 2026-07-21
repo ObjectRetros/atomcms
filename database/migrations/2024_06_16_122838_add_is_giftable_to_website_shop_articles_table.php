@@ -12,4 +12,11 @@ return new class extends Migration
             $table->boolean('is_giftable')->default(true)->after('position');
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('website_shop_articles', function (Blueprint $table) {
+            $table->dropColumn('is_giftable');
+        });
+    }
 };

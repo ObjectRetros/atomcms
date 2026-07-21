@@ -102,27 +102,38 @@ class WebsiteShopSeeder extends Seeder
         'Retired Rare Statue' => ['type' => 'furniture', 'type_value' => '9999', 'is_active' => false],
     ];
 
+    /** @var array<string, string> */
     private array $categories = [
-        'Starter Packs',
-        'Currency',
-        'VIP',
-        'Rare Collections',
-        'Room Sets',
-        'Seasonal',
-        'Limited Edition',
+        'Starter Packs' => '/assets/images/icons/navigation/shop.png',
+        'Currency' => '/assets/images/icons/currency.png',
+        'VIP' => '/assets/images/icons/catalog.png',
+        'Rare Collections' => '/assets/images/icons/catalog.png',
+        'Room Sets' => '/assets/images/profile/rooms.png',
+        'Seasonal' => '/assets/images/icons/navigation/shop.png',
+        'Limited Edition' => '/assets/images/icons/catalog.png',
     ];
 
-    /** Hidden from the shop front (ShopController only lists active categories) but still assignable. */
+    /**
+     * Hidden from the shop front but still assignable in housekeeping.
+     *
+     * @var array<string, string>
+     */
     private array $inactiveCategories = [
-        'Legacy Collection',
+        'Legacy Collection' => '/assets/images/icons/catalog.png',
     ];
 
     public function run(): void
     {
-        $categories = collect([...$this->categories, ...$this->inactiveCategories])->mapWithKeys(function (string $name) {
+        $categoryDefinitions = [...$this->categories, ...$this->inactiveCategories];
+
+        $categories = collect($categoryDefinitions)->mapWithKeys(function (string $icon, string $name) {
             $category = WebsiteShopCategory::updateOrCreate(
                 ['slug' => Str::slug($name)],
-                ['name' => $name, 'is_active' => ! in_array($name, $this->inactiveCategories, true)],
+                [
+                    'name' => $name,
+                    'icon' => $icon,
+                    'is_active' => ! array_key_exists($name, $this->inactiveCategories),
+                ],
             );
 
             return [$name => $category];

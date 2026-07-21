@@ -10,7 +10,11 @@ class ValidateInstallationKeyRule implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value !== WebsiteInstallation::first()->installation_key) {
+        $installationKey = WebsiteInstallation::query()->oldest('id')->value('installation_key');
+
+        if (! is_string($value)
+            || ! is_string($installationKey)
+            || ! hash_equals($installationKey, $value)) {
             $fail('The :attribute does not match');
         }
     }

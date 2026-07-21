@@ -33,11 +33,13 @@ class WebsiteShopCategory extends Model
 {
     protected $guarded = [];
 
+    /** @return HasMany<WebsiteShopArticle, $this> */
     public function articles(): HasMany
     {
         return $this->hasMany(WebsiteShopArticle::class);
     }
 
+    /** @return HasMany<WebsiteShopPackage, $this> */
     public function packages(): HasMany
     {
         return $this->hasMany(WebsiteShopPackage::class);

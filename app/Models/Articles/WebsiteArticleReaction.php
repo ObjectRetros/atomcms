@@ -3,6 +3,7 @@
 namespace App\Models\Articles;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,9 +30,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WebsiteArticleReaction extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'article_id',
+        'user_id',
+        'reaction',
+        'active',
+    ];
 
     public $timestamps = false;
 
@@ -40,28 +47,30 @@ class WebsiteArticleReaction extends Model
         'article_id',
     ];
 
-    public static function getReaction(int $articleId, int $userId, string $reaction): ?self
+    public static function toggleFor(WebsiteArticle $article, User $user, string $reaction): self
     {
-        return self::where('user_id', $userId)
-            ->where('article_id', $articleId)
-            ->where('reaction', $reaction)
-            ->first();
+        $record = self::query()->firstOrCreate([
+            'article_id' => $article->id,
+            'user_id' => $user->id,
+            'reaction' => $reaction,
+        ], [
+            'active' => true,
+        ]);
+
+        if (! $record->wasRecentlyCreated) {
+            $record->update(['active' => ! $record->active]);
+        }
+
+        return $record;
     }
 
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-    }
-
+    /** @return BelongsTo<WebsiteArticle, $this> */
     public function article(): BelongsTo
     {
         return $this->belongsTo(WebsiteArticle::class, 'article_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

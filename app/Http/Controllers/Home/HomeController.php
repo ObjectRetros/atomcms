@@ -11,6 +11,7 @@ use App\Services\Home\HomeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class HomeController extends Controller
 {
@@ -52,7 +53,9 @@ class HomeController extends Controller
     {
         try {
             $this->homeService->saveItems($user, $request->validated());
-        } catch (\Throwable) {
+        } catch (Throwable $exception) {
+            report($exception);
+
             return $this->jsonResponse([
                 'message' => __('An error occurred while saving your home.'),
             ], 500);

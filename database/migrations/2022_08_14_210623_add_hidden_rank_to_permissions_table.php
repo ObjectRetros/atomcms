@@ -8,12 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('permissions', function (Blueprint $table) {
-            if (columnExists('permissions', 'hidden_rank')) {
-                Schema::dropColumns('permissions', 'hidden_rank');
-            }
+        if (! Schema::hasColumn('permissions', 'hidden_rank')) {
+            Schema::table('permissions', function (Blueprint $table) {
+                $table->boolean('hidden_rank')->after('rank_name')->default(false);
+            });
+        }
+    }
 
-            $table->boolean('hidden_rank')->after('rank_name')->default(false);
+    public function down(): void
+    {
+        Schema::table('permissions', function (Blueprint $table) {
+            $table->dropColumn('hidden_rank');
         });
     }
 };

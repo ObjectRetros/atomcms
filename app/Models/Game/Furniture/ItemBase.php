@@ -83,12 +83,17 @@ class ItemBase extends Model
         return sprintf('%s/%s_icon.png', setting('furniture_icons_path'), $this->item_name);
     }
 
+    /** @return HasMany<CatalogItem, $this> */
     public function catalogItems(): HasMany
     {
         return $this->hasMany(CatalogItem::class, 'item_ids', 'id');
     }
 
-    /** Rows in `items` - one record per placed/owned piece of this base item. */
+    /**
+     * Rows in `items` - one record per placed/owned piece of this base item.
+     *
+     * @return HasMany<Item, $this>
+     */
     public function instances(): HasMany
     {
         return $this->hasMany(Item::class, 'item_id', 'id');

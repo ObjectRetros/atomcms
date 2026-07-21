@@ -3,12 +3,12 @@
 return [
     'site' => [
         'site_url' => env('APP_URL', 'http://localhost'),
-        'default_name' => env('APP_NAME', 'Atom'),
+        'default_name' => env('APP_NAME', 'Atom CMS'),
         'recaptcha_site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY'),
         'recaptcha_secret_key' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
         'convert_passwords' => env('CONVERT_PASSWORDS'),
         'force_https' => env('FORCE_HTTPS', false),
-        'date_format' => env('DATE_FORMAT', 'Y-m-d - h:m:s'),
+        'date_format' => env('DATE_FORMAT', 'Y-m-d H:i:s'),
         'default_language' => env('APP_LOCALE', 'en'),
         'debug_mode_enabled' => env('APP_DEBUG', false),
         'site_environment' => env('APP_ENV'),
@@ -36,9 +36,8 @@ return [
     ],
 
     'rcon' => [
-        'domain' => AF_INET,
-        'type' => SOCK_STREAM,
-        'protocol' => SOL_TCP,
+        'connect_timeout_seconds' => (float) env('RCON_CONNECT_TIMEOUT', 1),
+        'read_timeout_seconds' => (float) env('RCON_READ_TIMEOUT', 2),
     ],
 
     'client' => [
@@ -75,7 +74,7 @@ return [
         'sandbox' => [
             'client_id' => env('PAYPAL_SANDBOX_CLIENT_ID', ''),
             'client_secret' => env('PAYPAL_SANDBOX_CLIENT_SECRET', ''),
-            'app_id' => env('paypal_sandbox_app_id', 'APP-80W284485P519543T'),
+            'app_id' => env('PAYPAL_SANDBOX_APP_ID', 'APP-80W284485P519543T'),
         ],
         'live' => [
             'client_id' => env('PAYPAL_LIVE_CLIENT_ID', ''),
@@ -85,8 +84,9 @@ return [
 
         'payment_action' => env('PAYPAL_PAYMENT_ACTION', 'Order'), // Can only be 'Sale', 'Authorization' or 'Order'
         'currency' => env('PAYPAL_CURRENCY', 'USD'),
+        'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
         'notify_url' => env('PAYPAL_NOTIFY_URL', ''), // Change this accordingly for your application.
         'locale' => env('PAYPAL_LOCALE', 'en_US'), // force gateway language  i.e. it_IT, es_ES, en_US ... (for express checkout only)
-        'validate_ssl' => env('PAYPAL_VALIDATE_SSL', true), // Validate SSL when creating api client.
+        'validate_ssl' => true,
     ],
 ];

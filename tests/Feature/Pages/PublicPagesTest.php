@@ -13,6 +13,26 @@ test('public community pages render', function (string $route) {
     'rules' => 'help-center.rules.index',
 ]);
 
+test('public responses include browser security headers', function () {
+    $this->get(route('article.index'))
+        ->assertOk()
+        ->assertHeader('Content-Security-Policy', "base-uri 'self'; frame-ancestors 'self'")
+        ->assertHeader('Permissions-Policy', 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()')
+        ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+        ->assertHeaderMissing('Strict-Transport-Security');
+});
+
+test('secure production responses enable transport security', function () {
+    $this->app->detectEnvironment(fn () => 'production');
+
+    $this->withHeader('X-Forwarded-Proto', 'https')
+        ->get(route('article.index'))
+        ->assertOk()
+        ->assertHeader('Strict-Transport-Security', 'max-age=31536000');
+});
+
 test('authenticated community pages render', function (string $route) {
     $this->actingAs(User::factory()->create())
         ->get(route($route))

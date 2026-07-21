@@ -6,6 +6,7 @@ use App\Enums\HomeItemType;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class UserHomeItem extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $guarded = [];
@@ -50,6 +52,7 @@ class UserHomeItem extends Model
         return $this->belongsTo(HomeItem::class);
     }
 
+    /** @param Builder<static> $query */
     public function scopeDefaultRelationships(Builder $query, bool $completeLoading = false): void
     {
         $relation = $completeLoading ? 'homeItem' : 'homeItem:id,type,name,image';
@@ -69,19 +72,20 @@ class UserHomeItem extends Model
     public function setWidgetContent(User $user): void
     {
         $this->content = null;
+        $homeItem = $this->homeItem;
 
-        if ($this->homeItem->type !== HomeItemType::Widget) {
+        if ($homeItem === null || $homeItem->type !== HomeItemType::Widget) {
             return;
         }
 
-        $allAvailableWidgets = $this->homeItem->getAvailableWidgets();
+        $allAvailableWidgets = $homeItem->getAvailableWidgets();
 
-        if (empty($allAvailableWidgets) || ! array_key_exists($this->homeItem->name, $allAvailableWidgets)) {
+        if (empty($allAvailableWidgets) || ! array_key_exists($homeItem->name, $allAvailableWidgets)) {
             return;
         }
 
-        $this->widget_type = $allAvailableWidgets[$this->homeItem->name];
+        $this->widget_type = $allAvailableWidgets[$homeItem->name];
         $this->content = app(HomeService::class)->getWidgetContent($user, $this);
-        $this->homeItem->name = __($this->homeItem->name);
+        $homeItem->name = __($homeItem->name);
     }
 }

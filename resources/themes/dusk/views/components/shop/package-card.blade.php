@@ -8,7 +8,7 @@
             </p>
 
             <span class="font-bold">
-                ${{ $package->priceInDollars() }}
+                {{ $package->formattedPrice() }}
             </span>
         </div>
     </x-slot:title>
@@ -124,7 +124,7 @@
                                           if (!query.trim()) return;
                                           confirmAction = '{{ route('shop.buy-package', $package) }}';
                                           confirmReceiver = query;
-                                          confirmMessage = '{{ __('You are about to gift :package to', ['package' => $package->name]) }} ' + query + '. {{ __('You will be charged $:cost. This action is non-refundable.', ['cost' => $package->priceInDollars()]) }}';
+                                          confirmMessage = '{{ __('You are about to gift :package to', ['package' => $package->name]) }} ' + query + '. {{ __('You will be charged :cost. This action is non-refundable.', ['cost' => $package->formattedPrice()]) }}';
                                           open = false;
                                           $nextTick(() => { confirmOpen = true; });
                                       ">
@@ -175,7 +175,7 @@
                                             :disabled="!query.trim()"
                                             :class="{ 'opacity-50 cursor-not-allowed': !query.trim() }"
                                             class="w-full rounded bg-green-600 hover:bg-green-700 text-white p-2 border-2 border-green-500 transition ease-in-out duration-150 font-semibold">
-                                        {{ __('Gift for $:cost', ['cost' => $package->priceInDollars()]) }}
+                                        {{ __('Gift for :cost', ['cost' => $package->formattedPrice()]) }}
                                     </button>
                                 </form>
                             </div>
@@ -188,7 +188,7 @@
                   x-on:submit.prevent="
                       confirmAction = '{{ route('shop.buy-package', $package) }}';
                       confirmReceiver = '';
-                      confirmMessage = '{{ __('You are about to purchase :package for $:cost. This action is non-refundable. Are you sure?', ['package' => $package->name, 'cost' => $package->priceInDollars()]) }}';
+                      confirmMessage = '{{ __('You are about to purchase :package for :cost. This action is non-refundable. Are you sure?', ['package' => $package->name, 'cost' => $package->formattedPrice()]) }}';
                       confirmOpen = true;
                   ">
                 @csrf

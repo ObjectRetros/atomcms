@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\BannedMiddleware;
+use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
+use App\Http\Middleware\MaintenanceMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -56,6 +59,9 @@ class AdminFilamentPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                BannedMiddleware::class,
+                MaintenanceMiddleware::class,
+                ForceStaffTwoFactorMiddleware::class,
             ])
             ->plugins([]);
     }

@@ -19,6 +19,7 @@ use App\Models\Game\Permission;
 use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -32,8 +33,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -81,21 +82,21 @@ class UserResource extends Resource
                                 DateTimePicker::make('account_created')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->account_created)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->account_created)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.created_at')),
 
                                 DateTimePicker::make('last_login')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_login)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->last_login)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_login')),
 
                                 DateTimePicker::make('last_online')
                                     ->native(false)
                                     ->displayFormat('Y-m-d H:i:s')
-                                    ->dehydrateStateUsing(fn (Model $record) => $record->last_online)
+                                    ->dehydrateStateUsing(fn (User $record) => $record->last_online)
                                     ->disabled()
                                     ->label(__('filament::resources.inputs.last_online')),
 
@@ -111,15 +112,10 @@ class UserResource extends Resource
                                     ->label(__('filament::resources.inputs.referral_code'))
                                     ->disabled(),
 
-                                TextInput::make('referrer_code')
-                                    ->label(__('filament::resources.inputs.referrer_code'))
-                                    ->nullable()
-                                    ->maxLength(15),
-
                                 Select::make('team_id')
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.team_id'))
-                                    ->options(WebsiteTeam::all()->pluck('rank_name', 'id'))
+                                    ->options(fn () => WebsiteTeam::query()->pluck('rank_name', 'id'))
                                     ->columnSpanFull(),
                             ])->columns(['sm' => 2]),
 
@@ -177,6 +173,8 @@ class UserResource extends Resource
                                             ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                                             ->dehydrated(fn ($state) => filled($state))
                                             ->password()
+                                            ->required(fn (string $operation): bool => $operation === 'create')
+                                            ->rule(Password::default())
                                             ->confirmed(),
 
                                         TextInput::make('password_confirmation')
@@ -184,6 +182,7 @@ class UserResource extends Resource
                                             ->dehydrated(false)
                                             ->password(),
                                     ])->collapsible()
+                                    ->visible(fn (): bool => hasHousekeepingPermission('reset_user_password', Filament::auth()->user()))
                                     ->columns(['sm' => 2])
                                     ->collapsed(),
 
@@ -192,9 +191,16 @@ class UserResource extends Resource
                                         Select::make('rank')
                                             ->native(false)
                                             ->label(__('filament::resources.inputs.rank'))
-                                            ->options(Permission::where('id', '<', auth()->user()->rank)->get()->pluck('rank_name', 'id')),
+                                            ->options(function () {
+                                                $actor = Filament::auth()->user();
 
-                                        Toggle::make('is_hidden')
+                                                return $actor instanceof User
+                                                    ? Permission::query()->where('id', '<', $actor->rank)->pluck('rank_name', 'id')
+                                                    : [];
+                                            })
+                                            ->required(),
+
+                                        Toggle::make('hidden_staff')
                                             ->label(__('filament::resources.inputs.is_hidden'))
                                             ->default(false),
                                     ])->collapsible()
@@ -206,7 +212,20 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return static::getModel()::query();
+        $query = parent::getEloquentQuery();
+        $actor = Filament::auth()->user();
+
+        if (! $actor instanceof User) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $query->where('rank', '<', $actor->rank);
+
+        if (Emulator::supports(Feature::EmulatorUserSettings)) {
+            $query->with('settings');
+        }
+
+        return $query;
     }
 
     public static function table(Table $table): Table
@@ -241,7 +260,7 @@ class UserResource extends Resource
 
                 IconColumn::make('online')
                     ->label(__('filament::resources.columns.online'))
-                    ->icon(fn (Model $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (User $record) => $record->online ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'danger' => false,
                         'success' => true,
@@ -276,7 +295,12 @@ class UserResource extends Resource
         ]));
     }
 
-    public static function fillWithOutsideData(Model $record, array $formData): array
+    /**
+     * @param  array<string, mixed>  $formData
+     *
+     * @return array<string, mixed>
+     */
+    public static function fillWithOutsideData(User $record, array $formData): array
     {
         $formData['currency_0'] = $record->currency('duckets');
         $formData['currency_5'] = $record->currency('diamonds');

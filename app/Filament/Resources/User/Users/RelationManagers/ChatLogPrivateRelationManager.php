@@ -11,7 +11,7 @@ class ChatLogPrivateRelationManager extends RelationManager
 {
     protected static string $relationship = 'chatLogsPrivate';
 
-    protected static $targetResource = ChatlogPrivateResource::class;
+    protected static ?string $targetResource = ChatlogPrivateResource::class;
 
     public function form(Schema $schema): Schema
     {

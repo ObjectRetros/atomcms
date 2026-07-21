@@ -2,6 +2,7 @@
 
 namespace App\Models\Community\Staff;
 
+use App\Models\Compositions\HasBadge;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -36,10 +37,11 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class WebsiteTeam extends Model
+class WebsiteTeam extends Model implements HasBadge
 {
     protected $guarded = [];
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'team_id', 'id');

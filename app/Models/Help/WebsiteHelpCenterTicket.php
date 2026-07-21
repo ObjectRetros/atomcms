@@ -2,13 +2,12 @@
 
 namespace App\Models\Help;
 
+use App\Casts\PurifiedHtml;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Auth;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -44,43 +43,28 @@ class WebsiteHelpCenterTicket extends Model
 
     public $timestamps = false;
 
+    protected function casts(): array
+    {
+        return [
+            'content' => PurifiedHtml::class,
+        ];
+    }
+
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<WebsiteHelpCenterCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(WebsiteHelpCenterCategory::class);
     }
 
+    /** @return HasMany<WebsiteHelpCenterTicketReply, $this> */
     public function replies(): HasMany
     {
         return $this->hasMany(WebsiteHelpCenterTicketReply::class, 'ticket_id');
-    }
-
-    public function canDeleteTicket()
-    {
-        return $this->user_id === Auth::id() || hasPermission('delete_website_tickets');
-    }
-
-    public function canManageTicket()
-    {
-        return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
-    }
-
-    public function canCloseTicket()
-    {
-        return $this->user_id === Auth::id() || hasPermission('manage_website_tickets');
-    }
-
-    public function isOpen()
-    {
-        return $this->open || hasPermission('manage_website_tickets');
-    }
-
-    public function getContentAttribute($value)
-    {
-        return Purify::clean($value);
     }
 }

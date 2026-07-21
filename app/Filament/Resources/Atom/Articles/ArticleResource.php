@@ -9,7 +9,7 @@ use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
 use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
 use App\Filament\Traits\TranslatableResource;
 use App\Models\Articles\WebsiteArticle;
-use Exception;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -24,9 +24,11 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -55,6 +57,7 @@ class ArticleResource extends Resource
             ->components(static::getForm());
     }
 
+    /** @return array<int, Component> */
     public static function getForm(): array
     {
         return [
@@ -91,7 +94,7 @@ class ArticleResource extends Resource
                                 ->columnSpan('full'),
 
                             Hidden::make('user_id')
-                                ->default(fn () => auth()->check() ? auth()->user()->id : null),
+                                ->default(fn (): int => AuthenticatedUser::current()->id),
                         ]),
 
                     Tab::make(__('filament::resources.tabs.Configurations'))
@@ -102,22 +105,6 @@ class ArticleResource extends Resource
                                 ->onIcon('heroicon-s-check')
                                 ->offIcon('heroicon-s-x-mark')
                                 ->default(true)
-                                ->live()
-                                ->afterStateUpdated(function (string $operation, $state, $record) {
-                                    if ($operation !== 'edit' || is_null($record)) {
-                                        return;
-                                    }
-
-                                    try {
-                                        if ($state) {
-                                            $record->restore();
-                                        } else {
-                                            $record->delete();
-                                        }
-                                    } catch (Exception $e) {
-                                        report($e);
-                                    }
-                                })
                                 ->formatStateUsing(function ($record) {
                                     if (is_null($record)) {
                                         return true;
@@ -159,6 +146,7 @@ class ArticleResource extends Resource
             ]);
     }
 
+    /** @return array<int, Column> */
     public static function getTable(): array
     {
         return [
@@ -187,7 +175,7 @@ class ArticleResource extends Resource
                 ->state(fn ($record) => is_null($record->deleted_at))
                 ->disabled(),
 
-            ToggleColumn::make('allow_comments')
+            ToggleColumn::make('can_comment')
                 ->label(__('filament::resources.columns.allow_comments'))
                 ->onIcon('heroicon-s-check')
                 ->toggleable()
@@ -223,6 +211,7 @@ class ArticleResource extends Resource
 
     public static function getGlobalSearchEloquentQuery(): Builder
     {
-        return parent::getGlobalSearchEloquentQuery()->withTrashed();
+        return parent::getGlobalSearchEloquentQuery()
+            ->withoutGlobalScope(SoftDeletingScope::class);
     }
 }

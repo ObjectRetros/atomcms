@@ -13,7 +13,7 @@ class HabboBadgeColumn extends Column implements HasBadge
     {
         $record = $this->getRecord();
 
-        if (! method_exists($record, 'getBadgePath')) {
+        if (! $record instanceof HasBadge) {
             return '';
         }
 
@@ -24,7 +24,7 @@ class HabboBadgeColumn extends Column implements HasBadge
     {
         $record = $this->getRecord();
 
-        if (! method_exists($record, 'getBadgeName')) {
+        if (! $record instanceof HasBadge) {
             return '';
         }
 

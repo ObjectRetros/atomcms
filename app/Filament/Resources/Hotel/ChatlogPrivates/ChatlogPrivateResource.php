@@ -12,6 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -70,6 +71,7 @@ class ChatlogPrivateResource extends Resource
             ->toolbarActions([]);
     }
 
+    /** @return array<int, Column> */
     public static function getTable(): array
     {
         return [

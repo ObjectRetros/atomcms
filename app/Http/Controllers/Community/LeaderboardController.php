@@ -14,25 +14,20 @@ class LeaderboardController extends Controller
 {
     private const SIZE = 9;
 
-    /**
-     * @var array<int, int>
-     */
-    private array $staffIds;
+    public function __invoke(
+        CurrencyRepository $currencies,
+        PlayerStatsRepository $stats,
+        StaffService $staffService,
+    ): View {
+        $staffIds = $staffService->fetchEmployeeIds();
 
-    public function __construct(private readonly StaffService $staffService)
-    {
-        $this->staffIds = $this->staffService->fetchEmployeeIds();
-    }
-
-    public function __invoke(CurrencyRepository $currencies, PlayerStatsRepository $stats): View
-    {
         return view('leaderboard', [
-            'credits' => $currencies->topBy(CurrencyTypes::Credits, self::SIZE, $this->staffIds),
-            'duckets' => $currencies->topBy(CurrencyTypes::Duckets, self::SIZE, $this->staffIds),
-            'diamonds' => $currencies->topBy(CurrencyTypes::Diamonds, self::SIZE, $this->staffIds),
-            'mostOnline' => $stats->topBy(Stat::OnlineTime, self::SIZE, $this->staffIds),
-            'respectsReceived' => $stats->topBy(Stat::RespectsReceived, self::SIZE, $this->staffIds),
-            'achievementScores' => $stats->topBy(Stat::AchievementScore, self::SIZE, $this->staffIds),
+            'credits' => $currencies->topBy(CurrencyTypes::Credits, self::SIZE, $staffIds),
+            'duckets' => $currencies->topBy(CurrencyTypes::Duckets, self::SIZE, $staffIds),
+            'diamonds' => $currencies->topBy(CurrencyTypes::Diamonds, self::SIZE, $staffIds),
+            'mostOnline' => $stats->topBy(Stat::OnlineTime, self::SIZE, $staffIds),
+            'respectsReceived' => $stats->topBy(Stat::RespectsReceived, self::SIZE, $staffIds),
+            'achievementScores' => $stats->topBy(Stat::AchievementScore, self::SIZE, $staffIds),
         ]);
     }
 }

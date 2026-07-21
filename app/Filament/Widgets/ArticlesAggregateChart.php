@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Article;
+use App\Models\Articles\WebsiteArticle;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
@@ -28,7 +28,7 @@ class ArticlesAggregateChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Trend::model(Article::class)
+        $data = Trend::model(WebsiteArticle::class)
             ->between(
                 start: now()->startOfMonth(),
                 end: now()->endOfMonth(),

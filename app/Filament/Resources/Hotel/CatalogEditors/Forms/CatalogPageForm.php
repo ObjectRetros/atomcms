@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Hotel\CatalogEditors\Forms;
 
 use App\Services\Catalog\FurniIconService;
 use Filament\Forms;
+use Filament\Schemas\Components\Component;
 use Illuminate\Support\HtmlString;
 
 class CatalogPageForm
 {
-    /** @return array<int, Forms\Components\Component> */
+    /** @return array<int, Component> */
     public static function schema(): array
     {
         $icons = app(FurniIconService::class);
@@ -69,6 +70,8 @@ class CatalogPageForm
 
     public static function sanitizeTag(?string $value): string
     {
-        return $value ? strtolower(preg_replace('/[^a-z]/', '', $value)) : '';
+        $sanitized = $value ? preg_replace('/[^a-z]/', '', $value) : null;
+
+        return is_string($sanitized) ? strtolower($sanitized) : '';
     }
 }

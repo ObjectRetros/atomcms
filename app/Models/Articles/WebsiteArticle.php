@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -72,29 +72,31 @@ class WebsiteArticle extends Model
         return SlugOptions::create()
             ->generateSlugsFrom('title')
             ->saveSlugsTo('slug')
-            ->usingSeparator('-')
-            ->allowDuplicateSlugs();
+            ->usingSeparator('-');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return HasMany<WebsiteArticleReaction, $this> */
     public function reactions(): HasMany
     {
         return $this->hasMany(WebsiteArticleReaction::class, 'article_id')
             ->whereActive(true);
     }
 
+    /** @return HasMany<WebsiteArticleComment, $this> */
     public function comments(): HasMany
     {
         return $this->hasMany(WebsiteArticleComment::class, 'article_id');
     }
 
-    public function userHasReachedArticleCommentLimit(): bool
+    public function userHasReachedArticleCommentLimit(User $user): bool
     {
-        return $this->comments()->where('user_id', '=', Auth::id())->count() >= (int) setting('max_comment_per_article');
+        return $this->comments()->where('user_id', $user->id)->count() >= (int) setting('max_comment_per_article');
     }
 
     protected static function boot()
@@ -108,7 +110,8 @@ class WebsiteArticle extends Model
         });
     }
 
-    public function tags()
+    /** @return MorphToMany<Tag, $this> */
+    public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }

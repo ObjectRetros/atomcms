@@ -18,7 +18,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class TeamResource extends Resource
 {
@@ -80,7 +79,7 @@ class TeamResource extends Resource
 
                 IconColumn::make('hidden_rank')
                     ->label(__('filament::resources.columns.is_hidden'))
-                    ->icon(fn (Model $record) => $record->hidden_rank ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->icon(fn (WebsiteTeam $record) => $record->hidden_rank ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->colors([
                         'danger' => false,
                         'success' => true,

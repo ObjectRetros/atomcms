@@ -34,6 +34,14 @@ test('the full password reset flow works and tokens are single-use', function ()
     $this->get(route('reset.password.get', $token))->assertOk();
 
     $this->post(route('reset.password.post', $token), [
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasErrors('password');
+
+    expect(PasswordResetToken::whereKey(PasswordResetToken::hashToken($token))->exists())->toBeTrue()
+        ->and(Hash::check('password', $user->fresh()->password))->toBeTrue();
+
+    $this->post(route('reset.password.post', $token), [
         'password' => 'N3wPassword!',
         'password_confirmation' => 'N3wPassword!',
     ])->assertRedirect(route('login'));

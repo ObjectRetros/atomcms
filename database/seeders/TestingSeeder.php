@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class TestingSeeder extends Seeder
@@ -14,6 +15,8 @@ class TestingSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('users')->delete();
+
         WebsiteInstallation::query()->firstOrCreate(['installation_key' => 'key'], ['completed' => true]);
 
         $this->call([

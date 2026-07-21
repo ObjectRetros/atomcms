@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\WebsiteTicketFormRequest;
 use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Help\WebsiteHelpCenterTicket;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -31,7 +32,7 @@ class TicketController extends Controller
 
     public function store(WebsiteTicketFormRequest $request): RedirectResponse
     {
-        Auth::user()->tickets()->create($request->validated());
+        AuthenticatedUser::from($request)->tickets()->create($request->validated());
 
         return redirect()->back()->with('success', __('Ticket submitted!'));
     }

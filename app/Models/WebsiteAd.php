@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\SettingsService;
 use Exception;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class WebsiteAd extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $fillable = [
@@ -40,7 +42,7 @@ class WebsiteAd extends Model
         $settingsService = app(SettingsService::class);
 
         $adsPicturePath = Cache::remember('ads_picture_path', 3600, function () use ($settingsService) {
-            return $settingsService->getOrDefault('ads_picture_path');
+            return $settingsService->getOrDefault('ads_picture_path', '');
         });
 
         if (! str_starts_with($adsPicturePath, 'http')) {

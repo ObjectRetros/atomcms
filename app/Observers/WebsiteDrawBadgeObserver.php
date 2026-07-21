@@ -6,6 +6,8 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Models\User;
 use App\Models\WebsiteDrawBadge;
 use App\Services\Badge\NitroExternalTexts;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class WebsiteDrawBadgeObserver
 {
@@ -37,6 +39,13 @@ class WebsiteDrawBadgeObserver
             $this->badges->grant($owner, $badgeCode);
         }
 
-        $this->externalTexts->add($badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
+        try {
+            $this->externalTexts->add($badgeCode, $websiteDrawBadge->badge_name, $websiteDrawBadge->badge_desc);
+        } catch (RuntimeException $exception) {
+            Log::warning('Failed to update Nitro external texts for a drawn badge.', [
+                'badge_id' => $websiteDrawBadge->getKey(),
+                'exception_class' => $exception::class,
+            ]);
+        }
     }
 }

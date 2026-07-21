@@ -25,7 +25,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 use Str;
@@ -48,6 +47,11 @@ class PermissionResource extends Resource
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, mixed>
+     */
     public static function normalizeFormData(array $data): array
     {
         $data['log_commands'] = ($data['log_commands'] ?? '') === ''
@@ -262,9 +266,9 @@ class PermissionResource extends Resource
 
                 TextColumn::make('rank_name')
                     ->label(__('filament::resources.columns.name'))
-                    ->description(fn (Model $record) => Str::limit($record->description, 40))
-                    ->tooltip(function (Model $record): ?string {
-                        $description = $record->description;
+                    ->description(fn (Permission $record) => Str::limit($record->job_description, 40))
+                    ->tooltip(function (Permission $record): ?string {
+                        $description = $record->job_description;
 
                         if (strlen($description) <= 40) {
                             return null;
@@ -276,7 +280,7 @@ class PermissionResource extends Resource
 
                 TextColumn::make('prefix')
                     ->label(__('filament::resources.columns.prefix'))
-                    ->description(fn (Model $record) => $record->prefix_color)
+                    ->description(fn (Permission $record) => $record->prefix_color)
                     ->searchable(),
 
                 ToggleColumn::make('hidden_rank')

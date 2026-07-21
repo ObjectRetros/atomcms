@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ShopVoucherFormRequest;
 use App\Models\Shop\WebsiteShopVoucher;
 use App\Models\User;
+use App\Support\AuthenticatedUser;
+use App\Support\StorefrontMoney;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +15,7 @@ class ShopVoucherController extends Controller
 {
     public function __invoke(ShopVoucherFormRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = AuthenticatedUser::from($request);
         $voucher = WebsiteShopVoucher::where('code', $request->string('code'))->first();
 
         if ($voucher === null || ! $this->isActive($voucher)) {
@@ -52,7 +54,9 @@ class ShopVoucherController extends Controller
             $voucher->update(['expires_at' => now()]);
         }
 
-        return redirect()->back()->with('success', __('Your balance has been increased by $:amount', ['amount' => $voucher->amount]));
+        return redirect()->back()->with('success', __('Your balance has been increased by :amount', [
+            'amount' => StorefrontMoney::format($voucher->amount),
+        ]));
     }
 
     private function isActive(WebsiteShopVoucher $voucher): bool

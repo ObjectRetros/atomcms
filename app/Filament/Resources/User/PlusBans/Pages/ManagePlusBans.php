@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\User\PlusBans\Pages;
 
 use App\Filament\Resources\User\PlusBans\PlusBanResource;
+use App\Support\AuthenticatedUser;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
@@ -15,7 +16,7 @@ class ManagePlusBans extends ManageRecords
         return [
             CreateAction::make()
                 ->mutateDataUsing(function (array $data): array {
-                    $data['added_by'] = auth()->user()->username;
+                    $data['added_by'] = AuthenticatedUser::current()->username;
                     $data['added_date'] = time();
 
                     return $data;

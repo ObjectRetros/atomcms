@@ -447,11 +447,13 @@ class Permission extends Model implements HasBadge
 
     protected $guarded = ['id'];
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'rank', 'id');
     }
 
+    /** @return HasMany<WebsiteStaffApplications, $this> */
     public function staffApplications(): HasMany
     {
         return $this->hasMany(WebsiteStaffApplications::class, 'rank_id');

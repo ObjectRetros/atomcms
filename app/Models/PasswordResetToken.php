@@ -53,6 +53,7 @@ class PasswordResetToken extends Model
             ->isPast();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'email', 'mail');

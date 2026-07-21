@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property string|null $application_key
  * @property int $user_id
  * @property int|null $rank_id
  * @property int|null $team_id
@@ -52,6 +53,7 @@ class WebsiteStaffApplications extends Model
 
     protected $fillable = [
         'user_id',
+        'application_key',
         'rank_id',
         'team_id',
         'content',
@@ -67,26 +69,31 @@ class WebsiteStaffApplications extends Model
         'rejected_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function rejector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<Permission, $this> */
     public function rank(): BelongsTo
     {
         return $this->belongsTo(Permission::class, 'rank_id');
     }
 
+    /** @return BelongsTo<WebsiteTeam, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(WebsiteTeam::class, 'team_id');

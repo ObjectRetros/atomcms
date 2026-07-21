@@ -6,13 +6,14 @@ use App\Models\Miscellaneous\WebsiteSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Throwable;
 
 class SettingsService
 {
+    /** @var Collection<string, mixed>|null */
     private ?Collection $cachedSettings = null;
 
-    protected function settings()
+    /** @return Collection<string, mixed> */
+    protected function settings(): Collection
     {
         if ($this->cachedSettings !== null) {
             return $this->cachedSettings;
@@ -31,6 +32,13 @@ class SettingsService
         return $this->cachedSettings;
     }
 
+    /**
+     * @template TDefault
+     *
+     * @param  TDefault  $default
+     *
+     * @return string|TDefault
+     */
     public function getOrDefault(string $key, mixed $default = null): mixed
     {
         return $this->settings()->get($key, $default);
@@ -44,23 +52,16 @@ class SettingsService
 
     private function isInstallationIncomplete(): bool
     {
-        try {
-            return ! app(InstallationService::class)->isComplete();
-        } catch (Throwable) {
-            return true;
-        }
+        return ! app(InstallationService::class)->isComplete();
     }
 
-    private function fetchSettings()
+    /** @return Collection<string, mixed> */
+    private function fetchSettings(): Collection
     {
-        try {
-            if (! Schema::hasTable('website_settings')) {
-                return collect();
-            }
-
-            return WebsiteSetting::query()->pluck('value', 'key');
-        } catch (Throwable) {
+        if (! Schema::hasTable('website_settings')) {
             return collect();
         }
+
+        return WebsiteSetting::query()->pluck('value', 'key');
     }
 }
