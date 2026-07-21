@@ -4,7 +4,9 @@ namespace App\Services\Parsers;
 
 use App\Services\Badge\FlashExternalTexts;
 use App\Services\Badge\NitroExternalTexts;
+use App\Services\SettingsService;
 use App\Support\BadgeCode;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Reads and writes a badge's name/description across the client text files -
@@ -16,6 +18,7 @@ class ExternalTextsParser
     public function __construct(
         private readonly NitroExternalTexts $nitroTexts,
         private readonly FlashExternalTexts $flashTexts,
+        private readonly SettingsService $settings,
     ) {}
 
     /**
@@ -27,10 +30,10 @@ class ExternalTextsParser
      */
     public function getBadgeData(string $code): array
     {
-        $code = BadgeCode::ensure($code);
+        $code = BadgeCode::normalize($code);
 
         return [
-            'image' => file_exists($this->badgeImagePath($code)) ? $this->getBadgeImageUrl($code) : null,
+            'image' => Storage::disk('badges')->exists(BadgeCode::filename($code)) ? $this->getBadgeImageUrl($code) : null,
             'nitro' => $this->nitroTexts->find($code),
             'flash' => $this->flashTexts->find($code),
         ];
@@ -42,28 +45,21 @@ class ExternalTextsParser
      */
     public function updateNitroBadgeTexts(string $code, string $title = '', string $description = ''): void
     {
-        $this->nitroTexts->add(BadgeCode::ensure($code), $title, $description);
+        $this->nitroTexts->add(BadgeCode::normalize($code), $title, $description);
     }
 
     public function updateFlashBadgeTexts(string $code, string $title = '', string $description = ''): void
     {
-        $this->flashTexts->add(BadgeCode::ensure($code), $title, $description);
+        $this->flashTexts->add(BadgeCode::normalize($code), $title, $description);
     }
 
     public function getBadgeImageUrl(string $code): string
     {
-        $code = BadgeCode::ensure($code);
+        $baseUrl = rtrim((string) $this->settings->getOrDefault('badges_path', '/badges'), '/');
+        $path = $baseUrl . '/' . rawurlencode(BadgeCode::normalize($code)) . '.gif';
 
-        return url(sprintf('%s/c_images/album1584/%s.gif', $this->clientPath(), $code));
-    }
-
-    private function badgeImagePath(string $code): string
-    {
-        return public_path(sprintf('%s/c_images/album1584/%s.gif', $this->clientPath(), $code));
-    }
-
-    private function clientPath(): string
-    {
-        return trim((string) config('hotel.client.flash.relative_files_path'), '/');
+        return str_starts_with($path, 'https://') || str_starts_with($path, 'http://')
+            ? $path
+            : url($path);
     }
 }

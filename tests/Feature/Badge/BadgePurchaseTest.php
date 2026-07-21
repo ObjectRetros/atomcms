@@ -42,7 +42,7 @@ test('buying a drawn badge charges credits and stores the file', function () {
 
     $user = User::factory()->create(['credits' => 1000]);
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->post(route('badge.buy'), drawnBadgePayload())
         ->assertOk()
         ->assertJson(['success' => true]);
@@ -51,6 +51,8 @@ test('buying a drawn badge charges credits and stores the file', function () {
 
     expect($badge)->not->toBeNull()
         ->and(file_exists($badge->badge_path))->toBeTrue()
+        ->and($response->json('badge_url'))->toBe($badge->badge_url)
+        ->and($response->json('badge_path_filesystem'))->toBeNull()
         ->and((int) $user->refresh()->credits)->toBe(850);
 });
 

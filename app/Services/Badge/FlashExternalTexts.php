@@ -2,8 +2,8 @@
 
 namespace App\Services\Badge;
 
+use App\Services\Files\AtomicFileWriter;
 use App\Services\SettingsService;
-use App\Support\AtomicFileWriter;
 use App\Support\BadgeCode;
 use InvalidArgumentException;
 use RuntimeException;
@@ -25,7 +25,7 @@ class FlashExternalTexts
      */
     public function find(string $badgeCode): ?array
     {
-        $badgeCode = BadgeCode::ensure($badgeCode);
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $texts = $this->all();
 
         $name = $texts["badge_name_{$badgeCode}"] ?? null;
@@ -46,11 +46,11 @@ class FlashExternalTexts
      */
     public function add(string $badgeCode, ?string $title, ?string $description): void
     {
-        $badgeCode = BadgeCode::ensure($badgeCode);
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $path = $this->path();
 
-        if ($path === null) {
-            return;
+        if (! $path || ! file_exists($path) || ! is_writable($path)) {
+            throw new RuntimeException('The Flash external texts file is not writable.');
         }
 
         $entries = [
@@ -58,7 +58,7 @@ class FlashExternalTexts
             "badge_desc_{$badgeCode}" => $this->value($description),
         ];
 
-        $this->files->rewrite($path, function (string $contents) use ($entries): string {
+        $this->files->update($path, function (string $contents) use ($entries): string {
             $lines = preg_split('/\r\n|\n/', rtrim($contents));
             $lines = $lines === false ? [] : $lines;
             $pending = $entries;
@@ -128,4 +128,5 @@ class FlashExternalTexts
 
         return is_string($path) && $path !== '' ? $path : null;
     }
+
 }

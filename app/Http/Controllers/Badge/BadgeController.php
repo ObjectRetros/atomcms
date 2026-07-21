@@ -33,7 +33,7 @@ class BadgeController extends Controller
             'badge_description' => (string) $validated['badge_description'],
         ]);
 
-        return response()->json(['success' => true, 'badge_path_filesystem' => $badge->badge_path]);
+        return response()->json(['success' => true, 'badge_url' => $badge->badge_url]);
     }
 
     private function badgeFolderError(?string $path): ?string

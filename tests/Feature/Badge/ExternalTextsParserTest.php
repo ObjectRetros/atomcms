@@ -3,10 +3,12 @@
 use App\Services\Parsers\ExternalTextsParser;
 use App\Support\BadgeCode;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 function externalTextsSetup(): ExternalTextsParser
 {
     installHotel();
+    Storage::fake('badges');
 
     $directory = storage_path('framework/testing/external-texts');
     File::ensureDirectoryExists($directory);
@@ -28,6 +30,7 @@ function externalTextsSetup(): ExternalTextsParser
 
     setSetting('nitro_external_texts_file', $nitroPath);
     setSetting('flash_external_texts_file', $flashPath);
+    setSetting('badges_path', '/testing-badges');
 
     return app(ExternalTextsParser::class);
 }
@@ -91,7 +94,7 @@ test('badge codes are normalized and unsafe file keys are rejected', function ()
     $before = (string) file_get_contents($nitroPath);
 
     expect(BadgeCode::normalize(' ach_new-1 '))->toBe('ACH_NEW-1')
-        ->and(BadgeCode::normalize('../badge'))->toBeNull()
+        ->and(fn () => BadgeCode::normalize('../badge'))->toThrow(InvalidArgumentException::class)
         ->and(fn () => $parser->updateNitroBadgeTexts('../badge', 'Unsafe', 'Unsafe'))
         ->toThrow(InvalidArgumentException::class)
         ->and((string) file_get_contents($nitroPath))->toBe($before);
@@ -117,21 +120,13 @@ test('flash text values cannot inject additional entries', function () {
         ->and((string) file_get_contents($flashPath))->toBe($before);
 });
 
-test('the badge image url and existence follow the flash client path', function () {
+test('the badge image url and existence follow the configured badge disk', function () {
     $parser = externalTextsSetup();
 
-    config(['hotel.client.flash.relative_files_path' => 'testing-client']);
+    expect($parser->getBadgeImageUrl('ACH_Img'))->toBe(url('/testing-badges/ACH_Img.gif'));
 
-    expect($parser->getBadgeImageUrl('ACH_Img'))->toBe(url('testing-client/c_images/album1584/ACH_Img.gif'));
+    Storage::disk('badges')->put('ACH_Img.gif', 'gif');
 
-    $imageDir = public_path('testing-client/c_images/album1584');
-    File::ensureDirectoryExists($imageDir);
-    file_put_contents($imageDir . '/ACH_Img.gif', 'gif');
-
-    try {
-        expect($parser->getBadgeData('ACH_Img')['image'])
-            ->toBe(url('testing-client/c_images/album1584/ACH_Img.gif'));
-    } finally {
-        File::deleteDirectory(public_path('testing-client'));
-    }
+    expect($parser->getBadgeData('ACH_Img')['image'])
+        ->toBe(url('/testing-badges/ACH_Img.gif'));
 });

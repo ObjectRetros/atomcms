@@ -2,8 +2,8 @@
 
 namespace App\Services\Badge;
 
+use App\Services\Files\AtomicFileWriter;
 use App\Services\SettingsService;
-use App\Support\AtomicFileWriter;
 use App\Support\BadgeCode;
 use JsonException;
 use RuntimeException;
@@ -24,7 +24,7 @@ class NitroExternalTexts
      */
     public function find(string $badgeCode): ?array
     {
-        $badgeCode = BadgeCode::ensure($badgeCode);
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $texts = $this->read();
 
         $name = $texts["badge_name_{$badgeCode}"] ?? null;
@@ -42,8 +42,7 @@ class NitroExternalTexts
 
     public function add(string $badgeCode, ?string $name, ?string $description): void
     {
-        $badgeCode = BadgeCode::ensure($badgeCode);
-
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $this->rewrite(fn (array $texts): array => array_merge($texts, [
             "badge_name_{$badgeCode}" => $name,
             "badge_desc_{$badgeCode}" => $description,
@@ -52,27 +51,30 @@ class NitroExternalTexts
 
     public function remove(string $badgeCode): void
     {
-        $badgeCode = BadgeCode::ensure($badgeCode);
-
+        $badgeCode = BadgeCode::normalize($badgeCode);
         $this->rewrite(function (array $texts) use ($badgeCode): array {
             unset($texts["badge_name_{$badgeCode}"], $texts["badge_desc_{$badgeCode}"]);
 
             return $texts;
-        });
+        }, required: false);
     }
 
     /**
      * @param  callable(array<string, mixed>): array<string, mixed>  $mutate
      */
-    private function rewrite(callable $mutate): void
+    private function rewrite(callable $mutate, bool $required = true): void
     {
         $path = $this->path();
 
-        if ($path === null) {
+        if (! $path || ! file_exists($path) || ! is_writable($path)) {
+            if ($required) {
+                throw new RuntimeException('The Nitro external texts file is not writable.');
+            }
+
             return;
         }
 
-        $this->files->rewrite(
+        $this->files->update(
             $path,
             fn (string $contents): string => json_encode(
                 $mutate($this->decode($contents, $path)),
