@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -70,7 +71,7 @@ class WebsiteTeamApplicationsController extends Controller
         );
 
         $applications->forTeam(
-            $request->user(),
+            AuthenticatedUser::from($request),
             $position->team_id,
             $request->string('content')->toString(),
         );

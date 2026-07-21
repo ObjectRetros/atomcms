@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Actions\User\ClaimReferralReward;
 use App\Http\Controllers\Controller;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,7 @@ class ReferralController extends Controller
     public function __invoke(Request $request, ClaimReferralReward $claim): RedirectResponse
     {
         $claimed = $claim->execute(
-            $request->user(),
+            AuthenticatedUser::from($request),
             $request->ip() ?: 'unknown',
         );
 

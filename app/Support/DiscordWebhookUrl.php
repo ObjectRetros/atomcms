@@ -4,6 +4,7 @@ namespace App\Support;
 
 final class DiscordWebhookUrl
 {
+    /** @phpstan-assert-if-true string $url */
     public static function isValid(mixed $url): bool
     {
         if (! is_string($url) || strlen($url) > 2048) {

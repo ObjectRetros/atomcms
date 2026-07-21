@@ -51,14 +51,12 @@ class StaffService
             ->values()
             ->all();
 
-        if (! $cacheEnabled) {
-            return $resolve();
-        }
-
-        return Cache::remember(
+        $ids = $cacheEnabled ? Cache::remember(
             CommunityCache::STAFF_IDS,
             now()->addMinutes((int) setting('cache_timer')),
             $resolve,
-        );
+        ) : $resolve();
+
+        return array_values($ids);
     }
 }

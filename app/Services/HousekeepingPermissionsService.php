@@ -12,6 +12,7 @@ class HousekeepingPermissionsService
     /** @var Collection<string, int>|null */
     private ?Collection $permissions = null;
 
+    /** @return Collection<string, int> */
     private function permissions(): Collection
     {
         if ($this->permissions !== null) {
@@ -27,7 +28,10 @@ class HousekeepingPermissionsService
 
     public function getOrDefault(string $permissionName, bool $default = false, ?User $user = null): bool
     {
-        $user = auth()->user();
+        if ($user === null) {
+            $authenticatedUser = auth()->user();
+            $user = $authenticatedUser instanceof User ? $authenticatedUser : null;
+        }
 
         return $user instanceof User
             ? $this->allows($user, $permissionName, $default)

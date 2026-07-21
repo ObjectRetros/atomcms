@@ -20,6 +20,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Log;
+use LogicException;
 use RuntimeException;
 use Throwable;
 
@@ -220,7 +221,13 @@ class BadgePage extends Page
 
     public function create(): void
     {
-        $this->data = $this->form->getState();
+        $form = $this->getSchema('form');
+
+        if ($form === null) {
+            throw new LogicException('The badge form schema is unavailable.');
+        }
+
+        $this->data = $form->getState();
 
         $nitroEnabled = config('hotel.client.nitro.enabled');
         $flashEnabled = config('hotel.client.flash.enabled');

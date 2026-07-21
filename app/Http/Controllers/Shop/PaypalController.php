@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountTopupFormRequest;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Services\Payments\PaypalPaymentService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -15,16 +16,19 @@ class PaypalController extends Controller
 {
     public function process(AccountTopupFormRequest $request, PaypalPaymentService $payments): RedirectResponse
     {
+        $user = AuthenticatedUser::from($request);
+
         try {
-            $approvalUrl = $payments->createOrder($request->user(), $request->integer('amount'));
+            $approvalUrl = $payments->createOrder($user, $request->integer('amount'));
         } catch (PaypalPaymentException $exception) {
             Log::warning('PayPal order creation failed.', [
-                'user_id' => $request->user()->getKey(),
+                'user_id' => $user->getKey(),
                 'exception_class' => $exception::class,
             ]);
 
             return $this->failure();
         }
+
         return redirect()->away($approvalUrl);
     }
 
@@ -34,7 +38,7 @@ class PaypalController extends Controller
             'token' => ['required', 'string', 'max:255'],
         ]);
 
-        $transaction = $request->user()
+        $transaction = AuthenticatedUser::from($request)
             ->transactions()
             ->where('transaction_id', $validated['token'])
             ->first();
@@ -67,7 +71,7 @@ class PaypalController extends Controller
             'token' => ['required', 'string', 'max:255'],
         ]);
 
-        $transaction = $request->user()
+        $transaction = AuthenticatedUser::from($request)
             ->transactions()
             ->where('transaction_id', $validated['token'])
             ->first();

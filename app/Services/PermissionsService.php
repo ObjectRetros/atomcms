@@ -12,6 +12,7 @@ class PermissionsService
     /** @var Collection<string, int>|null */
     private ?Collection $permissions = null;
 
+    /** @return Collection<string, int> */
     private function permissions(): Collection
     {
         if ($this->permissions !== null) {

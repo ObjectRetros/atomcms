@@ -6,6 +6,7 @@ use App\Actions\Community\SubmitStaffApplication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -49,7 +50,7 @@ class StaffApplicationsController extends Controller
         );
 
         $applications->forRank(
-            $request->user(),
+            AuthenticatedUser::from($request),
             $position->permission_id,
             $request->string('content')->toString(),
         );

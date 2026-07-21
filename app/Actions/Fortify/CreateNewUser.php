@@ -52,7 +52,7 @@ class CreateNewUser implements CreatesNewUsers
 
         if (setting('enable_discord_webhook') === '1') {
             // After the response, so registration never waits on Discord.
-            SendRegisteredUserWebhook::dispatchAfterResponse($user->username, $user->ip_register, $user->mail);
+            SendRegisteredUserWebhook::dispatchAfterResponse($user->username, $user->ip_register, $validated['mail']);
         }
 
         return $user;

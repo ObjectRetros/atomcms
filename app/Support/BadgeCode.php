@@ -10,7 +10,7 @@ final class BadgeCode
 
     public static function normalize(string $value): string
     {
-        $value = strtoupper(trim($value));
+        $value = trim($value);
 
         if (! self::isValid($value)) {
             throw new InvalidArgumentException('Badge codes must be 1 to 64 characters and may only contain letters, numbers, underscores, and hyphens.');

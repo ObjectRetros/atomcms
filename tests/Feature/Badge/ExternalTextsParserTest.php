@@ -93,7 +93,7 @@ test('badge codes are normalized and unsafe file keys are rejected', function ()
     $nitroPath = storage_path('framework/testing/external-texts/ExternalTexts.json');
     $before = (string) file_get_contents($nitroPath);
 
-    expect(BadgeCode::normalize(' ach_new-1 '))->toBe('ACH_NEW-1')
+    expect(BadgeCode::normalize(' ACH_New-1 '))->toBe('ACH_New-1')
         ->and(fn () => BadgeCode::normalize('../badge'))->toThrow(InvalidArgumentException::class)
         ->and(fn () => $parser->updateNitroBadgeTexts('../badge', 'Unsafe', 'Unsafe'))
         ->toThrow(InvalidArgumentException::class)

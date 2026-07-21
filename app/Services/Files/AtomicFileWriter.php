@@ -48,9 +48,15 @@ class AtomicFileWriter
             }
 
             $updated = $mutate($current);
-            $temporaryPath = tempnam(dirname($path), '.atom-');
+            $candidatePath = tempnam(dirname($path), '.atom-');
 
-            if ($temporaryPath === false || file_put_contents($temporaryPath, $updated) !== strlen($updated)) {
+            if ($candidatePath === false) {
+                throw new RuntimeException("Unable to create temporary file for: {$path}");
+            }
+
+            $temporaryPath = $candidatePath;
+
+            if (file_put_contents($temporaryPath, $updated) !== strlen($updated)) {
                 throw new RuntimeException("Unable to write temporary file for: {$path}");
             }
 
