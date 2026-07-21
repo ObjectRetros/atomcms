@@ -6,6 +6,7 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Models\User;
 use App\Models\WebsiteDrawBadge;
 use App\Services\Badge\NitroExternalTexts;
+use RuntimeException;
 
 /**
  * Removes every trace of a drawn badge before its record is deleted: the
@@ -28,8 +29,8 @@ class PurgeDrawnBadge
 
         $this->externalTexts->remove($badgeCode);
 
-        if ($badge->badge_path && file_exists($badge->badge_path)) {
-            unlink($badge->badge_path);
+        if ($badge->badge_path && is_file($badge->badge_path) && ! unlink($badge->badge_path)) {
+            throw new RuntimeException("Unable to remove badge image: {$badge->badge_path}");
         }
     }
 }

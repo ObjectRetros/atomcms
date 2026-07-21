@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Badge\CreateDrawnBadge;
+use App\Exceptions\BadgePurchaseException;
 use App\Models\User;
 use App\Models\WebsiteDrawBadge;
 use Illuminate\Support\Facades\File;
@@ -83,5 +85,20 @@ test('invalid image data is rejected by validation', function () {
         ->assertSessionHasErrors('badge_data');
 
     expect(WebsiteDrawBadge::count())->toBe(0)
+        ->and((int) $user->refresh()->credits)->toBe(1000);
+});
+
+test('invalid image bytes cannot leave a partial badge or charge', function () {
+    installHotel();
+    $directory = prepareBadgeDirectory();
+    $user = User::factory()->create(['credits' => 1000]);
+
+    expect(fn () => app(CreateDrawnBadge::class)->execute($user, [
+        'badge_data' => base64_encode('not a gif'),
+        'badge_name' => 'Invalid',
+        'badge_description' => 'Invalid',
+    ]))->toThrow(BadgePurchaseException::class)
+        ->and(File::files($directory))->toBeEmpty()
+        ->and(WebsiteDrawBadge::count())->toBe(0)
         ->and((int) $user->refresh()->credits)->toBe(1000);
 });

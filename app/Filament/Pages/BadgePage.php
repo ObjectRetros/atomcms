@@ -4,6 +4,9 @@ namespace App\Filament\Pages;
 
 use App\Filament\Traits\TranslatableResource;
 use App\Services\Parsers\ExternalTextsParser;
+use App\Support\BadgeCode;
+use App\Support\OutboundHttp;
+use App\Support\PublicHttpUrlResolver;
 use Filament\Actions\Action;
 use Filament\Actions\Action as PageAction;
 use Filament\Actions\ActionGroup;
@@ -16,12 +19,13 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class BadgePage extends Page
 {
+    private const MAX_BADGE_IMAGE_BYTES = 1_048_576;
+
     use InteractsWithForms, TranslatableResource;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
@@ -60,6 +64,9 @@ class BadgePage extends Page
                         TextInput::make('code')
                             ->label(__('filament::resources.inputs.badge_code'))
                             ->helperText(__('filament::resources.helpers.badge_code_helper'))
+                            ->required()
+                            ->maxLength(BadgeCode::MAX_LENGTH)
+                            ->regex('/\A[A-Z0-9_-]+\z/')
                             ->afterStateUpdated(function (?string $state, Set $set) {
                                 $set('code', is_string($state) ? strtoupper($state) : null);
                             })
@@ -116,9 +123,9 @@ class BadgePage extends Page
 
     private function searchBadgesByCode(): void
     {
-        $badgeCode = $this->data['code'] ?? null;
+        $badgeCode = $this->badgeCode();
 
-        if (empty($badgeCode)) {
+        if ($badgeCode === null) {
             Notification::make()
                 ->danger()
                 ->title(__('filament::resources.notifications.badge_code_required'))
@@ -127,7 +134,21 @@ class BadgePage extends Page
             return;
         }
 
-        $badgeData = app(ExternalTextsParser::class)->getBadgeData($badgeCode);
+        $this->data['code'] = $badgeCode;
+
+        try {
+            $badgeData = app(ExternalTextsParser::class)->getBadgeData($badgeCode);
+        } catch (Throwable $exception) {
+            Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
+
+            Notification::make()
+                ->danger()
+                ->title(__('filament::resources.notifications.badge_update_failed'))
+                ->send();
+
+            return;
+        }
+
         $this->badgeWasPreviouslyCreated = is_array($badgeData['nitro']) || is_array($badgeData['flash']);
 
         if ($this->badgeWasPreviouslyCreated) {
@@ -196,18 +217,28 @@ class BadgePage extends Page
     {
         $nitroEnabled = config('hotel.client.nitro.enabled');
         $flashEnabled = config('hotel.client.flash.enabled');
+        $badgeCode = $this->badgeCode();
 
-        // image and code fields are required when creating a new badge
-        if (! $this->badgeWasPreviouslyCreated && (empty($this->data['image']) || empty($this->data['code']))) {
-            $notificationTitle = empty($this->data['image']) ?
-                __('filament::resources.notifications.badge_image_required') :
-                __('filament::resources.notifications.badge_code_required');
-
+        if ($badgeCode === null) {
             Notification::make()
                 ->icon('heroicon-o-exclamation-triangle')
                 ->iconColor('danger')
                 ->color('danger')
-                ->title($notificationTitle)
+                ->title(__('filament::resources.notifications.badge_code_required'))
+                ->send();
+
+            return;
+        }
+
+        $this->data['code'] = $badgeCode;
+
+        // image and code fields are required when creating a new badge
+        if (! $this->badgeWasPreviouslyCreated && empty($this->data['image'])) {
+            Notification::make()
+                ->icon('heroicon-o-exclamation-triangle')
+                ->iconColor('danger')
+                ->color('danger')
+                ->title(__('filament::resources.notifications.badge_image_required'))
                 ->send();
 
             return;
@@ -227,13 +258,15 @@ class BadgePage extends Page
         }
 
         try {
-            $this->uploadBadgeImage($externalTextsParser);
+            if (! $this->uploadBadgeImage($externalTextsParser, $badgeCode)) {
+                return;
+            }
 
             if (! empty($this->data['nitro']) && $nitroEnabled) {
-                $externalTextsParser->updateNitroBadgeTexts($this->data['code'], ...$this->data['nitro']);
+                $externalTextsParser->updateNitroBadgeTexts($badgeCode, ...$this->data['nitro']);
             }
             if (! empty($this->data['flash']) && $flashEnabled) {
-                $externalTextsParser->updateFlashBadgeTexts($this->data['code'], ...$this->data['flash']);
+                $externalTextsParser->updateFlashBadgeTexts($badgeCode, ...$this->data['flash']);
             }
         } catch (Throwable $exception) {
             Log::channel('badge')->error('[ORION BADGE RESOURCE] - ERROR: ' . $exception->getMessage());
@@ -248,12 +281,6 @@ class BadgePage extends Page
             return;
         }
 
-        $badgeCode = $this->data['code'] ?? null;
-
-        if (! is_string($badgeCode)) {
-            return;
-        }
-
         $this->data['image'] = $externalTextsParser->getBadgeImageUrl($badgeCode);
         $this->badgeWasPreviouslyCreated = true;
 
@@ -265,49 +292,99 @@ class BadgePage extends Page
             ->send();
     }
 
-    protected function uploadBadgeImage(ExternalTextsParser $parser): void
+    protected function uploadBadgeImage(ExternalTextsParser $parser, string $badgeCode): bool
     {
-        if (empty($this->data['image']) || ! filter_var($this->data['image'], FILTER_VALIDATE_URL)) {
-            return;
+        $imageUrl = $this->data['image'] ?? null;
+
+        if (! is_string($imageUrl) || trim($imageUrl) === '') {
+            return true;
         }
 
-        if ($this->data['image'] == $parser->getBadgeImageUrl($this->data['code'])) {
-            return;
+        if ($imageUrl === $parser->getBadgeImageUrl($badgeCode)) {
+            return true;
         }
 
-        $image = Http::get($this->data['image']);
+        $resolvedUrl = app(PublicHttpUrlResolver::class)->resolve($imageUrl);
 
-        if (! $image->successful()) {
-            return;
+        if ($resolvedUrl === null) {
+            $this->notifyBadgeImageUploadFailed();
+
+            return false;
         }
 
-        $contentType = $image->header('content-type');
+        $image = OutboundHttp::request()
+            ->withOptions([
+                'allow_redirects' => false,
+                'curl' => [
+                    CURLOPT_RESOLVE => [$resolvedUrl->curlResolveEntry()],
+                    CURLOPT_PROXY => '',
+                    CURLOPT_NOPROXY => '*',
+                    CURLOPT_NOPROGRESS => false,
+                    CURLOPT_XFERINFOFUNCTION => static fn (
+                        mixed $handle,
+                        float $downloadSize,
+                        float $downloaded,
+                        float $uploadSize,
+                        float $uploaded,
+                    ): int => $downloaded > self::MAX_BADGE_IMAGE_BYTES ? 1 : 0,
+                ],
+            ])
+            ->get($resolvedUrl->url);
 
-        $gdImage = match ($contentType) {
-            'image/png' => imagecreatefrompng($this->data['image']),
-            'image/gif' => imagecreatefromgif($this->data['image']),
-            'image/jpeg' => imagecreatefromjpeg($this->data['image']),
-            default => false
-        };
+        if (! $image->successful() || strlen($image->body()) > self::MAX_BADGE_IMAGE_BYTES) {
+            $this->notifyBadgeImageUploadFailed();
+
+            return false;
+        }
+
+        $contentType = strtolower(trim(explode(';', $image->header('content-type'), 2)[0]));
+
+        try {
+            $gdImage = in_array($contentType, ['image/png', 'image/gif', 'image/jpeg'], true)
+                ? imagecreatefromstring($image->body())
+                : false;
+        } catch (Throwable) {
+            $gdImage = false;
+        }
 
         if ($gdImage === false) {
-            Notification::make()
-                ->icon('heroicon-o-exclamation-triangle')
-                ->iconColor('danger')
-                ->color('danger')
-                ->title(__('filament::resources.notifications.badge_image_upload_failed'))
-                ->send();
+            $this->notifyBadgeImageUploadFailed();
 
-            return;
+            return false;
         }
 
         $uploadPath = public_path(sprintf('%s%s%s.gif',
             rtrim(config('hotel.client.flash.relative_files_path'), '\//'),
             '/c_images/album1584/',
-            $this->data['code'],
+            $badgeCode,
         ));
 
-        imagegif($gdImage, $uploadPath);
+        try {
+            $saved = imagegif($gdImage, $uploadPath);
+        } finally {
+            imagedestroy($gdImage);
+        }
+
+        if (! $saved) {
+            $this->notifyBadgeImageUploadFailed();
+        }
+
+        return $saved;
+    }
+
+    private function badgeCode(): ?string
+    {
+        return BadgeCode::normalize($this->data['code'] ?? null);
+    }
+
+    private function notifyBadgeImageUploadFailed(): void
+    {
+        Notification::make()
+            ->icon('heroicon-o-exclamation-triangle')
+            ->iconColor('danger')
+            ->color('danger')
+            ->title(__('filament::resources.notifications.badge_image_upload_failed'))
+            ->send();
     }
 
     /**

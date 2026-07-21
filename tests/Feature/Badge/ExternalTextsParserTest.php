@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Parsers\ExternalTextsParser;
+use App\Support\BadgeCode;
 use Illuminate\Support\Facades\File;
 
 function externalTextsSetup(): ExternalTextsParser
@@ -9,6 +10,7 @@ function externalTextsSetup(): ExternalTextsParser
 
     $directory = storage_path('framework/testing/external-texts');
     File::ensureDirectoryExists($directory);
+    File::cleanDirectory($directory);
 
     $nitroPath = $directory . '/ExternalTexts.json';
     file_put_contents($nitroPath, json_encode([
@@ -81,6 +83,38 @@ test('updating an existing badge rewrites its lines in place', function () {
     expect($flash)->toContain('badge_name_ACH_Existing=Renamed')
         ->and($flash)->toContain('badge_desc_ACH_Existing=Redescribed')
         ->and(substr_count($flash, 'badge_name_ACH_Existing='))->toBe(1);
+});
+
+test('badge codes are normalized and unsafe file keys are rejected', function () {
+    $parser = externalTextsSetup();
+    $nitroPath = storage_path('framework/testing/external-texts/ExternalTexts.json');
+    $before = (string) file_get_contents($nitroPath);
+
+    expect(BadgeCode::normalize(' ach_new-1 '))->toBe('ACH_NEW-1')
+        ->and(BadgeCode::normalize('../badge'))->toBeNull()
+        ->and(fn () => $parser->updateNitroBadgeTexts('../badge', 'Unsafe', 'Unsafe'))
+        ->toThrow(InvalidArgumentException::class)
+        ->and((string) file_get_contents($nitroPath))->toBe($before);
+});
+
+test('malformed nitro texts are never overwritten', function () {
+    $parser = externalTextsSetup();
+    $nitroPath = storage_path('framework/testing/external-texts/ExternalTexts.json');
+    file_put_contents($nitroPath, '{malformed');
+
+    expect(fn () => $parser->updateNitroBadgeTexts('ACH_Safe', 'Safe', 'Safe'))
+        ->toThrow(RuntimeException::class)
+        ->and((string) file_get_contents($nitroPath))->toBe('{malformed');
+});
+
+test('flash text values cannot inject additional entries', function () {
+    $parser = externalTextsSetup();
+    $flashPath = storage_path('framework/testing/external-texts/external_flash_texts.txt');
+    $before = (string) file_get_contents($flashPath);
+
+    expect(fn () => $parser->updateFlashBadgeTexts('ACH_Safe', "Safe\ninjected.key=value", 'Safe'))
+        ->toThrow(InvalidArgumentException::class)
+        ->and((string) file_get_contents($flashPath))->toBe($before);
 });
 
 test('the badge image url and existence follow the flash client path', function () {

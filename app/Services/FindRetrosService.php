@@ -2,53 +2,35 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
+use App\Support\OutboundHttp;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /* Credits to Kani for this */
 
 class FindRetrosService
 {
-    /**
-     * The findretros verification uri.
-     */
-    public const FIND_RETROS_VERIFY_URI = '%s/validate.php?user=%s&ip=%s';
-
-    /**
-     * The findretros redirect uri.
-     */
-    public const FIND_RETROS_REDIRECT_URI = '%s/servers/%s/vote?minimal=1&return=1';
-
     public const FIND_RETROS_CACHE_KEY = 'voted.%s';
-
-    /**
-     * The guzzle client instance
-     */
-    protected Client $client;
-
-    /**
-     * Initialise Find Retros Service
-     */
-    public function __construct()
-    {
-        $this->client = new Client(['verify' => false]);
-    }
 
     /**
      * Check the user has voted.
      */
-    public function checkHasVoted(): bool
+    public function checkHasVoted(Request $request): bool
     {
         if (! config('habbo.findretros.enabled')) {
             return true;
         }
 
-        $cacheKey = sprintf(self::FIND_RETROS_CACHE_KEY, request()->ip());
-        if (request()->ip() === '127.0.0.1') {
+        $ip = $request->ip();
+        $cacheKey = sprintf(self::FIND_RETROS_CACHE_KEY, $ip);
+
+        if ($ip === '127.0.0.1') {
             return true;
         }
 
-        if (request()->has('novote')) {
+        if ($request->has('novote')) {
             return true;
         }
 
@@ -56,11 +38,30 @@ class FindRetrosService
             return true;
         }
 
-        $uri = sprintf(self::FIND_RETROS_VERIFY_URI, config('habbo.findretros.api'), config('habbo.findretros.name'), request()->ip());
-        $request = $this->client->get($uri);
-        $response = $request->getBody()->getContents();
+        try {
+            $response = OutboundHttp::request()
+                ->accept('text/plain')
+                ->get(rtrim((string) config('habbo.findretros.api'), '/') . '/validate.php', [
+                    'user' => config('habbo.findretros.name'),
+                    'ip' => $ip,
+                ]);
+        } catch (ConnectionException $exception) {
+            Log::warning('FindRetros verification was unavailable.', [
+                'exception_class' => $exception::class,
+            ]);
 
-        if (in_array($response, ['1', '2'])) {
+            return true;
+        }
+
+        if (! $response->successful()) {
+            Log::warning('FindRetros verification returned an error.', [
+                'status' => $response->status(),
+            ]);
+
+            return true;
+        }
+
+        if (in_array(trim($response->body()), ['1', '2'], true)) {
             Cache::put($cacheKey, true, now()->addMinutes(30));
 
             return true;
@@ -74,6 +75,10 @@ class FindRetrosService
      */
     public function getRedirectUri(): string
     {
-        return sprintf(self::FIND_RETROS_REDIRECT_URI, config('habbo.findretros.api'), config('habbo.findretros.name'));
+        return sprintf(
+            '%s/servers/%s/vote?minimal=1&return=1',
+            rtrim((string) config('habbo.findretros.api'), '/'),
+            rawurlencode((string) config('habbo.findretros.name')),
+        );
     }
 }
