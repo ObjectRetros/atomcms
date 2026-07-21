@@ -3,6 +3,7 @@
 namespace App\Services\Community;
 
 use App\Models\Community\Teams\WebsiteTeam;
+use App\Support\CommunityCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -13,11 +14,7 @@ class TeamService
     {
         $cacheEnabled = setting('enable_caching') === '1';
 
-        if ($cacheEnabled && Cache::has('hotel_teams')) {
-            return Cache::get('hotel_teams');
-        }
-
-        $employees = WebsiteTeam::select([
+        $resolve = fn (): Collection => WebsiteTeam::select([
             'id',
             'rank_name',
             'badge',
@@ -33,11 +30,14 @@ class TeamService
             }])
             ->get();
 
-        if ($cacheEnabled) {
-            $cacheTimer = (int) setting('cache_timer');
-            Cache::put('hotel_teams', $employees, now()->addMinutes($cacheTimer));
+        if (! $cacheEnabled) {
+            return $resolve();
         }
 
-        return $employees;
+        return Cache::remember(
+            CommunityCache::TEAMS,
+            now()->addMinutes((int) setting('cache_timer')),
+            $resolve,
+        );
     }
 }
