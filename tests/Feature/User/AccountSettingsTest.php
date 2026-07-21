@@ -7,6 +7,22 @@ beforeEach(function () {
     installHotel();
 });
 
+test('security and economy fields cannot be mass assigned', function () {
+    $user = new User;
+
+    $user->fill([
+        'username' => 'AllowedName',
+        'website_balance' => 500,
+        'machine_id' => 'attacker-controlled',
+        'two_factor_secret' => 'attacker-controlled',
+    ]);
+
+    expect($user->username)->toBe('AllowedName')
+        ->and($user->isDirty('website_balance'))->toBeFalse()
+        ->and($user->isDirty('machine_id'))->toBeFalse()
+        ->and($user->isDirty('two_factor_secret'))->toBeFalse();
+});
+
 test('an offline user can update their motto', function () {
     $user = User::factory()->create(['motto' => 'Old motto', 'online' => '0']);
 

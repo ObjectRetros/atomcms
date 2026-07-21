@@ -186,24 +186,32 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public $timestamps = false;
 
-    /**
-     * Economy and security columns are only ever written through dedicated
-     * paths (increment(), forceFill()), never mass-assignment - guard them so a
-     * stray fill() of request data cannot tamper with balances or 2FA secrets.
-     */
-    protected $guarded = [
-        'id',
-        'website_balance',
-        'pixels',
-        'points',
-        'vip_points',
-        'activity_points',
-        'gotw_points',
-        'machine_id',
-        'pincode',
-        'secret_key',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
+    protected $fillable = [
+        'username',
+        'real_name',
+        'password',
+        'mail',
+        'mail_verified',
+        'account_created',
+        'account_day_of_birth',
+        'last_login',
+        'last_online',
+        'motto',
+        'look',
+        'gender',
+        'rank',
+        'credits',
+        'online',
+        'auth_ticket',
+        'ip_register',
+        'ip_current',
+        'home_room',
+        'referral_code',
+        'extra_rank',
+        'team_id',
+        'hidden_staff',
+        'two_factor_confirmed',
+        'two_factor_confirmed_at',
     ];
 
     protected $hidden = [
