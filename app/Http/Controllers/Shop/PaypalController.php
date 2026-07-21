@@ -20,11 +20,9 @@ class PaypalController extends Controller
 
     private const STATUS_COMPLETED = 'COMPLETED';
 
-    public function __construct(private readonly PayPalClient $provider) {}
-
-    public function process(AccountTopupFormRequest $request): Response|RedirectResponse
+    public function process(AccountTopupFormRequest $request, PayPalClient $provider): Response|RedirectResponse
     {
-        $response = $this->provider->createOrder($this->buildOrderData($request->integer('amount')));
+        $response = $provider->createOrder($this->buildOrderData($request->integer('amount')));
 
         if (! is_array($response)) {
             return $this->orderCreationFailed(['message' => 'PayPal returned an invalid order response.']);
@@ -102,7 +100,7 @@ class PaypalController extends Controller
         return to_route('shop.index')->withErrors(['message' => $response['message'] ?? __('Something went wrong')]);
     }
 
-    public function successful(Request $request): Response
+    public function successful(Request $request, PayPalClient $provider): Response
     {
         $request->validate([
             'token' => 'required',
@@ -120,14 +118,13 @@ class PaypalController extends Controller
             return to_route('shop.index')->with('success', __('Transaction successful'));
         }
 
-        $response = $this->provider->capturePaymentOrder($request['token']);
+        $response = $provider->capturePaymentOrder($request['token']);
 
         if (! is_array($response)) {
             $this->recordFailure($transaction, ['message' => 'PayPal returned an invalid capture response.']);
 
             return to_route('shop.index')->withErrors(['message' => __('Something went wrong, please check your paypal account to make sure nothing was deducted and try again')]);
         }
-
         $capture = data_get($response, 'purchase_units.0.payments.captures.0');
 
         if (! is_string($response['status'] ?? null) || ! is_array($capture)) {

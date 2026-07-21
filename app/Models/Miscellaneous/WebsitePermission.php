@@ -2,6 +2,7 @@
 
 namespace App\Models\Miscellaneous;
 
+use App\Services\PermissionsService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -28,4 +29,10 @@ use Illuminate\Support\Carbon;
 class WebsitePermission extends Model
 {
     protected $guarded = ['id'];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => PermissionsService::clearCache());
+        static::deleted(fn () => PermissionsService::clearCache());
+    }
 }

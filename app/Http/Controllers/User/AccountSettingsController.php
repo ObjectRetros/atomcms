@@ -13,8 +13,6 @@ use Illuminate\View\View;
 
 class AccountSettingsController extends Controller
 {
-    public function __construct(private readonly SessionService $sessionService, private readonly Rcon $rconService) {}
-
     public function edit(): View
     {
         return view('user.settings.account', [
@@ -22,20 +20,20 @@ class AccountSettingsController extends Controller
         ]);
     }
 
-    public function sessionLogs(Request $request): View
+    public function sessionLogs(Request $request, SessionService $sessionService): View
     {
-        $sessions = $this->sessionService->fetchSessionLogs($request);
+        $sessions = $sessionService->fetchSessionLogs($request);
 
         return view('user.settings.session-logs', [
             'logs' => $sessions,
         ]);
     }
 
-    public function update(AccountSettingsFormRequest $request): RedirectResponse
+    public function update(AccountSettingsFormRequest $request, Rcon $rcon): RedirectResponse
     {
         $user = AuthenticatedUser::from($request);
 
-        if (! $this->rconService->isConnected() && $user->online) {
+        if (! $rcon->isConnected() && $user->online) {
             return back()->withErrors('You must be offline to change your account settings');
         }
 
@@ -47,7 +45,7 @@ class AccountSettingsController extends Controller
         $motto = (string) $request->input('motto');
 
         if ($user->motto !== $motto) {
-            $this->rconService->setMotto($user, $motto);
+            $rcon->setMotto($user, $motto);
             $user->update(['motto' => $motto]);
         }
 

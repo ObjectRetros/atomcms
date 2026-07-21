@@ -26,6 +26,7 @@ use App\Models\User\Ban;
 use App\Models\User\ClaimedReferralLog;
 use App\Models\User\Referral;
 use App\Models\User\UserReferral;
+use App\Services\HousekeepingPermissionsService;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
@@ -466,7 +467,7 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return hasHousekeepingPermission('can_access_housekeeping');
+        return app(HousekeepingPermissionsService::class)->allows($this, 'can_access_housekeeping');
     }
 
     public function getActivitylogOptions(): LogOptions
