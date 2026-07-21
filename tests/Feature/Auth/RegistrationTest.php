@@ -31,6 +31,17 @@ test('a visitor can register an account', function () {
         ->and($user->referral_code)->not->toBeEmpty();
 });
 
+test('registration rejects a weak password', function () {
+    installHotel();
+
+    register([
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasErrors('password');
+
+    expect(User::where('username', 'Tester')->exists())->toBeFalse();
+});
+
 test('registration is blocked when disabled', function () {
     installHotel();
     setSetting('disable_registration', '1');
