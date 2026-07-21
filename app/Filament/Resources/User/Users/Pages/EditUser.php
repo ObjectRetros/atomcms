@@ -10,7 +10,6 @@ use App\Emulator\Emulator;
 use App\Enums\CurrencyTypes;
 use App\Filament\Resources\User\Users\UserResource;
 use App\Models\User;
-use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -47,8 +46,9 @@ class EditUser extends EditRecord
         $user = $this->userRecord($this->getRecord());
         $data = $this->getSchema('form')?->getState()
             ?? throw new LogicException('The user edit form schema is not registered.');
+        $actor = auth()->user();
 
-        if ($data['rank'] > AuthenticatedUser::current()->rank) {
+        if (! $actor instanceof User || $actor->cannot('update', $user) || (int) $data['rank'] >= $actor->rank) {
             Notification::make()
                 ->danger()
                 ->title(__('You cannot edit this user!'))
@@ -93,6 +93,16 @@ class EditUser extends EditRecord
             // The emulator persists these fields when the deferred RCON commands run.
             return parent::handleRecordUpdate($user, Arr::except($data, ['credits', 'rank', 'motto']));
         });
+    }
+
+    /** @param array<string, mixed> $data */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (! hasHousekeepingPermission('reset_user_password', auth()->user())) {
+            unset($data['password']);
+        }
+
+        return $data;
     }
 
     /** @param array<string, mixed> $data */
@@ -190,7 +200,10 @@ class EditUser extends EditRecord
         if ($data['rank'] == $user->rank) {
             return;
         }
-        if ($data['rank'] > AuthenticatedUser::current()->rank) {
+
+        $actor = auth()->user();
+
+        if (! $actor instanceof User || (int) $data['rank'] >= $actor->rank) {
             return;
         }
 

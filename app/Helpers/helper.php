@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use App\Services\HousekeepingPermissionsService;
 use App\Services\PermissionsService;
 use App\Services\SettingsService;
@@ -26,9 +27,9 @@ if (! function_exists('hasPermission')) {
 }
 
 if (! function_exists('hasHousekeepingPermission')) {
-    function hasHousekeepingPermission(string $permission): bool
+    function hasHousekeepingPermission(string $permission, ?User $user = null): bool
     {
-        return app(HousekeepingPermissionsService::class)->getOrDefault($permission);
+        return app(HousekeepingPermissionsService::class)->getOrDefault($permission, user: $user);
     }
 }
 

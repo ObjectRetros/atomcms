@@ -10,12 +10,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
 
     ignoreErrors:
-        # Fortify internals - overridden from vendor
-        - identifier: nullsafe.neverNull
-          path: app/Actions/Fortify/RedirectIfTwoFactorAuthenticatable.php
-        - identifier: method.notFound
-          path: app/Actions/Fortify/RedirectIfTwoFactorAuthenticatable.php
-
         # Turnstile package may not be installed in all environments
         - identifier: class.notFound
           path: app/Rules/TurnstileCheck.php

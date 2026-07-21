@@ -30,7 +30,7 @@ abstract class HousekeepingPolicy
         return $this->allows($user, $this->permission());
     }
 
-    public function view(User $user): bool
+    public function view(User $user, mixed $record = null): bool
     {
         return $this->allows($user, $this->permission());
     }
@@ -40,7 +40,7 @@ abstract class HousekeepingPolicy
         return $this->allows($user, $this->permission());
     }
 
-    public function update(User $user): bool
+    public function update(User $user, mixed $record = null): bool
     {
         return $this->allows($user, $this->permission());
     }
@@ -85,7 +85,7 @@ abstract class HousekeepingPolicy
         return $this->allows($user, $this->permission());
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user, mixed $record = null): bool
     {
         return $this->allows($user, $this->deletePermission());
     }
@@ -95,7 +95,7 @@ abstract class HousekeepingPolicy
         return $this->allows($user, $this->deletePermission());
     }
 
-    public function restore(User $user): bool
+    public function restore(User $user, mixed $record = null): bool
     {
         return $this->allows($user, $this->deletePermission());
     }
@@ -105,7 +105,7 @@ abstract class HousekeepingPolicy
         return $this->allows($user, $this->deletePermission());
     }
 
-    public function forceDelete(User $user): bool
+    public function forceDelete(User $user, mixed $record = null): bool
     {
         return $this->allows($user, $this->deletePermission());
     }

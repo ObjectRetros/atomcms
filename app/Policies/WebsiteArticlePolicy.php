@@ -16,7 +16,7 @@ class WebsiteArticlePolicy extends HousekeepingPolicy
         return 'delete_article';
     }
 
-    public function update(User $user): bool
+    public function update(User $user, mixed $record = null): bool
     {
         return $this->allows($user, 'edit_article');
     }

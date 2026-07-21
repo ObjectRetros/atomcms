@@ -25,7 +25,7 @@ class HousekeepingPermissionsService
         return $this->permissions = collect($data);
     }
 
-    public function getOrDefault(string $permissionName, bool $default = false): bool
+    public function getOrDefault(string $permissionName, bool $default = false, ?User $user = null): bool
     {
         $user = auth()->user();
 

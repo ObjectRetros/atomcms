@@ -17,9 +17,9 @@ use App\Filament\Traits\TranslatableResource;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
-use App\Support\AuthenticatedUser;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -115,7 +115,7 @@ class UserResource extends Resource
                                 Select::make('team_id')
                                     ->native(false)
                                     ->label(__('filament::resources.inputs.team_id'))
-                                    ->options(WebsiteTeam::all()->pluck('rank_name', 'id'))
+                                    ->options(fn () => WebsiteTeam::query()->pluck('rank_name', 'id'))
                                     ->columnSpanFull(),
                             ])->columns(['sm' => 2]),
 
@@ -182,6 +182,7 @@ class UserResource extends Resource
                                             ->dehydrated(false)
                                             ->password(),
                                     ])->collapsible()
+                                    ->visible(fn (): bool => hasHousekeepingPermission('reset_user_password', Filament::auth()->user()))
                                     ->columns(['sm' => 2])
                                     ->collapsed(),
 
@@ -190,7 +191,14 @@ class UserResource extends Resource
                                         Select::make('rank')
                                             ->native(false)
                                             ->label(__('filament::resources.inputs.rank'))
-                                            ->options(Permission::where('id', '<', AuthenticatedUser::current()->rank)->get()->pluck('rank_name', 'id')),
+                                            ->options(function () {
+                                                $actor = Filament::auth()->user();
+
+                                                return $actor instanceof User
+                                                    ? Permission::query()->where('id', '<', $actor->rank)->pluck('rank_name', 'id')
+                                                    : [];
+                                            })
+                                            ->required(),
 
                                         Toggle::make('hidden_staff')
                                             ->label(__('filament::resources.inputs.is_hidden'))
@@ -205,6 +213,13 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
+        $actor = Filament::auth()->user();
+
+        if (! $actor instanceof User) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $query->where('rank', '<', $actor->rank);
 
         if (Emulator::supports(Feature::EmulatorUserSettings)) {
             $query->with('settings');
