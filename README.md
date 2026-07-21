@@ -93,7 +93,7 @@ cd atomcms
 composer setup
 ```
 
-The installer prompts for your database credentials, offers to create the database if it doesn't exist, and imports the Arcturus base SQL automatically (skipped if the tables already exist). It then asks which theme you want (atom or dusk), activates it and builds its assets. When it finishes, serve the site and visit `/installation` to configure your hotel.
+The installer prompts for your database credentials, offers to create the database if it doesn't exist, and imports the Arcturus base SQL automatically (skipped if the tables already exist). On Windows it connects the questions directly to the console even though Composer cannot allocate a child-process TTY. It then asks which theme you want (atom or dusk), activates it and builds its assets. When it finishes, serve the site and visit `/installation` to configure your hotel.
 
 Useful variations:
 

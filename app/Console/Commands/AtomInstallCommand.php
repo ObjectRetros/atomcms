@@ -8,21 +8,19 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
 use PDO;
 use PDOException;
+use Symfony\Component\Console\Input\StreamableInputInterface;
 use Throwable;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\password;
 use function Laravel\Prompts\progress;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
+/** @phpstan-type DatabaseConfig array{host: string, port: string, database: string, username: string, password: string} */
 class AtomInstallCommand extends Command
 {
     protected $signature = 'atom:install
@@ -41,6 +39,8 @@ class AtomInstallCommand extends Command
 
     public function handle(): int
     {
+        $this->attachConsoleInput();
+
         intro('Atom CMS installer');
 
         $this->ensureEnvFile();
@@ -92,15 +92,40 @@ class AtomInstallCommand extends Command
     private function configureDatabase(): bool
     {
         $connection = config('database.default');
-        $current = config("database.connections.{$connection}");
+
+        if (! is_string($connection)) {
+            error('The default database connection is not configured.');
+
+            return false;
+        }
+
+        $configured = config("database.connections.{$connection}");
+
+        if (! is_array($configured)) {
+            error("The '{$connection}' database connection is not configured.");
+
+            return false;
+        }
+
+        $current = $this->databaseConfig($configured);
 
         for ($attempt = 1; $attempt <= 3; $attempt++) {
             if ($this->input->isInteractive()) {
-                $current['host'] = text('Database host', default: $current['host'] ?? '127.0.0.1', hint: "Use 'mariadb' for Docker, '127.0.0.1' for local");
-                $current['port'] = text('Database port', default: (string) ($current['port'] ?? '3306'));
-                $current['database'] = text('Database name', default: $current['database'] ?? 'atomcms', hint: 'Atom and Arcturus share this database');
-                $current['username'] = text('Database username', default: $current['username'] ?? 'root');
-                $current['password'] = password('Database password', hint: 'Leave empty to keep the value currently in .env') ?: $current['password'];
+                $defaultHost = PHP_OS_FAMILY === 'Windows' && $current['host'] === 'mariadb'
+                    ? '127.0.0.1'
+                    : $current['host'];
+
+                $this->line("Use 'mariadb' for Docker, or '127.0.0.1' for a database running on this computer.");
+                $current['host'] = (string) $this->ask('Database host', $defaultHost);
+                $current['port'] = (string) $this->ask('Database port', $current['port']);
+                $current['database'] = (string) $this->ask('Database name (shared by Atom and Arcturus)', $current['database']);
+                $current['username'] = (string) $this->ask('Database username', $current['username']);
+
+                $password = $this->secret('Database password (leave empty to keep the value from .env)');
+
+                if (is_string($password) && $password !== '') {
+                    $current['password'] = $password;
+                }
             }
 
             $this->applyDatabaseConfig($connection, $current);
@@ -131,6 +156,22 @@ class AtomInstallCommand extends Command
         return false;
     }
 
+    /**
+     * @param  array<string, mixed>  $configured
+     *
+     * @return DatabaseConfig
+     */
+    private function databaseConfig(array $configured): array
+    {
+        return [
+            'host' => $this->databaseConfigValue($configured, 'host', '127.0.0.1'),
+            'port' => $this->databaseConfigValue($configured, 'port', '3306'),
+            'database' => $this->databaseConfigValue($configured, 'database', 'atomcms'),
+            'username' => $this->databaseConfigValue($configured, 'username', 'root'),
+            'password' => $this->databaseConfigValue($configured, 'password', ''),
+        ];
+    }
+
     private function isUnknownDatabaseError(Throwable $exception): bool
     {
         while ($exception !== null && ! $exception instanceof PDOException) {
@@ -140,10 +181,11 @@ class AtomInstallCommand extends Command
         return $exception !== null && str_contains($exception->getMessage(), 'Unknown database');
     }
 
+    /** @param DatabaseConfig $config */
     private function createDatabase(array $config): bool
     {
         $create = ! $this->input->isInteractive()
-            || confirm("Database '{$config['database']}' does not exist. Create it?", default: true);
+            || $this->confirm("Database '{$config['database']}' does not exist. Create it?", true);
 
         if (! $create) {
             return false;
@@ -157,7 +199,7 @@ class AtomInstallCommand extends Command
             );
             $pdo->exec(sprintf(
                 'CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci',
-                str_replace('`', '', $config['database']),
+                str_replace('`', '``', $config['database']),
             ));
 
             $connection = config('database.default');
@@ -174,6 +216,7 @@ class AtomInstallCommand extends Command
         }
     }
 
+    /** @param DatabaseConfig $config */
     private function applyDatabaseConfig(string $connection, array $config): void
     {
         config([
@@ -187,10 +230,15 @@ class AtomInstallCommand extends Command
         DB::purge($connection);
     }
 
+    /** @param DatabaseConfig $config */
     private function writeDatabaseEnv(array $config): void
     {
         $path = base_path('.env');
         $contents = file_get_contents($path);
+
+        if (! is_string($contents)) {
+            throw new \RuntimeException("Unable to read environment file: {$path}");
+        }
 
         foreach ([
             'DB_HOST' => $config['host'],
@@ -201,12 +249,22 @@ class AtomInstallCommand extends Command
         ] as $key => $value) {
             $line = str_contains((string) $value, ' ') ? sprintf('%s="%s"', $key, $value) : sprintf('%s=%s', $key, $value);
 
-            $contents = preg_match("/^{$key}=.*$/m", $contents)
-                ? preg_replace("/^{$key}=.*$/m", $line, $contents)
-                : $contents . PHP_EOL . $line;
+            if (preg_match("/^{$key}=.*$/m", $contents) === 1) {
+                $updated = preg_replace("/^{$key}=.*$/m", $line, $contents);
+
+                if (! is_string($updated)) {
+                    throw new \RuntimeException("Unable to update {$key} in environment file: {$path}");
+                }
+
+                $contents = $updated;
+            } else {
+                $contents .= PHP_EOL . $line;
+            }
         }
 
-        file_put_contents($path, $contents);
+        if (file_put_contents($path, $contents) === false) {
+            throw new \RuntimeException("Unable to write environment file: {$path}");
+        }
     }
 
     private function importArcturusDatabase(): bool
@@ -247,7 +305,7 @@ class AtomInstallCommand extends Command
 
         try {
             foreach ($this->readStatements($path) as $statement) {
-                DB::unprepared($statement);
+                DB::connection()->getPdo()->exec($statement);
                 $progress->advance();
             }
         } catch (Throwable $exception) {
@@ -328,12 +386,15 @@ class AtomInstallCommand extends Command
         }
 
         if ($theme === null && $this->input->isInteractive()) {
-            $theme = select(
+            $selectedTheme = $this->choice(
                 'Which theme do you want to use?',
                 self::THEMES,
-                default: in_array($seeded, self::THEMES, true) ? $seeded : 'atom',
-                hint: 'You can switch themes later in the housekeeping.',
+                in_array($seeded, self::THEMES, true) ? $seeded : 'atom',
             );
+
+            if (is_string($selectedTheme)) {
+                $theme = $selectedTheme;
+            }
         }
 
         $theme ??= in_array($seeded, self::THEMES, true) ? $seeded : 'atom';
@@ -375,5 +436,44 @@ class AtomInstallCommand extends Command
 
         $this->callSilent('storage:link');
         info('Linked public storage.');
+    }
+
+    /**
+     * Composer cannot allocate a TTY for child processes on Windows. Attach
+     * Symfony's questions directly to the active console so `composer setup`
+     * remains interactive instead of silently accepting Docker defaults.
+     */
+    private function attachConsoleInput(): void
+    {
+        if (
+            ! $this->input->isInteractive()
+            || ! ($this->input instanceof StreamableInputInterface)
+            || app()->environment('testing')
+            || (function_exists('stream_isatty') && @stream_isatty(STDIN))
+        ) {
+            return;
+        }
+
+        $console = PHP_OS_FAMILY === 'Windows' ? 'CONIN$' : '/dev/tty';
+        $stream = @fopen($console, 'r');
+
+        if ($stream === false) {
+            $this->input->setInteractive(false);
+            warning('No interactive console is available. Using the database values from .env.');
+
+            return;
+        }
+
+        $this->input->setStream($stream);
+    }
+
+    /**
+     * @param  array<string, mixed>  $config
+     */
+    private function databaseConfigValue(array $config, string $key, string $default): string
+    {
+        $value = $config[$key] ?? null;
+
+        return is_string($value) || is_int($value) ? (string) $value : $default;
     }
 }

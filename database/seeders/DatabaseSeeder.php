@@ -24,13 +24,11 @@ class DatabaseSeeder extends Seeder
             WebsiteTeamSeeder::class,
 
             // Shop
-            WebsiteShopCategoriesSeeder::class,
             WebsiteShopSeeder::class,
 
             // Help center
             WebsiteRuleCategorySeeder::class,
             WebsiteRuleSeeder::class,
-            WebsiteHelperCenterCategorySeeder::class,
             WebsiteHelperCenterCategorySeeder::class,
 
             // Values

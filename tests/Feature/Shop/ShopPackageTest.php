@@ -4,10 +4,12 @@ use App\Actions\Shop\PurchaseShopPackage;
 use App\Data\RconResponse;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
+use App\Models\Shop\WebsiteShopCategory;
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
+use Database\Seeders\WebsiteShopSeeder;
 use Illuminate\Support\Collection;
 
 function makePackage(array $attributes = []): WebsiteShopPackage
@@ -41,6 +43,27 @@ test('the shop lists packages alongside articles', function () {
         ->assertOk()
         ->assertViewHas('shopPackages', fn ($packages) => $packages->contains($package))
         ->assertSee($package->name);
+});
+
+test('the seeded shop categories have local icons and render once in the Atom theme', function () {
+    installHotel();
+    $this->seed(WebsiteShopSeeder::class);
+
+    $user = User::factory()->create();
+    $categories = WebsiteShopCategory::query()
+        ->where('is_active', true)
+        ->whereHas('packages')
+        ->get();
+
+    expect($categories)->not->toBeEmpty()
+        ->and($categories->every(fn (WebsiteShopCategory $category): bool => is_string($category->icon)
+            && str_starts_with($category->icon, '/assets/images/')))->toBeTrue();
+
+    $response = $this->actingAs($user)->get(route('shop.index'))->assertOk();
+
+    foreach ($categories as $category) {
+        expect(substr_count($response->getContent(), route('shop.index', $category)))->toBe(1);
+    }
 });
 
 test('a package purchase charges the buyer and delivers its items', function () {

@@ -24,9 +24,20 @@ use Illuminate\Database\Eloquent\Model;
  */
 class WebsiteSetting extends Model
 {
+    public const OPTIONAL_INSTALLATION_KEYS = [
+        'flash_external_texts_file',
+        'seo_description',
+        'seo_keywords',
+    ];
+
     protected $guarded = [];
 
     public $timestamps = false;
+
+    public function isRequiredDuringInstallation(): bool
+    {
+        return ! in_array($this->key, self::OPTIONAL_INSTALLATION_KEYS, true);
+    }
 
     protected static function booted(): void
     {

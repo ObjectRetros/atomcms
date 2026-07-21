@@ -50,25 +50,23 @@
                 {{ __('Categories') }}
             </x-slot:title>
 
-            @foreach($categories as $category)
-                <div class="space-y-2">
-                    <a href="{{ route('shop.index') }}"
+            <div class="space-y-2">
+                <a href="{{ route('shop.index') }}"
+                   class="flex items-center gap-3 py-2 px-4 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 transition ease-in-out duration-150">
+                    <img class="max-h-[50px] max-w-[50px]" src="{{ asset('/assets/images/icons/navigation/shop.png') }}" alt="">
+
+                    {{ __('All') }}
+                </a>
+
+                @foreach($categories as $category)
+                    <a href="{{ route('shop.index', $category->slug) }}"
                        class="flex items-center gap-3 py-2 px-4 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 transition ease-in-out duration-150">
-                        <img class="max-h-[50px] max-w-[50px]" src="{{ asset('/assets/images/icons/navigation/shop.png') }}" alt="">
+                        <img class="max-h-[50px] max-w-[50px]" src="{{ $category->icon }}" alt="">
 
-                        {{ __('All') }}
+                        {{ $category->name }}
                     </a>
-
-                    @foreach($categories as $category)
-                        <a href="{{ route('shop.index', $category->slug) }}"
-                           class="flex items-center gap-3 py-2 px-4 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 transition ease-in-out duration-150">
-                            <img class="max-h-[50px] max-w-[50px]" src="{{ $category->icon }}" alt="">
-
-                            {{ $category->name }}
-                        </a>
-                    @endforeach
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </x-content.content-card>
     </div>
 

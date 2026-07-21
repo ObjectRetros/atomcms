@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Miscellaneous\WebsiteInstallation;
+use App\Models\Miscellaneous\WebsiteSetting;
 use App\Services\InstallationService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\ViewErrorBag;
 
 /**
  * Puts the hotel into a fresh, not-yet-installed state. The test database
@@ -111,6 +113,32 @@ test('a wrong installation key is rejected', function () {
         ->assertSessionHasErrors('installation_key');
 
     expect(WebsiteInstallation::first()->step)->toBe(0);
+});
+
+test('optional settings are not blocked by browser required validation', function () {
+    installHotel();
+
+    foreach (WebsiteSetting::OPTIONAL_INSTALLATION_KEYS as $key) {
+        $setting = WebsiteSetting::query()->where('key', $key)->firstOrFail();
+        $content = view('installation.partials.setting-input', [
+            'setting' => $setting,
+            'errors' => new ViewErrorBag,
+        ])->render();
+        preg_match('/<input\b[^>]*\bname="' . preg_quote($key, '/') . '"[^>]*>/i', $content, $matches);
+
+        expect($matches)->toHaveCount(1)
+            ->and($matches[0])->not->toContain(' required');
+    }
+
+    $setting = WebsiteSetting::query()->where('key', 'hotel_name')->firstOrFail();
+    $content = view('installation.partials.setting-input', [
+        'setting' => $setting,
+        'errors' => new ViewErrorBag,
+    ])->render();
+    preg_match('/<input\b[^>]*\bname="hotel_name"[^>]*>/i', $content, $matches);
+
+    expect($matches)->toHaveCount(1)
+        ->and($matches[0])->toContain(' required');
 });
 
 test('visiting a later step than reached redirects back to the current step', function () {
