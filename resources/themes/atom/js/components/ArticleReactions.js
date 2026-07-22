@@ -1,12 +1,10 @@
-import Alpine from "alpinejs";
-
 const ArticleReactions = {
     init() {
         document.addEventListener("alpine:init", () => this.startComponent());
     },
 
     startComponent() {
-        Alpine.data(
+        window.Alpine.data(
             "reactions",
             (myReactions = [], articleReactions = [], url = "") => ({
                 url,

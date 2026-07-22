@@ -13,9 +13,26 @@ import "../../../js/components/HomeManager.js";
 
 window.Alpine = Alpine;
 
-const startLivewire = () => Livewire.start();
+const livewireStartedKey = Symbol.for("atomcms.livewire.started");
+const startLivewire = () => {
+    if (window[livewireStartedKey]) {
+        return;
+    }
+
+    window[livewireStartedKey] = true;
+
+    try {
+        Livewire.start();
+    } catch (error) {
+        delete window[livewireStartedKey];
+        throw error;
+    }
+};
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startLivewire, { once: true });
+    document.addEventListener("DOMContentLoaded", startLivewire, {
+        once: true,
+    });
 } else {
     startLivewire();
 }
