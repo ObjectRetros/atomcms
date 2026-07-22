@@ -105,12 +105,12 @@ class WebsiteShopSeeder extends Seeder
     /** @var array<string, string> */
     private array $categories = [
         'Starter Packs' => '/assets/images/icons/navigation/shop.png',
-        'Currency' => '/assets/images/icons/currency.png',
-        'VIP' => '/assets/images/icons/catalog.png',
-        'Rare Collections' => '/assets/images/icons/catalog.png',
-        'Room Sets' => '/assets/images/profile/rooms.png',
+        'Currency' => '/assets/images/icons/navigation/shop.png',
+        'VIP' => '/assets/images/icons/navigation/shop.png',
+        'Rare Collections' => '/assets/images/icons/navigation/shop.png',
+        'Room Sets' => '/assets/images/icons/navigation/shop.png',
         'Seasonal' => '/assets/images/icons/navigation/shop.png',
-        'Limited Edition' => '/assets/images/icons/catalog.png',
+        'Limited Edition' => '/assets/images/icons/navigation/shop.png',
     ];
 
     /**
@@ -119,7 +119,7 @@ class WebsiteShopSeeder extends Seeder
      * @var array<string, string>
      */
     private array $inactiveCategories = [
-        'Legacy Collection' => '/assets/images/icons/catalog.png',
+        'Legacy Collection' => '/assets/images/icons/navigation/shop.png',
     ];
 
     public function run(): void
