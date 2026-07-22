@@ -140,13 +140,5 @@
                 this.toasts = this.toasts.filter((toast) => toast.id !== id);
             },
         });
-
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('toast', (payload) => {
-                const detail = Array.isArray(payload) ? payload[0] : payload;
-
-                window.toast(detail?.title ?? '', detail?.icon ?? 'success');
-            });
-        });
     })();
 </script>
