@@ -1,5 +1,5 @@
 import "./bootstrap";
-import "./external/flowbite";
+import { initFlowbite, initPopovers } from "flowbite";
 
 import { Livewire, Alpine } from "livewire";
 
@@ -36,6 +36,9 @@ if (document.readyState === "loading") {
 } else {
     startLivewire();
 }
+
+document.addEventListener("turbolinks:load", () => initFlowbite());
+document.addEventListener("reactions:loaded", () => initPopovers());
 
 // Swiper Initialization
 document.addEventListener("DOMContentLoaded", function () {
