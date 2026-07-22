@@ -10,6 +10,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Condensed&display=swap" rel="stylesheet">
 
+    @livewireStyles
+    @livewireScriptConfig
     @vite(['resources/themes/' .  setting('theme') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
 </head>
 

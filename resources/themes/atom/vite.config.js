@@ -31,6 +31,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "js/app.js"),
+            livewire: path.resolve(__dirname, "../../../vendor/livewire/livewire/dist/livewire.esm.js"),
         },
     },
     css: {

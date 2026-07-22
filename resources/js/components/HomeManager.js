@@ -1,6 +1,5 @@
-import Alpine from "alpinejs";
-
-Alpine.data('homeManager', (username, isMe) => ({
+document.addEventListener("alpine:init", () => {
+    window.Alpine.data('homeManager', (username, isMe) => ({
     username,
     isMe,
     editing: false,
@@ -829,4 +828,5 @@ Alpine.data('homeManager', (username, isMe) => ({
 
         return res.json();
     },
-}));
+    }));
+});

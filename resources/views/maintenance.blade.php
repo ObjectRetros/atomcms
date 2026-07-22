@@ -8,6 +8,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ setting('hotel_name') }} - {{ __('Maintenance') }}</title>
 
+    @livewireStyles
+    @livewireScriptConfig
     @vite(['resources/themes/' .  setting('theme') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
 </head>
 
