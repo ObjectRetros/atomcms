@@ -1,13 +1,13 @@
 <div align="center">
 <img src="https://i.imgur.com/9ePNdJ4.png" alt="Atom CMS"/>
 
-A modern, community-driven Retro CMS built with Laravel 12.x
+A modern, community-driven Retro CMS built with Laravel 13.x
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/pP6HyZedAj)
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.5+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
 
-[Live Demos](#-live-preview) • [Installation](#-installation) • [Documentation](https://github.com/atom-retros/atomcms/wiki) • [Contributing](#-contributing)
+[Live Demos](#live-preview) • [Installation](#installation) • [Documentation](https://github.com/ObjectRetros/atomcms/wiki) • [Contributing](#contributing)
 
 </div>
 
@@ -17,31 +17,33 @@ A modern, community-driven Retro CMS built with Laravel 12.x
 > Atom CMS is provided as an educational resource for learning purposes only. The creators and contributors are not responsible for any misuse or unintended consequences arising from its use. By using Atom CMS, you agree to take full responsibility for your actions and ensure compliance with all applicable laws and regulations in your jurisdiction.
 
 
-## 🎯 About
+## About
 
-Atom CMS is a modern, community-driven CMS designed to provide a flexible and user-friendly platform for retro hotel management. Built on Laravel 12.x with a focus on extensibility and ease of use, Atom CMS features a built-in theme system that allows you to use any CSS framework or create fully customized vanilla designs.
+Atom CMS is a modern, community-driven CMS designed to provide a flexible and user-friendly platform for retro hotel management. Built on Laravel 13.x with a focus on extensibility and ease of use, Atom CMS features a built-in theme system that allows you to use any CSS framework or create fully customized vanilla designs.
 
 ### Built With
 
-- **[Laravel 12.x](https://laravel.com/docs/11.x)** - Elegant PHP framework powering the backend
+- **[Laravel 13.x](https://laravel.com/docs/13.x)** - Elegant PHP framework powering the backend
+- **[Livewire 4](https://livewire.laravel.com/)** - Dynamic frontend components without leaving Blade
+- **[Filament 5](https://filamentphp.com/)** - Powering the integrated housekeeping panel
 - **[Vite](https://vitejs.dev/)** - Next-generation frontend tooling for blazing-fast builds
-- **[TailwindCSS](https://tailwindcss.com/)** - Utility-first CSS framework for responsive design
+- **[TailwindCSS 4](https://tailwindcss.com/)** - Utility-first CSS framework for responsive design
 
 ---
 
-## ✨ Features
+## Features
 
-- 🎨 **Built-in Theme System** - Use any CSS framework or create custom themes
-- 🔐 **Secure Authentication** - Laravel-powered authentication and authorization
-- 🌍 **Multi-language Support** - Built-in localization for global audiences
-- 📊 **Integrated Housekeeping** - Comprehensive admin panel
-- 🔄 **Rcon System** - Real-time server communication
-- 📱 **Responsive Design** - Mobile-first approach with TailwindCSS
-- 🚀 **Modern Stack** - Latest PHP 8.2+ features
+- **Built-in Theme System** - Use any CSS framework or create custom themes
+- **Secure Authentication** - Laravel-powered authentication and authorization
+- **Multi-language Support** - Built-in localization for global audiences
+- **Integrated Housekeeping** - Comprehensive Filament-powered admin panel
+- **Rcon System** - Real-time server communication
+- **Responsive Design** - Mobile-first approach with TailwindCSS
+- **Modern Stack** - Latest PHP 8.5+ features, PHPStan level 8 static analysis
 
 ---
 
-## 👀 Live Preview
+## Live Preview
 
 Experience Atom CMS with our official themes:
 
@@ -50,16 +52,16 @@ Experience Atom CMS with our official themes:
 
 ---
 
-## 🚧 Requirements
+## Requirements
 
 | Requirement | Version |
 |------------|---------|
-| PHP | 8.2 or higher |
+| PHP | 8.5 or higher |
 | MySQL | 8.x or higher |
 | MariaDB | 10.x or higher |
 | Composer | v2 |
 | Node.js | LTS |
-| Database | [Arcturus Morningstar](https://github.com/ObjectRetros/retro-hotel-files/blob/main/arcturus-3-5-3-database.sql) |
+| Database | Arcturus Morningstar 3.5.5 (bundled, imported by the installer) |
 
 ### Required PHP Extensions
 
@@ -80,7 +82,7 @@ extension=intl
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Quick Setup (Recommended)
 
@@ -124,9 +126,9 @@ copy .env.example .env
 composer install
 npm install
 
-# Set up database and generate key
-php artisan migrate --seed
+# Generate key and set up database
 php artisan key:generate
+php artisan migrate --seed
 
 # Build assets
 npm run build:atom
@@ -180,9 +182,9 @@ cp .env.example .env
 composer install
 npm install
 
-# Set up database and generate key
-php artisan migrate --seed
+# Generate key and set up database
 php artisan key:generate
+php artisan migrate --seed
 
 # Build assets
 npm run build:atom
@@ -200,7 +202,7 @@ chmod -R 775 bootstrap/cache
 
 #### NGINX Configuration
 
-For NGINX setup, refer to Laravel's [deployment documentation](https://laravel.com/docs/12.x/deployment#nginx).
+For NGINX setup, refer to Laravel's [deployment documentation](https://laravel.com/docs/13.x/deployment#nginx).
 
 #### Complete Linux Tutorial
 
@@ -210,7 +212,7 @@ Need help setting up your retro hotel on Linux? Follow our comprehensive Ubuntu 
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Production Environment
 
@@ -228,7 +230,7 @@ Protect your site from bots:
 
 1. Visit [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/)
 2. Sign in and select your site
-3. Copy the site and secret keys to your `.env` file
+3. Copy the site and secret keys to `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in your `.env` file
 
 ### Important: Disable Rocket Loader
 
@@ -248,7 +250,7 @@ Set `RENAME_COLLIDING_TABLES=true` in your `.env` file. Atom CMS will automatica
 
 ---
 
-## 🧪 Testing
+## Testing
 
 Atom CMS includes a growing test suite using Pest.
 
@@ -264,24 +266,24 @@ php artisan test
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-For detailed documentation, addons, tips, and tricks, visit our [official wiki](https://github.com/atom-retros/atomcms/wiki).
+For detailed documentation, addons, tips, and tricks, visit our [official wiki](https://github.com/ObjectRetros/atomcms/wiki).
 
 ### Learning Laravel
 
 New to Laravel? These free resources will help:
 - [Official bootcamp & course](https://learn.laravel.com) - Official Laravel bootcamp & course
-- [Laravel 11 from Scratch](https://laracasts.com/series/30-days-to-learn-laravel-11) - Official Laracasts course
+- [Laracasts](https://laracasts.com) - Video courses covering Laravel, Livewire, testing and more
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! To maintain code quality and streamline reviews, please read our [contribution guidelines](https://github.com/ObjectRetros/atomcms/wiki/0.-Contribution-guidelines) before submitting a pull request.
 
 ---
 
-## 🏆 Credits
+## Credits
 
 Atom CMS is made possible by our amazing community:
 
@@ -319,7 +321,7 @@ Atom CMS is made possible by our amazing community:
 
 <div align="center">
 
-**[⬆ Back to Top](#atom-cms)**
+**[⬆ Back to Top](#readme)**
 
 Made with ❤️ by the Atom CMS Community
 
