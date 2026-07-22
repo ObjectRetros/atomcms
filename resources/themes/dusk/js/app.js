@@ -1,8 +1,7 @@
 import "./bootstrap";
 import "./external/flowbite";
 
-import Alpine from "alpinejs";
-import Focus from "@alpinejs/focus";
+import { Livewire, Alpine } from "livewire";
 
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
@@ -12,8 +11,14 @@ import "swiper/css/pagination";
 
 import "../../../js/components/HomeManager.js";
 
-Alpine.plugin(Focus);
-Alpine.start();
+window.Alpine = Alpine;
+
+const startLivewire = () => Livewire.start();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startLivewire, { once: true });
+} else {
+    startLivewire();
+}
 
 // Swiper Initialization
 document.addEventListener("DOMContentLoaded", function () {

@@ -19,6 +19,8 @@
     <script src="{{ asset('assets/js/tippy-bundle.umd.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('assets/css/scale.min.css') }}"/>
 
+    @livewireStyles
+    @livewireScriptConfig
     @vite(['resources/themes/' .  setting('theme', 'atom') . '/css/app.css', 'resources/themes/' .  setting('theme') . '/js/app.js'], 'build')
     @stack('scripts')
     <x-turnstile.scripts />
@@ -103,7 +105,6 @@
     @endif
 
     <script defer src="{{ asset('assets/js/alpine-ui.js') }}"></script>
-    <script defer src="{{ asset('assets/js/alpine-focus.js') }}"></script>
 
     @stack('javascript')
     </body>
