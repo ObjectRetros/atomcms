@@ -30,7 +30,11 @@ class WebsiteSetting extends Model
         'seo_keywords',
     ];
 
-    protected $guarded = [];
+    protected $fillable = [
+        'key',
+        'value',
+        'comment',
+    ];
 
     public $timestamps = false;
 

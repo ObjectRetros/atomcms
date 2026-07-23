@@ -5,17 +5,33 @@ namespace App\Models\Home;
 use App\Enums\HomeItemType;
 use App\Models\User;
 use App\Services\Home\HomeService;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
+ * @property int $user_id
+ * @property int $home_item_id
+ * @property int $x
+ * @property int $y
+ * @property int $z
+ * @property bool $placed
+ * @property bool $is_reversed
+ * @property string|null $extra_data
+ * @property string|null $theme
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read HomeItem|null $homeItem
+ * @property-read User|null $user
+ *
  * Transient, view-only attributes built at render time. They are set on the
  * model so they serialise to the home page JSON, but are never persisted as
  * columns:
- *
  * @property string|null $parsed_data
  * @property string|null $content
  * @property string|null $widget_type
@@ -53,7 +69,8 @@ class UserHomeItem extends Model
     }
 
     /** @param Builder<static> $query */
-    public function scopeDefaultRelationships(Builder $query, bool $completeLoading = false): void
+    #[Scope]
+    protected function defaultRelationships(Builder $query, bool $completeLoading = false): void
     {
         $relation = $completeLoading ? 'homeItem' : 'homeItem:id,type,name,image';
 

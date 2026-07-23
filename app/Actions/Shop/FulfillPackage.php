@@ -106,7 +106,7 @@ class FulfillPackage
             throw self::misconfigured($item);
         }
 
-        $user->update(['rank' => $rank]);
+        $user->forceFill(['rank' => $rank])->save();
     }
 
     private static function misconfigured(WebsiteShopItem $item): ShopPurchaseException

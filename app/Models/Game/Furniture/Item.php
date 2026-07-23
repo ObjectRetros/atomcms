@@ -2,7 +2,7 @@
 
 namespace App\Models\Game\Furniture;
 
-use App\Models\Game\Room;
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

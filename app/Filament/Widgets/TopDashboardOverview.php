@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\ItemDefinition;
+use App\Models\Game\Furniture\ItemBase;
 use App\Models\Miscellaneous\CameraWeb;
 use App\Models\Room;
 use App\Models\User;
@@ -25,7 +25,7 @@ class TopDashboardOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-user-group', IconPosition::Before)
                 ->color('success'),
 
-            Stat::make(__('filament::resources.stats.furniture_count.title'), Number::format(ItemDefinition::count(), 0, 1, app()->getLocale()))
+            Stat::make(__('filament::resources.stats.furniture_count.title'), Number::format(ItemBase::count(), 0, 1, app()->getLocale()))
                 ->description(__('filament::resources.stats.furniture_count.description'))
                 ->descriptionIcon('heroicon-m-cube', IconPosition::Before)
                 ->chart([20, 20])

@@ -30,4 +30,6 @@ class EmulatorText extends Model
     protected $primaryKey = 'key';
 
     public $incrementing = false;
+
+    protected $keyType = 'string';
 }

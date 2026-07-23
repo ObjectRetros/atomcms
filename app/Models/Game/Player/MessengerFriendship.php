@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MessengerFriendship extends Model
 {
+    public $timestamps = false;
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {

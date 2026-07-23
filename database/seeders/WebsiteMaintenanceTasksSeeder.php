@@ -17,7 +17,7 @@ class WebsiteMaintenanceTasksSeeder extends Seeder
         $user = User::where('rank', $permission->id)->first();
 
         if ($user === null) {
-            $user = User::create([
+            $user = User::query()->forceCreate([
                 'username' => 'Admin',
                 'mail' => 'admin@example.com',
                 'password' => Hash::make(Str::password()),

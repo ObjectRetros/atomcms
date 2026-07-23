@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Models\Game\Furniture\Item;
+use App\Models\Game\Guild\Guild;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -55,6 +58,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $jukebox_active
  * @property string $hidewired
  * @property string $is_forsale
+ * @property-read Guild|null $guild
+ * @property-read User|null $owner
  * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Room newModelQuery()
@@ -125,6 +130,18 @@ class Room extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id', 'id');
+    }
+
+    /** @return HasOne<Guild, $this> */
+    public function guild(): HasOne
+    {
+        return $this->hasOne(Guild::class, 'room_id');
+    }
+
     /** @return HasMany<Item, $this> */
     public function items(): HasMany
     {
@@ -133,30 +150,32 @@ class Room extends Model
 
     public function replicateForUser(User $user): self
     {
-        $replicatedRoom = $this->replicate();
+        return DB::transaction(function () use ($user): self {
+            $replicatedRoom = $this->replicate();
 
-        $replicatedRoom->owner_id = $user->id;
-        $replicatedRoom->owner_name = $user->username;
-        $replicatedRoom->score = 0;
-        $replicatedRoom->guild_id = 0;
-        $replicatedRoom->is_public = '0';
-        $replicatedRoom->is_staff_picked = '0';
+            $replicatedRoom->owner_id = $user->id;
+            $replicatedRoom->owner_name = $user->username;
+            $replicatedRoom->score = 0;
+            $replicatedRoom->guild_id = 0;
+            $replicatedRoom->is_public = '0';
+            $replicatedRoom->is_staff_picked = '0';
 
-        $replicatedRoom->save();
+            $replicatedRoom->save();
 
-        $items = [];
+            $items = [];
 
-        foreach ($this->items as $item) {
-            $replicatedItem = $item->replicate();
+            foreach ($this->items as $item) {
+                $replicatedItem = $item->replicate();
 
-            $replicatedItem->user_id = $user->id;
-            $replicatedItem->room_id = $replicatedRoom->id;
+                $replicatedItem->user_id = $user->id;
+                $replicatedItem->room_id = $replicatedRoom->id;
 
-            $items[] = $replicatedItem;
-        }
+                $items[] = $replicatedItem;
+            }
 
-        $replicatedRoom->items()->saveMany($items);
+            $replicatedRoom->items()->saveMany($items);
 
-        return $replicatedRoom;
+            return $replicatedRoom;
+        });
     }
 }

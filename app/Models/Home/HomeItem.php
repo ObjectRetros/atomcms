@@ -4,16 +4,33 @@ namespace App\Models\Home;
 
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
+ * @property int|null $home_category_id
  * @property HomeItemType $type
+ * @property int $order
+ * @property string $name
+ * @property string $image
+ * @property int $price
  * @property CurrencyTypes $currency_type
+ * @property bool $enabled
+ * @property int|null $limit
+ * @property int $total_bought
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read HomeCategory|null $homeCategory
+ * @property-read Collection<int, UserHomeItem> $userHomeItems
+ * @property-read int|null $user_home_items_count
  */
 class HomeItem extends Model
 {
@@ -55,7 +72,8 @@ class HomeItem extends Model
     }
 
     /** @param Builder<static> $query */
-    public function scopeEnabled(Builder $query): void
+    #[Scope]
+    protected function enabled(Builder $query): void
     {
         $query->where('enabled', true);
     }

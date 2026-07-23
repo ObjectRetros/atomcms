@@ -57,3 +57,15 @@ test('badges paginate as normalised entries, newest first', function (BadgeRepos
         ->and($page->items()[0])->toBeInstanceOf(OwnedBadge::class)
         ->and($page->items()[0]->badge_code)->toBe('ACH_Newer');
 })->with('badge drivers');
+
+test('deleting a badge model removes only that row', function () {
+    $user = User::factory()->create();
+
+    $keep = $user->badges()->create(['slot_id' => 0, 'badge_code' => 'ACH_Keep1']);
+    $delete = $user->badges()->create(['slot_id' => 0, 'badge_code' => 'ACH_Delete1']);
+
+    $delete->delete();
+
+    expect($user->badges()->pluck('badge_code')->all())->toBe(['ACH_Keep1'])
+        ->and($keep->fresh())->not->toBeNull();
+});

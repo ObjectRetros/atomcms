@@ -64,10 +64,13 @@ class WebsiteStaffApplications extends Model
         'rejected_at',
     ];
 
-    protected $casts = [
-        'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
+        ];
+    }
 
     /** @return BelongsTo<User, $this> */
     public function approver(): BelongsTo

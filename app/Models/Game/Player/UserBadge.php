@@ -27,8 +27,6 @@ class UserBadge extends Model
 {
     protected $table = 'users_badges';
 
-    protected $primaryKey = 'user_id';
-
     protected $guarded = [];
 
     public $timestamps = false;
