@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Articles;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ToggleReactionFormRequest;
 use App\Models\Articles\WebsiteArticle;
+use App\Models\User;
 use App\Services\Articles\ArticleService;
 use App\Services\Articles\ReactionService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -30,26 +31,23 @@ class ArticleController extends Controller
 
     public function show(WebsiteArticle $article): View
     {
-        $article->load(['user' => function ($query) {
-            $query->select('id', 'username', 'look', 'motto', 'rank', 'hidden_staff', 'online')
-                ->with('permission:id,rank_name,staff_background');
-        }]);
-
-        $reactions = $article->reactions()
-            ->with('user:id,username')
-            ->get();
+        $user = Auth::user();
 
         return view('community.article', [
-            'article' => $article,
-            'otherArticles' => WebsiteArticle::whereNot('slug', $article->slug)->latest('id')->take(15)->get(),
-            'myReactions' => Auth::check() ? $reactions->where('user_id', Auth::id())->pluck('reaction') : [],
-            'articleReactions' => $reactions->groupBy('reaction', true),
+            'article' => $this->articlesService->loadForDisplay($article),
+            'otherArticles' => $this->articlesService->otherArticles($article),
+            'myReactions' => $user instanceof User ? $this->reactionService->reactionsFor($article, $user) : collect(),
+            'articleReactions' => $this->reactionService->countsFor($article),
         ]);
     }
 
-    public function toggleReaction(WebsiteArticle $article, Request $request): JsonResponse
+    public function toggleReaction(WebsiteArticle $article, ToggleReactionFormRequest $request): JsonResponse
     {
-        $response = $this->reactionService->toggleReaction($article, AuthenticatedUser::from($request), $request);
+        $response = $this->reactionService->toggleReaction(
+            $article,
+            AuthenticatedUser::from($request),
+            $request->validated('reaction'),
+        );
 
         return response()->json($response);
     }

@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleReaction;
+use App\Models\User;
+use App\Services\Articles\ReactionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -36,37 +38,31 @@ class ArticleReactions extends Component
         $this->showModal = false;
     }
 
-    public function toggleReaction(string $reaction): void
+    public function toggleReaction(ReactionService $reactions, string $reaction): void
     {
-        if (! Auth::check()) {
-            return;
-        }
-
         if (! in_array($reaction, config('habbo.reactions'), true)) {
             return;
         }
 
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return;
         }
 
-        WebsiteArticleReaction::toggleFor($this->article, $user, $reaction);
+        $reactions->toggleReaction($this->article, $user, $reaction);
 
         $this->dispatch('reactions:loaded');
     }
 
     public function render(): View
     {
+        // The unique (user_id, article_id, reaction) index guarantees one row
+        // per user and reaction, so no PHP-side dedupe is needed.
+        /** @var Collection<int, WebsiteArticleReaction> $reactions */
         $reactions = $this->article->reactions()
             ->with('user:id,username')
             ->get();
-
-        /** @var Collection<int, WebsiteArticleReaction> $reactions */
-        $reactions = $reactions->unique(function ($reaction) {
-            return $reaction->reaction . '-' . $reaction->user_id;
-        })->values();
 
         $groupedReactions = $reactions->groupBy('reaction', true);
 
@@ -83,7 +79,7 @@ class ArticleReactions extends Component
         })->values();
 
         $myReactions = Auth::check()
-            ? $reactions->where('user_id', Auth::id())->pluck('reaction')->unique()->values()
+            ? $reactions->where('user_id', Auth::id())->pluck('reaction')->values()
             : collect();
 
         $usedReactionNames = $articleReactions->pluck('name')->values();

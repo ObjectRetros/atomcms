@@ -24,4 +24,28 @@ class ArticleService
     {
         return WebsiteArticle::where('slug', '=', $slug)->firstOrFail();
     }
+
+    /**
+     * Load the relations the article page renders.
+     */
+    public function loadForDisplay(WebsiteArticle $article): WebsiteArticle
+    {
+        return $article->load(['user' => function ($query) {
+            $query->select('id', 'username', 'look', 'motto', 'rank', 'hidden_staff', 'online')
+                ->with('permission:id,rank_name,staff_background');
+        }]);
+    }
+
+    /**
+     * The latest articles shown in the sidebar next to the open article.
+     *
+     * @return Collection<int, WebsiteArticle>
+     */
+    public function otherArticles(WebsiteArticle $article, int $limit = 15): Collection
+    {
+        return WebsiteArticle::whereNot('slug', $article->slug)
+            ->latest('id')
+            ->take($limit)
+            ->get();
+    }
 }
