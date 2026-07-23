@@ -4,8 +4,7 @@ use App\Actions\Fortify\Controllers\TwoFactorAuthenticatedSessionController;
 use App\Http\Controllers\Articles\ArticleController;
 use App\Http\Controllers\Articles\WebsiteArticleCommentsController;
 use App\Http\Controllers\Badge\BadgeController;
-use App\Http\Controllers\Client\FlashController;
-use App\Http\Controllers\Client\NitroController;
+use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Community\LeaderboardController;
 use App\Http\Controllers\Community\PhotosController;
 use App\Http\Controllers\Community\Staff\StaffApplicationsController;
@@ -224,8 +223,8 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {
-            Route::get('/nitro', NitroController::class)->name('nitro-client');
-            Route::get('/flash', FlashController::class)->name('flash-client');
+            Route::get('/nitro', ClientController::class)->name('nitro-client')->defaults('client', 'nitro');
+            Route::get('/flash', ClientController::class)->name('flash-client')->defaults('client', 'flash');
         });
 
         // Logo generator

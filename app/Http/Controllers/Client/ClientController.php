@@ -7,9 +7,13 @@ use App\Support\AuthenticatedUser;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class FlashController extends Controller
+class ClientController extends Controller
 {
-    public function __invoke(Request $request): View
+    /**
+     * Serve a game client. The route supplies which one via a default for the
+     * "client" parameter (client.nitro or client.flash).
+     */
+    public function __invoke(Request $request, string $client): View
     {
         $user = AuthenticatedUser::from($request);
 
@@ -17,7 +21,7 @@ class FlashController extends Controller
             'ip_current' => $request->ip(),
         ]);
 
-        return view('client.flash', [
+        return view("client.{$client}", [
             'sso' => $user->ssoTicket(),
         ]);
     }
