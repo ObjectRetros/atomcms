@@ -14,7 +14,7 @@ use App\Filament\Resources\User\Users\RelationManagers\ChatLogRelationManager;
 use App\Filament\Resources\User\Users\RelationManagers\SettingsRelationManager;
 use App\Filament\Tables\Columns\UserAvatarColumn;
 use App\Filament\Traits\TranslatableResource;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
 use Filament\Actions\EditAction;

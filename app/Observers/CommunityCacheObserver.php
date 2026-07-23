@@ -2,7 +2,6 @@
 
 namespace App\Observers;
 
-use App\Models\Community\Staff\WebsiteTeam as StaffWebsiteTeam;
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
@@ -71,7 +70,7 @@ class CommunityCacheObserver
             return;
         }
 
-        if ($model instanceof StaffWebsiteTeam || $model instanceof WebsiteTeam) {
+        if ($model instanceof WebsiteTeam) {
             CommunityCache::forgetTeams();
         }
     }
