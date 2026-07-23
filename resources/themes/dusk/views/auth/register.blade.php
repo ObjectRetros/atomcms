@@ -5,7 +5,7 @@
     <div class="col-span-12 md:col-span-6 bg-gray-900/50 rounded-xl flex flex-col py-6 px-8 text-white self-start">
         <h2 class="text-2xl">{{ __('Create a new account') }}</h2>
 
-        <form action="{{ route('register') }}" method="POST">
+        <form action="{{ route('register.store') }}" method="POST">
             @csrf
 
            <div class="grid grid-cols-12 gap-3 mt-4">
