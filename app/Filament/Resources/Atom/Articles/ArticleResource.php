@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\Atom\Articles;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Atom\Articles\Pages\EditArticle;
 use App\Filament\Resources\Atom\Articles\Pages\ListArticles;
 use App\Filament\Resources\Atom\Articles\Pages\ViewArticle;
 use App\Filament\Resources\Atom\Articles\RelationManagers\TagsRelationManager;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Articles\WebsiteArticle;
-use App\Support\AuthenticatedUser;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -19,7 +18,6 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -92,9 +90,6 @@ class ArticleResource extends Resource
                                 ->label(__('filament::resources.inputs.content'))
                                 ->required()
                                 ->columnSpan('full'),
-
-                            Hidden::make('user_id')
-                                ->default(fn (): int => AuthenticatedUser::current()->id),
                         ]),
 
                     Tab::make(__('filament::resources.tabs.Configurations'))
@@ -127,7 +122,6 @@ class ArticleResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->poll('60s')
             ->columns(static::getTable())
             ->filters([
                 TrashedFilter::make(),
