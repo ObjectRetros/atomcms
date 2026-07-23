@@ -4,6 +4,7 @@ namespace App\Filament\Resources\User\Users;
 
 use App\Emulator\Data\Feature;
 use App\Emulator\Emulator;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\User\Users\Pages\CreateUser;
 use App\Filament\Resources\User\Users\Pages\EditUser;
 use App\Filament\Resources\User\Users\Pages\ListUsers;
@@ -13,7 +14,6 @@ use App\Filament\Resources\User\Users\RelationManagers\ChatLogPrivateRelationMan
 use App\Filament\Resources\User\Users\RelationManagers\ChatLogRelationManager;
 use App\Filament\Resources\User\Users\RelationManagers\SettingsRelationManager;
 use App\Filament\Tables\Columns\UserAvatarColumn;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Community\Staff\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;

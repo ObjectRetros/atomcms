@@ -10,6 +10,7 @@ return [
         'User Management' => 'User Management',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Shop',
+        'Shop Management' => 'Shopverwaltung',
         'Logs' => 'Logs'
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Webkamera',
+            'label' => 'Foto',
+            'plural' => 'Fotos',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Gezeichnete Badges',
+            'label' => 'Gezeichnetes Badge',
+            'plural' => 'Gezeichnete Badges',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Badge-Editor',
+            'label' => 'Badge-Text',
+            'plural' => 'Badge-Texte',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Teambewerbungen',
+            'label' => 'Bewerbung',
+            'plural' => 'Bewerbungen',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Offene Stellen',
+            'label' => 'Offene Stelle',
+            'plural' => 'Offene Stellen',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Werbebilder',
+            'label' => 'Werbeanzeige',
+            'plural' => 'Werbeanzeigen',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Artikel verwalten',
+            'label' => 'Artikel',
+            'plural' => 'Artikel',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Pakete verwalten',
+            'label' => 'Paket',
+            'plural' => 'Pakete',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Katalogseiten',
+            'label' => 'Katalogseite',
+            'plural' => 'Katalogseiten',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Katalog-Editor',
+            'label' => 'Katalogartikel',
+            'plural' => 'Katalogartikel',
         ],
 
         // Relations

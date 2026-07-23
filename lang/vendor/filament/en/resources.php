@@ -10,6 +10,7 @@ return [
         'User Management' => 'User Management',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Shop',
+        'Shop Management' => 'Shop Management',
         'Logs' => 'Logs'
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Web Camera',
+            'label' => 'Photo',
+            'plural' => 'Photos',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Draw Badges',
+            'label' => 'Drawn Badge',
+            'plural' => 'Drawn Badges',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Badge Editor',
+            'label' => 'Badge Text',
+            'plural' => 'Badge Texts',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Staff Applications',
+            'label' => 'Staff Application',
+            'plural' => 'Staff Applications',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Open Positions',
+            'label' => 'Open Position',
+            'plural' => 'Open Positions',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'ADS Images',
+            'label' => 'Advertisement',
+            'plural' => 'Advertisements',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Manage Items',
+            'label' => 'Item',
+            'plural' => 'Items',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Manage Packages',
+            'label' => 'Package',
+            'plural' => 'Packages',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Catalog Pages',
+            'label' => 'Catalog Page',
+            'plural' => 'Catalog Pages',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Catalog Editor',
+            'label' => 'Catalog Item',
+            'plural' => 'Catalog Items',
         ],
 
         // Relations

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Shop\WebsiteShopCategories;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\Shop\WebsiteShopCategory;
 use BackedEnum;
 use Filament\Actions;
@@ -16,9 +17,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class WebsiteShopCategoryResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteShopCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -30,6 +34,8 @@ class WebsiteShopCategoryResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $slug = 'shop/categories';
+
+    public static string $translateIdentifier = 'shop-categories';
 
     public static function form(Schema $schema): Schema
     {
@@ -143,7 +149,11 @@ class WebsiteShopCategoryResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $activeCategories = static::getModel()::where('is_active', true)->count();
+        $activeCategories = Cache::remember(
+            'housekeeping.shop-categories.active-count',
+            300,
+            fn (): int => static::getModel()::where('is_active', true)->count(),
+        );
 
         return $activeCategories > 0 ? (string) $activeCategories : null;
     }

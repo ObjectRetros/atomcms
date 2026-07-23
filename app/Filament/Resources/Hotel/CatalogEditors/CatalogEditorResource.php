@@ -4,16 +4,15 @@ namespace App\Filament\Resources\Hotel\CatalogEditors;
 
 use App\Emulator\Data\Feature;
 use App\Filament\Concerns\RequiresEmulatorFeature;
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\Game\Furniture\CatalogPage;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 
 class CatalogEditorResource extends Resource
 {
     use RequiresEmulatorFeature;
+    use TranslatableResource;
 
     protected static function requiredEmulatorFeature(): Feature
     {
@@ -26,22 +25,7 @@ class CatalogEditorResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
-    protected static ?string $navigationLabel = 'Catalog Editor';
-
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('id')->label('ID')->sortable(),
-                TextColumn::make('caption')->label('Page Name')->searchable(),
-                TextColumn::make('parent_id')->label('Parent ID'),
-                TextColumn::make('order_num')->label('Order'),
-                IconColumn::make('visible')->boolean()->label('Visible'),
-                IconColumn::make('enabled')->boolean()->label('Enabled'),
-            ])
-            ->recordActions([])
-            ->toolbarActions([]);
-    }
+    public static string $translateIdentifier = 'catalog-editor';
 
     public static function form(Schema $schema): Schema
     {

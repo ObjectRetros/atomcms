@@ -10,6 +10,7 @@ return [
         'User Management' => 'Gestion des utilisateurs',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Boutique',
+        'Shop Management' => 'Gestion de la boutique',
         'Logs' => 'Logs',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Caméra web',
+            'label' => 'Photo',
+            'plural' => 'Photos',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Badges dessinés',
+            'label' => 'Badge dessiné',
+            'plural' => 'Badges dessinés',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Éditeur de badges',
+            'label' => 'Texte de badge',
+            'plural' => 'Textes de badges',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Candidatures staff',
+            'label' => 'Candidature',
+            'plural' => 'Candidatures',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Postes à pourvoir',
+            'label' => 'Poste à pourvoir',
+            'plural' => 'Postes à pourvoir',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Images publicitaires',
+            'label' => 'Publicité',
+            'plural' => 'Publicités',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Gérer les articles',
+            'label' => 'Article',
+            'plural' => 'Articles',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Gérer les packs',
+            'label' => 'Pack',
+            'plural' => 'Packs',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Pages du catalogue',
+            'label' => 'Page du catalogue',
+            'plural' => 'Pages du catalogue',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Éditeur de catalogue',
+            'label' => 'Article du catalogue',
+            'plural' => 'Articles du catalogue',
         ],
 
         // Relations

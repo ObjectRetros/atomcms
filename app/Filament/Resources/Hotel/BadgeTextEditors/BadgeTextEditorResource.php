@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hotel\BadgeTextEditors;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\CreateBadgeTextEditor;
 use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\EditBadgeTextEditor;
 use App\Filament\Resources\Hotel\BadgeTextEditors\Pages\ListBadgeTextEditors;
@@ -20,17 +21,17 @@ use Illuminate\Support\Str;
 
 class BadgeTextEditorResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteBadge::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
 
-    protected static ?string $navigationLabel = 'Badge Editor';
-
-    protected static ?string $modelLabel = 'Badge Text';
-
     protected static ?string $slug = 'hotel/badge-text-editor';
+
+    public static string $translateIdentifier = 'badge-text-editor';
 
     public static function form(Schema $schema): Schema
     {
@@ -38,6 +39,7 @@ class BadgeTextEditorResource extends Resource
             ->components([
                 TextInput::make('badge_key')
                     ->required()
+                    ->unique(ignoreRecord: true)
                     ->label('Badge Key - Expl. ATOM101')
                     ->placeholder('This is the badge code'),
                 TextInput::make('badge_name')

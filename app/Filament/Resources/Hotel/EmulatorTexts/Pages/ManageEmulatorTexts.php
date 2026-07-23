@@ -10,15 +10,10 @@ class ManageEmulatorTexts extends ManageRecords
 {
     protected static string $resource = EmulatorTextResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make('create'),
         ];
-    }
-
-    public function getPrimaryKey(): string
-    {
-        return 'key';
     }
 }

@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Hotel\WordFilters;
 
 use App\Emulator\Data\Feature;
 use App\Filament\Concerns\RequiresEmulatorFeature;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\WordFilters\Pages\ManageWordFilters;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Wordfilter;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;

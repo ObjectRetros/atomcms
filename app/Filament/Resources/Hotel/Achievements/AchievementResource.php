@@ -4,12 +4,12 @@ namespace App\Filament\Resources\Hotel\Achievements;
 
 use App\Enums\AchievementCategory;
 use App\Enums\CurrencyTypes;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\Achievements\Pages\CreateAchievement;
 use App\Filament\Resources\Hotel\Achievements\Pages\EditAchievement;
 use App\Filament\Resources\Hotel\Achievements\Pages\ListAchievements;
 use App\Filament\Resources\Hotel\Achievements\Pages\ViewAchievement;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Achievement;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;

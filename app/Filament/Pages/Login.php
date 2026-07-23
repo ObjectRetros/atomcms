@@ -5,7 +5,6 @@ namespace App\Filament\Pages;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Notifications\Notification;
@@ -15,8 +14,6 @@ use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Auth\Pages\Login
 {
-    public string $username = '';
-
     public function authenticate(): ?LoginResponse
     {
         try {
@@ -78,23 +75,6 @@ class Login extends \Filament\Auth\Pages\Login
         ]);
 
         return is_string($body) ? $body : null;
-    }
-
-    /** @return array<int, Component> */
-    protected function getFormSchema(): array
-    {
-        return [
-            TextInput::make('username')
-                ->label(__('filament::login.fields.username.label'))
-                ->required()
-                ->autocomplete(),
-            TextInput::make('password')
-                ->label(__('filament::login.fields.password.label'))
-                ->password()
-                ->required(),
-            Checkbox::make('remember')
-                ->label(__('filament::login.fields.remember.label')),
-        ];
     }
 
     protected function getEmailFormComponent(): Component
