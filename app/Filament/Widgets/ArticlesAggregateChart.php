@@ -7,10 +7,13 @@ use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Cache;
 
 class ArticlesAggregateChart extends ChartWidget
 {
     protected static ?int $sort = 2;
+
+    protected ?string $pollingInterval = null;
 
     protected ?string $maxHeight = '300px';
 
@@ -28,13 +31,17 @@ class ArticlesAggregateChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Trend::model(WebsiteArticle::class)
-            ->between(
-                start: now()->startOfMonth(),
-                end: now()->endOfMonth(),
-            )
-            ->perDay()
-            ->count();
+        $data = Cache::remember(
+            'housekeeping.dashboard.articles-trend',
+            300,
+            fn () => Trend::model(WebsiteArticle::class)
+                ->between(
+                    start: now()->startOfMonth(),
+                    end: now()->endOfMonth(),
+                )
+                ->perDay()
+                ->count(),
+        );
 
         $label = __('filament::resources.stats.articles_chart.label');
 
