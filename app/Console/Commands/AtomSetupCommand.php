@@ -52,7 +52,7 @@ class AtomSetupCommand extends Command
             $this->progressInfo($step);
             $step++;
 
-            $startDuckets = $this->ask('Enter the amount of credits new users should start with: (default is 5000)');
+            $startDuckets = $this->ask('Enter the amount of duckets new users should start with: (default is 5000)');
             WebsiteSetting::where('key', '=', 'start_duckets')->update([
                 'value' => empty($startDuckets) ? '5000' : $startDuckets,
             ]);
