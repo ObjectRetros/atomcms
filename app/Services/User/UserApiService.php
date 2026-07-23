@@ -3,6 +3,7 @@
 namespace App\Services\User;
 
 use App\Models\User;
+use App\Support\Sql;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -36,5 +37,24 @@ class UserApiService
     public function onlineUserCount(): int
     {
         return User::where('online', '1')->count();
+    }
+
+    /**
+     * Prefix-search usernames, escaping LIKE wildcards so user input cannot
+     * widen the match.
+     *
+     * @return list<array{username: string, look: string|null}>
+     */
+    public function searchUsers(string $query, int $limit = 8): array
+    {
+        return User::where('username', 'like', Sql::escapeLike($query) . '%')
+            ->limit($limit)
+            ->get(['username', 'look'])
+            ->map(fn (User $user): array => [
+                'username' => $user->username,
+                'look' => $user->look,
+            ])
+            ->values()
+            ->all();
     }
 }

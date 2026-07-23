@@ -4,6 +4,7 @@ namespace App\Services\Catalog;
 
 use App\Models\Game\Furniture\CatalogItem;
 use App\Models\Game\Furniture\CatalogPage;
+use App\Support\Sql;
 use Illuminate\Support\Collection;
 
 class CatalogTreeService
@@ -61,7 +62,7 @@ class CatalogTreeService
     /** @return Collection<int, CatalogPage> */
     public function searchPages(string $needle): Collection
     {
-        $like = '%' . $this->escapeLike($needle) . '%';
+        $like = '%' . Sql::escapeLike($needle) . '%';
 
         return CatalogPage::query()
             ->where(function ($q) use ($like) {
@@ -76,7 +77,7 @@ class CatalogTreeService
     /** @return Collection<int, CatalogItem> */
     public function searchItems(string $needle): Collection
     {
-        $like = '%' . $this->escapeLike($needle) . '%';
+        $like = '%' . Sql::escapeLike($needle) . '%';
         $isNumeric = ctype_digit($needle);
 
         return CatalogItem::query()
@@ -89,10 +90,5 @@ class CatalogTreeService
             ->orderBy('catalog_name')
             ->limit(200)
             ->get();
-    }
-
-    private function escapeLike(string $value): string
-    {
-        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 }

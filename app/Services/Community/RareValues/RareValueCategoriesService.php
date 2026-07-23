@@ -3,6 +3,7 @@
 namespace App\Services\Community\RareValues;
 
 use App\Models\Community\RareValue\WebsiteRareValueCategory;
+use App\Support\Sql;
 use Illuminate\Database\Eloquent\Collection;
 
 class RareValueCategoriesService
@@ -22,11 +23,13 @@ class RareValueCategoriesService
     /** @return Collection<int, WebsiteRareValueCategory> */
     public function searchCategories(string $searchTerm): Collection
     {
-        return WebsiteRareValueCategory::orderBy('priority')->whereHas('furniture', function ($query) use ($searchTerm) {
-            $query->where('name', 'like', '%' . $searchTerm . '%');
+        $like = '%' . Sql::escapeLike($searchTerm) . '%';
+
+        return WebsiteRareValueCategory::orderBy('priority')->whereHas('furniture', function ($query) use ($like) {
+            $query->where('name', 'like', $like);
         })
-            ->with(['furniture' => function ($query) use ($searchTerm) {
-                $query->where('name', 'like', '%' . $searchTerm . '%');
+            ->with(['furniture' => function ($query) use ($like) {
+                $query->where('name', 'like', $like);
             }])
             ->get();
     }
