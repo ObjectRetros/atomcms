@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\AchievementCategory;
 use App\Models\Compositions\HasBadge;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
  * @property string $name
- * @property string $category
+ * @property AchievementCategory $category
  * @property int $level
  * @property int $reward_amount
  * @property int $reward_type
@@ -33,7 +34,23 @@ class Achievement extends Model implements HasBadge
 {
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'category',
+        'level',
+        'reward_amount',
+        'reward_type',
+        'points',
+        'progress_needed',
+        'visible',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'category' => AchievementCategory::class,
+        ];
+    }
 
     public function getBadgePath(): string
     {
