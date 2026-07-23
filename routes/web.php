@@ -48,7 +48,7 @@ Route::get('/language/{locale}', LocaleController::class)->name('language.select
 // Installation routes
 Route::prefix('installation')->controller(InstallationController::class)->group(function () {
     Route::get('/', 'index')->name('installation.index');
-    Route::get('/step/{step}', 'showStep')->name('installation.show-step');
+    Route::get('/step/{step}', 'showStep')->whereNumber('step')->name('installation.show-step');
 
     Route::post('/start-installation', 'storeInstallationKey')->name('installation.start-installation');
     Route::post('/restart-installation', 'restartInstallation')->name('installation.restart');

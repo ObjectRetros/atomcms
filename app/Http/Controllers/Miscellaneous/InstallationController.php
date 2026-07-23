@@ -7,7 +7,6 @@ use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
 use App\Services\InstallationService;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +44,7 @@ class InstallationController extends Controller
             3 => 'installation.step-3',
             4 => 'installation.step-4',
             5 => 'installation.step-5',
-            default => throw new Exception('Step does not exist'),
+            default => abort(404),
         };
 
         return view($view, [
@@ -55,9 +54,10 @@ class InstallationController extends Controller
 
     public function saveStepSettings(Request $request): RedirectResponse
     {
-        $this->updateSettings($request);
-
         $installation = $this->installation();
+
+        $this->updateSettings($request, $installation->step);
+
         $installation->increment('step');
 
         return to_route('installation.show-step', $installation->step);
@@ -105,9 +105,20 @@ class InstallationController extends Controller
         return to_route('welcome');
     }
 
-    private function updateSettings(Request $request): void
+    /**
+     * Only the keys that belong to the step being saved may be written, and
+     * only with scalar string values; everything else in the request payload
+     * is ignored.
+     */
+    private function updateSettings(Request $request, int $step): void
     {
+        $allowedKeys = $this->getSettingsForStep($step)->pluck('key');
+
         foreach ($request->except('_token') as $key => $value) {
+            if (! $allowedKeys->contains($key) || (! is_string($value) && $value !== null)) {
+                continue;
+            }
+
             WebsiteSetting::where('key', '=', $key)->update([
                 'value' => $value ?? '',
             ]);
@@ -121,24 +132,30 @@ class InstallationController extends Controller
         return WebsiteInstallation::query()->oldest('id')->firstOrFail();
     }
 
-    /** @return Collection<int, WebsiteSetting> */
+    /**
+     * The wizard splits all settings into four equal steps; the fifth step is
+     * the completion screen and carries none.
+     *
+     * @return Collection<int, WebsiteSetting>
+     */
     private function getSettingsForStep(int $step): Collection
     {
-        $chunkSize = max(1, (int) ceil(WebsiteSetting::count() / 4));
-        $settingsData = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), $chunkSize);
+        if ($step < 1 || $step > 5) {
+            abort(404);
+        }
 
-        $settings = match ($step) {
-            1 => $settingsData[0] ?? [],
-            2 => $settingsData[1] ?? [],
-            3 => $settingsData[2] ?? [],
-            4 => $settingsData[3] ?? [],
-            5 => [], // Completion step has no settings
-            default => throw new Exception('Step does not exist'),
-        };
-
-        return WebsiteSetting::query()
-            ->whereIn('key', $settings)
-            ->select(['key', 'value', 'comment'])
+        $settings = WebsiteSetting::query()
+            ->select(['id', 'key', 'value', 'comment'])
+            ->orderBy('id')
             ->get();
+
+        if ($step === 5) {
+            return new Collection;
+        }
+
+        $chunkSize = max(1, (int) ceil($settings->count() / 4));
+
+        /** @var Collection<int, WebsiteSetting> */
+        return $settings->chunk($chunkSize)->values()->get($step - 1, new Collection)->values();
     }
 }
