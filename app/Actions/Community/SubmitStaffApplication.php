@@ -2,37 +2,28 @@
 
 namespace App\Actions\Community;
 
+use App\Enums\StaffApplicationKind;
 use App\Models\Community\Staff\WebsiteStaffApplications;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 class SubmitStaffApplication
 {
-    public function forRank(User $user, int $rankId, string $content): WebsiteStaffApplications
-    {
-        return $this->submit($user, 'rank', $rankId, $content);
-    }
-
-    public function forTeam(User $user, int $teamId, string $content): WebsiteStaffApplications
-    {
-        return $this->submit($user, 'team', $teamId, $content);
-    }
-
-    private function submit(User $user, string $kind, int $targetId, string $content): WebsiteStaffApplications
+    public function execute(User $user, StaffApplicationKind $kind, int $targetId, string $content): WebsiteStaffApplications
     {
         $application = WebsiteStaffApplications::query()->createOrFirst(
             ['application_key' => self::key($kind, $user->id, $targetId)],
             [
                 'user_id' => $user->id,
-                'rank_id' => $kind === 'rank' ? $targetId : null,
-                'team_id' => $kind === 'team' ? $targetId : null,
+                'rank_id' => $kind === StaffApplicationKind::Rank ? $targetId : null,
+                'team_id' => $kind === StaffApplicationKind::Team ? $targetId : null,
                 'content' => $content,
             ],
         );
 
         if (! $application->wasRecentlyCreated) {
             throw ValidationException::withMessages([
-                'content' => $kind === 'rank'
+                'content' => $kind === StaffApplicationKind::Rank
                     ? __('You have already applied for this position.')
                     : __('You have already applied for this team.'),
             ]);
@@ -41,8 +32,24 @@ class SubmitStaffApplication
         return $application;
     }
 
-    public static function key(string $kind, int $userId, int $targetId): string
+    /**
+     * Kept for the HTTP controllers; delegates to execute().
+     */
+    public function forRank(User $user, int $rankId, string $content): WebsiteStaffApplications
     {
-        return "{$kind}:{$userId}:{$targetId}";
+        return $this->execute($user, StaffApplicationKind::Rank, $rankId, $content);
+    }
+
+    /**
+     * Kept for the HTTP controllers; delegates to execute().
+     */
+    public function forTeam(User $user, int $teamId, string $content): WebsiteStaffApplications
+    {
+        return $this->execute($user, StaffApplicationKind::Team, $teamId, $content);
+    }
+
+    public static function key(StaffApplicationKind $kind, int $userId, int $targetId): string
+    {
+        return "{$kind->value}:{$userId}:{$targetId}";
     }
 }

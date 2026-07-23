@@ -11,7 +11,10 @@ use App\Models\User;
 
 class UserObserver
 {
-    public function __construct(private readonly CurrencyRepository $currencies) {}
+    public function __construct(
+        private readonly CurrencyRepository $currencies,
+        private readonly CreateDefaultHome $defaultHome,
+    ) {}
 
     public function created(User $user): void
     {
@@ -21,7 +24,7 @@ class UserObserver
 
         $this->grantStartingBalances($user);
 
-        CreateDefaultHome::for($user);
+        $this->defaultHome->execute($user);
     }
 
     /**
