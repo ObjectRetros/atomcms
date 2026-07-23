@@ -106,9 +106,13 @@ class TicketController extends Controller
      */
     private function myOpenTickets(?WebsiteHelpCenterTicket $except = null): Collection
     {
-        return WebsiteHelpCenterTicket::where('open', true)
-            ->where('user_id', Auth::id())
-            ->when($except, fn ($query) => $query->whereKeyNot($except->id))
-            ->get();
+        $query = WebsiteHelpCenterTicket::where('open', true)
+            ->where('user_id', Auth::id());
+
+        if ($except !== null) {
+            $query->whereKeyNot($except->getKey());
+        }
+
+        return $query->get();
     }
 }

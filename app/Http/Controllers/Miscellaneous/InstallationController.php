@@ -56,7 +56,7 @@ class InstallationController extends Controller
     {
         $installation = $this->installation();
 
-        $this->updateSettings($request, $installation->step);
+        $this->updateSettings($request, (int) $installation->step);
 
         $installation->increment('step');
 

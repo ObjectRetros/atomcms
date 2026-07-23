@@ -21,7 +21,12 @@ class ClientController extends Controller
             'ip_current' => $request->ip(),
         ]);
 
-        return view("client.{$client}", [
+        $view = match ($client) {
+            'flash' => 'client.flash',
+            default => 'client.nitro',
+        };
+
+        return view($view, [
             'sso' => $user->ssoTicket(),
         ]);
     }

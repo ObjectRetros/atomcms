@@ -11,7 +11,7 @@ class UpdateAccountSettings
     public function __construct(private readonly Rcon $rcon) {}
 
     /**
-     * @param  array{username?: string, mail: string, motto?: string|null}  $data
+     * @param  array<string, mixed>  $data  The validated AccountSettingsFormRequest payload.
      *
      * @throws ValidationException
      */
@@ -23,20 +23,24 @@ class UpdateAccountSettings
             ]);
         }
 
-        if ($user->mail !== $data['mail']) {
-            $user->update(['mail' => $data['mail']]);
+        $mail = $data['mail'] ?? null;
+
+        if (is_string($mail) && $user->mail !== $mail) {
+            $user->update(['mail' => $mail]);
         }
 
         // The motto is nullable in validation; clearing it means an empty string.
-        $motto = (string) ($data['motto'] ?? '');
+        $motto = is_string($data['motto'] ?? null) ? $data['motto'] : '';
 
         if ($user->motto !== $motto) {
             $this->rcon->setMotto($user, $motto);
             $user->update(['motto' => $motto]);
         }
 
-        if (array_key_exists('username', $data)) {
-            $this->renameUser($user, $data['username']);
+        $username = $data['username'] ?? null;
+
+        if (is_string($username)) {
+            $this->renameUser($user, $username);
         }
     }
 

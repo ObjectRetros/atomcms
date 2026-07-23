@@ -43,7 +43,7 @@ class UserApiService
      * Prefix-search usernames, escaping LIKE wildcards so user input cannot
      * widen the match.
      *
-     * @return list<array{username: string, look: string|null}>
+     * @return array<int, array{username: string, look: string}>
      */
     public function searchUsers(string $query, int $limit = 8): array
     {
