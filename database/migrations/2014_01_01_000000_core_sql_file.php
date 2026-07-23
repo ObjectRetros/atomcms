@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class CoreSqlFile extends Migration
+return new class extends Migration
 {
     public function up(): void
     {
@@ -43,4 +43,4 @@ class CoreSqlFile extends Migration
     {
         // The emulator owns this imported schema, so Laravel must not drop it.
     }
-}
+};
