@@ -12,8 +12,17 @@ class ArcturusFurnitureRepository implements FurnitureRepository
 {
     public function grant(User $user, int $baseItemId, int $amount): void
     {
-        for ($i = 0; $i < $amount; $i++) {
-            $user->items()->create(['item_id' => $baseItemId]);
+        if ($amount < 1) {
+            return;
         }
+
+        // One multi-row insert instead of a query per item; the remaining
+        // columns fall back to the table defaults.
+        $rows = array_fill(0, $amount, [
+            'user_id' => $user->id,
+            'item_id' => $baseItemId,
+        ]);
+
+        $user->items()->insert($rows);
     }
 }
