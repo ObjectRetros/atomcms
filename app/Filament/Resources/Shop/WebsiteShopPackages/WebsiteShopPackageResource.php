@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Shop\WebsiteShopPackages;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Support\StorefrontMoney;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class WebsiteShopPackageResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteShopPackage::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
@@ -36,6 +39,8 @@ class WebsiteShopPackageResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $slug = 'shop/packages';
+
+    public static string $translateIdentifier = 'shop-packages';
 
     public static function form(Schema $schema): Schema
     {

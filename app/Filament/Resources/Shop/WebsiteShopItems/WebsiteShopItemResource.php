@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Shop\WebsiteShopItems;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\Shop\WebsiteShopItem;
 use BackedEnum;
 use Filament\Actions;
@@ -20,6 +21,8 @@ use Filament\Tables\Table;
 
 class WebsiteShopItemResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteShopItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
@@ -31,6 +34,8 @@ class WebsiteShopItemResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $slug = 'shop/items';
+
+    public static string $translateIdentifier = 'shop-items';
 
     /** @return array<int, Component> */
     public static function getFormFields(): array

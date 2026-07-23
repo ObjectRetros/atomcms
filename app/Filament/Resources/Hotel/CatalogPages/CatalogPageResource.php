@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hotel\CatalogPages;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\CatalogPages\Pages\CreateCatalogPage;
 use App\Filament\Resources\Hotel\CatalogPages\Pages\EditCatalogPage;
 use App\Filament\Resources\Hotel\CatalogPages\Pages\ListCatalogPages;
@@ -20,6 +21,8 @@ use Filament\Tables\Table;
 
 class CatalogPageResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = CatalogPage::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';

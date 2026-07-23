@@ -10,6 +10,7 @@ return [
         'User Management' => 'Kullanıcı Yönetimi',
         'Profile Management' => 'Profil Yönetimi',
         'Shop' => 'Mağaza',
+        'Shop Management' => 'Mağaza Yönetimi',
         'Logs' => 'Kayıtlar',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Web Kamerası',
+            'label' => 'Fotoğraf',
+            'plural' => 'Fotoğraflar',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Çizilmiş Rozetler',
+            'label' => 'Çizilmiş Rozet',
+            'plural' => 'Çizilmiş Rozetler',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Rozet Düzenleyici',
+            'label' => 'Rozet Metni',
+            'plural' => 'Rozet Metinleri',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Yetkili Başvuruları',
+            'label' => 'Başvuru',
+            'plural' => 'Başvurular',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Açık Pozisyonlar',
+            'label' => 'Açık Pozisyon',
+            'plural' => 'Açık Pozisyonlar',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Reklam Görselleri',
+            'label' => 'Reklam',
+            'plural' => 'Reklamlar',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Ürünleri Yönet',
+            'label' => 'Ürün',
+            'plural' => 'Ürünler',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Paketleri Yönet',
+            'label' => 'Paket',
+            'plural' => 'Paketler',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Katalog Sayfaları',
+            'label' => 'Katalog Sayfası',
+            'plural' => 'Katalog Sayfaları',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Katalog Düzenleyici',
+            'label' => 'Katalog Ürünü',
+            'plural' => 'Katalog Ürünleri',
         ],
 
         // Relations

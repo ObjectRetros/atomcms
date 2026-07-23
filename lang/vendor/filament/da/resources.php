@@ -10,6 +10,7 @@ return [
         'User Management' => 'Brugeradministration',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Shop',
+        'Shop Management' => 'Shopadministration',
         'Logs' => 'Logs',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Webkamera',
+            'label' => 'Foto',
+            'plural' => 'Fotos',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Tegnede badges',
+            'label' => 'Tegnet badge',
+            'plural' => 'Tegnede badges',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Badge-editor',
+            'label' => 'Badge-tekst',
+            'plural' => 'Badge-tekster',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Personaleansøgninger',
+            'label' => 'Ansøgning',
+            'plural' => 'Ansøgninger',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Ledige stillinger',
+            'label' => 'Ledig stilling',
+            'plural' => 'Ledige stillinger',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Reklamebilleder',
+            'label' => 'Reklame',
+            'plural' => 'Reklamer',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Administrer varer',
+            'label' => 'Vare',
+            'plural' => 'Varer',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Administrer pakker',
+            'label' => 'Pakke',
+            'plural' => 'Pakker',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Katalogsider',
+            'label' => 'Katalogside',
+            'plural' => 'Katalogsider',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Katalogeditor',
+            'label' => 'Katalogvare',
+            'plural' => 'Katalogvarer',
         ],
 
         // Relations
