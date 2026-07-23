@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Concerns\TranslatableResource;
 use App\Rules\ValidBadgeCode;
 use App\Services\Badge\BadgeImageStorage;
 use App\Services\Parsers\ExternalTextsParser;
@@ -41,11 +41,9 @@ class BadgePage extends Page
     /** @var array<string, mixed> */
     public ?array $data = [];
 
-    public static string $roleName = 'badge_page';
-
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view::admin::' . static::$roleName) ?? false;
+        return hasHousekeepingPermission('manage_badges');
     }
 
     public function getTitle(): string|Htmlable
