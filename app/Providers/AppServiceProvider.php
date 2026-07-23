@@ -16,6 +16,7 @@ use App\Services\SettingsService;
 use App\Services\ViteService;
 use Filament\Tables\Table;
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\URL;
@@ -31,50 +32,39 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(PaypalGateway::class, SrmklivePaypalGateway::class);
+        // Scoped per request so a webhook that verifies and captures reuses a
+        // single gateway (and therefore a single PayPal client and token).
+        $this->app->scoped(PaypalGateway::class, SrmklivePaypalGateway::class);
 
         $this->app->bind(
             Vite::class,
             ViteService::class,
         );
 
-        $this->app->singleton(
-            InstallationService::class,
-            fn () => new InstallationService,
-        );
+        $this->app->singleton(InstallationService::class);
 
-        $this->app->singleton(
-            SettingsService::class,
-            fn () => new SettingsService,
-        );
+        $this->app->singleton(SettingsService::class);
 
-        $this->app->singleton(
-            PermissionsService::class,
-            fn () => new PermissionsService,
-        );
+        $this->app->singleton(PermissionsService::class);
 
-        $this->app->singleton(
-            HousekeepingPermissionsService::class,
-            fn () => new HousekeepingPermissionsService,
-        );
+        $this->app->singleton(HousekeepingPermissionsService::class);
 
         // Wrapped so RCON sends inside a DB transaction only fire once it
         // commits - a rolled-back purchase never grants items in the emulator.
         $this->app->singleton(
             Rcon::class,
-            fn () => new AfterCommitRcon(new RconService),
+            fn (Application $app) => new AfterCommitRcon($app->make(RconService::class)),
         );
 
-        // Resolve the PayPal client pre-authenticated so consumers can inject
-        // it and tests can swap it for a fake.
-        $this->app->bind(PayPalClient::class, function (): PayPalClient {
+        // Authentication happens lazily on the gateway's first API call, so
+        // resolving the client never performs OAuth HTTP inside the container.
+        $this->app->scoped(PayPalClient::class, function (): PayPalClient {
             $client = new PayPalClient(config('habbo.paypal'));
             $client->setClient(new HttpClient([
                 'connect_timeout' => 3,
                 'timeout' => 10,
                 'verify' => true,
             ]));
-            $client->getAccessToken();
 
             return $client;
         });

@@ -3,22 +3,31 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaypalGateway;
-use Illuminate\Contracts\Container\Container;
+use App\Exceptions\PaypalPaymentException;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
+use Throwable;
 
-class SrmklivePaypalGateway implements PaypalGateway
+final class SrmklivePaypalGateway implements PaypalGateway
 {
-    private ?PayPalClient $client = null;
+    private bool $authenticated = false;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct(private readonly PayPalClient $client) {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * @return array<string, mixed>
+     */
     public function createOrder(array $data): array
     {
         return $this->arrayResponse($this->client()->createOrder($data));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function captureOrder(string $orderId, string $idempotencyKey): array
     {
         $response = $this->client()
@@ -28,6 +37,9 @@ class SrmklivePaypalGateway implements PaypalGateway
         return $this->arrayResponse($response);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function showOrder(string $orderId): array
     {
         return $this->arrayResponse($this->client()->showOrderDetails($orderId));
@@ -42,9 +54,29 @@ class SrmklivePaypalGateway implements PaypalGateway
         return is_array($response) && ($response['verification_status'] ?? null) === 'SUCCESS';
     }
 
+    /**
+     * Authenticate lazily on first use, so resolving the gateway never blocks
+     * on PayPal's OAuth endpoint and an outage surfaces as a payment error.
+     */
     private function client(): PayPalClient
     {
-        return $this->client ??= $this->container->make(PayPalClient::class);
+        if ($this->authenticated) {
+            return $this->client;
+        }
+
+        try {
+            $response = $this->client->getAccessToken();
+        } catch (Throwable $exception) {
+            throw PaypalPaymentException::gatewayFailure($exception);
+        }
+
+        if (! is_array($response) || ! isset($response['access_token'])) {
+            throw PaypalPaymentException::gatewayFailure();
+        }
+
+        $this->authenticated = true;
+
+        return $this->client;
     }
 
     /**
