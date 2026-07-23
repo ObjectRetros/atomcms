@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class BadgePurchaseRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, mixed>
      */

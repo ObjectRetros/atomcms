@@ -7,6 +7,7 @@ use App\Http\Requests\WebsiteTicketFormRequest;
 use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Help\WebsiteHelpCenterTicket;
 use App\Support\AuthenticatedUser;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class TicketController extends Controller
         $this->authorize('viewAny', WebsiteHelpCenterTicket::class);
 
         return view('help-center.tickets.index', [
-            'tickets' => WebsiteHelpCenterTicket::orderBy('open')->with('user:id,username')->paginate(15),
+            'tickets' => WebsiteHelpCenterTicket::orderBy('open')->latest('id')->with('user:id,username')->paginate(15),
         ]);
     }
 
@@ -26,7 +27,7 @@ class TicketController extends Controller
     {
         return view('help-center.tickets.create', [
             'categories' => WebsiteHelpCenterCategory::get(),
-            'openTickets' => WebsiteHelpCenterTicket::where('open', true)->where('user_id', Auth::id())->get(),
+            'openTickets' => $this->myOpenTickets(),
         ]);
     }
 
@@ -50,7 +51,7 @@ class TicketController extends Controller
         return view('help-center.tickets.edit', [
             'ticket' => $ticket,
             'categories' => WebsiteHelpCenterCategory::get(),
-            'openTickets' => WebsiteHelpCenterTicket::where('open', true)->where('id', '!=', $ticket->id)->where('user_id', Auth::id())->get(),
+            'openTickets' => $this->myOpenTickets($ticket),
         ]);
     }
 
@@ -75,7 +76,7 @@ class TicketController extends Controller
 
         return view('help-center.tickets.show', [
             'ticket' => $ticket,
-            'openTickets' => WebsiteHelpCenterTicket::where('open', true)->where('id', '!=', $ticket->id)->where('user_id', Auth::id())->get(),
+            'openTickets' => $this->myOpenTickets($ticket),
         ]);
     }
 
@@ -95,5 +96,19 @@ class TicketController extends Controller
         $ticket->update(['open' => ! $ticket->open]);
 
         return redirect()->back()->with('success', __('The ticket status has been changed!'));
+    }
+
+    /**
+     * The current user's open tickets, optionally excluding the one being
+     * viewed or edited.
+     *
+     * @return Collection<int, WebsiteHelpCenterTicket>
+     */
+    private function myOpenTickets(?WebsiteHelpCenterTicket $except = null): Collection
+    {
+        return WebsiteHelpCenterTicket::where('open', true)
+            ->where('user_id', Auth::id())
+            ->when($except, fn ($query) => $query->whereKeyNot($except->id))
+            ->get();
     }
 }

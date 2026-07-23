@@ -13,9 +13,4 @@ class RareSearchFormRequest extends FormRequest
             'search' => ['required', 'string', 'min:1', 'max:255'],
         ];
     }
-
-    public function authorize(): bool
-    {
-        return true;
-    }
 }

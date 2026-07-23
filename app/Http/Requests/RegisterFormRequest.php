@@ -27,11 +27,6 @@ class RegisterFormRequest extends FormRequest
         ];
     }
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function messages(): array
     {
         return [

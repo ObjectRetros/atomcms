@@ -14,9 +14,4 @@ class ArticleCommentFormRequest extends FormRequest
             'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule],
         ];
     }
-
-    public function authorize(): bool
-    {
-        return true;
-    }
 }
