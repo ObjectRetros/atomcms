@@ -2,7 +2,7 @@
 
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -148,4 +148,21 @@ test('application content has a bounded size', function () {
         ->assertSessionHasErrors('content');
 
     expect(WebsiteStaffApplications::where('user_id', $this->user->id)->exists())->toBeFalse();
+});
+
+test('deleting a rank position cascades its applications', function () {
+    $position = openRankPosition();
+
+    $this->actingAs($this->user)
+        ->post(route('staff-applications.store', $position), [
+            'content' => 'I would love to help moderate the hotel.',
+        ])
+        ->assertSessionHas('success');
+
+    expect(WebsiteStaffApplications::where('rank_id', $position->permission_id)->exists())->toBeTrue();
+
+    $position->delete();
+
+    expect(WebsiteStaffApplications::where('rank_id', $position->permission_id)->exists())->toBeFalse()
+        ->and(WebsiteOpenPosition::query()->count())->toBe(0);
 });
