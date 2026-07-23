@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\Atom\CmsSettings;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\CmsSettings\Pages\ManageCmsSettings;
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Support\TruncatedTooltip;
 use App\Models\Miscellaneous\WebsiteSetting;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -78,15 +79,7 @@ class CmsSettingResource extends Resource
                     ->label(__('filament::resources.columns.comment'))
                     ->toggleable()
                     ->searchable()
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-
-                        return $state;
-                    })
+                    ->tooltip(fn (TextColumn $column): ?string => TruncatedTooltip::of($column))
                     ->limit(60),
             ])
             ->filters([

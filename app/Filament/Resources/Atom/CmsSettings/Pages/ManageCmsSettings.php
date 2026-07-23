@@ -13,7 +13,7 @@ class ManageCmsSettings extends ManageRecords
 {
     protected static string $resource = CmsSettingResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             Action::make('reload_cache')

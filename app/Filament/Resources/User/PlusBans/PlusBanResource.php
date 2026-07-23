@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\User\PlusBans;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\User\PlusBans\Pages\ManagePlusBans;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Plus\PlusBan;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;

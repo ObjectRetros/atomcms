@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Home;
 
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Home\HomeItemResource\Pages;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Home\HomeItem;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;

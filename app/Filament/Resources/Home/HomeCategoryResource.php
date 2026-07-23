@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Home;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Home\HomeCategoryResource\Pages;
 use App\Filament\Resources\Home\HomeCategoryResource\RelationManagers;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Home\HomeCategory;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;

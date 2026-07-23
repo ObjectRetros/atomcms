@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Traits;
+namespace App\Filament\Concerns;
 
 use BackedEnum;
 use Str;
