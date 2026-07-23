@@ -21,6 +21,13 @@ use LogicException;
 
 class EditUser extends EditRecord
 {
+    /**
+     * Columns that are guarded against mass assignment on the User model. The
+     * housekeeping editor may still change them once beforeSave() has verified
+     * the actor's authority, so they are persisted through forceFill().
+     */
+    private const PRIVILEGED_ATTRIBUTES = ['rank', 'credits', 'hidden_staff', 'extra_rank', 'auth_ticket', 'team_id'];
+
     protected static string $resource = UserResource::class;
 
     protected function getActions(): array
@@ -78,7 +85,7 @@ class EditUser extends EditRecord
             if (! $user->online) {
                 $this->treatChangedCurrenciesWithoutRcon($user, $data);
 
-                return parent::handleRecordUpdate($user, $data);
+                return $this->persistUserUpdate($user, $data);
             }
 
             if ($data['credits'] != $user->credits) {
@@ -91,8 +98,24 @@ class EditUser extends EditRecord
             $this->treatChangedUserMotto($user, $data, $rcon);
 
             // The emulator persists these fields when the deferred RCON commands run.
-            return parent::handleRecordUpdate($user, Arr::except($data, ['credits', 'rank', 'motto']));
+            return $this->persistUserUpdate($user, Arr::except($data, ['credits', 'rank', 'motto']));
         });
+    }
+
+    /**
+     * Persists a housekeeping edit, force-filling the attributes the User
+     * model guards against mass assignment. beforeSave() has already
+     * authorized the actor for these privileged changes.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function persistUserUpdate(User $user, array $data): User
+    {
+        $user->fill(Arr::except($data, self::PRIVILEGED_ATTRIBUTES));
+        $user->forceFill(Arr::only($data, self::PRIVILEGED_ATTRIBUTES));
+        $user->save();
+
+        return $user;
     }
 
     /** @param array<string, mixed> $data */
@@ -218,7 +241,7 @@ class EditUser extends EditRecord
         }
 
         if (! $user->online) {
-            $user->update(['rank' => $data['rank']]);
+            $user->forceFill(['rank' => $data['rank']])->save();
 
             return;
         }

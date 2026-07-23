@@ -90,7 +90,9 @@ class CreateNewUser implements CreatesNewUsers
      */
     private function createUser(array $input, string $password, string $ip): User
     {
-        $user = User::create([
+        // credits and auth_ticket are guarded against mass assignment, so this
+        // trusted registration path assigns the full attribute set explicitly.
+        $user = User::query()->forceCreate([
             'username' => $input['username'],
             'mail' => $input['mail'],
             'password' => $password,

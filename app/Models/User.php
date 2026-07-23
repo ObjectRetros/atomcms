@@ -7,7 +7,7 @@ use App\Enums\CurrencyTypes;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Models\Community\Staff\WebsiteStaffApplications;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Compositions\HasHome;
 use App\Models\Game\Furniture\Item;
 use App\Models\Game\Permission;
@@ -16,7 +16,6 @@ use App\Models\Game\Player\UserBadge;
 use App\Models\Game\Player\UserCurrency;
 use App\Models\Game\Player\UserSetting;
 use App\Models\Game\Player\UserSubscription;
-use App\Models\Game\Room;
 use App\Models\Help\WebsiteHelpCenterTicket;
 use App\Models\Miscellaneous\CameraWeb;
 use App\Models\Miscellaneous\WebsiteBetaCode;
@@ -164,7 +163,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereReferralCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereSecretKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTeamId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorConfirmed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorConfirmedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorRecoveryCodes($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorSecret($value)
@@ -201,18 +199,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         'motto',
         'look',
         'gender',
-        'rank',
-        'credits',
         'online',
-        'auth_ticket',
         'ip_register',
         'ip_current',
         'home_room',
         'referral_code',
-        'extra_rank',
-        'team_id',
-        'hidden_staff',
-        'two_factor_confirmed',
         'two_factor_confirmed_at',
     ];
 
@@ -234,7 +225,6 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'hidden_staff' => 'boolean',
@@ -341,7 +331,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name', 'Atom')), Str::uuid());
 
             if (! User::where('auth_ticket', $sso)->exists()) {
-                $this->update(['auth_ticket' => $sso]);
+                $this->forceFill(['auth_ticket' => $sso])->save();
 
                 return $sso;
             }
@@ -431,7 +421,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             ->select(['user_two_id', 'users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online'])
             ->join('users', 'users.id', '=', 'user_two_id')
             ->where('users.online', '1')
-            ->inRandomOrder()
+            ->orderByDesc('users.last_online')
             ->limit($total)
             ->get();
     }

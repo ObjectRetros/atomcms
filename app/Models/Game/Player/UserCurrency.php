@@ -23,7 +23,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class UserCurrency extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'type',
+        'amount',
+    ];
 
     protected $table = 'users_currency';
 
