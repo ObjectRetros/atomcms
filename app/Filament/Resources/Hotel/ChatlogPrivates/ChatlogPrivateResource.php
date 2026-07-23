@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Hotel\ChatlogPrivates;
 
 use App\Emulator\Data\Feature;
 use App\Filament\Concerns\RequiresEmulatorFeature;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\ChatlogPrivates\Pages\ManageChatlogPrivates;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogPrivate;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -88,7 +88,7 @@ class ChatlogPrivateResource extends Resource
             TextColumn::make('message')
                 ->label(__('filament::resources.columns.message'))
                 ->limit(40)
-                ->searchable(isIndividual: true),
+                ->searchable(isIndividual: true, isGlobal: false),
 
             TextColumn::make('timestamp')
                 ->label(__('filament::resources.columns.executed_at'))

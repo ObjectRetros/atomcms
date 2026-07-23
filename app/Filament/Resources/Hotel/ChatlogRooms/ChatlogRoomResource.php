@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\ChatlogRooms;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\ChatlogRooms\Pages\ManageChatlogRooms;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogRoom;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -100,7 +100,7 @@ class ChatlogRoomResource extends Resource
             TextColumn::make('message')
                 ->label(__('filament::resources.columns.message'))
                 ->limit(40)
-                ->searchable(isIndividual: true),
+                ->searchable(isIndividual: true, isGlobal: false),
 
             TextColumn::make('timestamp')
                 ->label(__('filament::resources.columns.executed_at'))

@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Hotel\CommandLogs;
 
 use App\Emulator\Data\Feature;
 use App\Filament\Concerns\RequiresEmulatorFeature;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\CommandLogs\Pages\ManageCommandLogs;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\CommandLog;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -65,8 +65,7 @@ class CommandLogResource extends Resource
 
                 TextColumn::make('timestamp')
                     ->label(__('filament::resources.columns.executed_at'))
-                    ->dateTime('Y-m-d H:i')
-                    ->searchable(),
+                    ->dateTime('Y-m-d H:i'),
             ])
             ->filters([
                 SelectFilter::make('succes')
