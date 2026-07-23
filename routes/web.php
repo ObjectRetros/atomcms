@@ -79,7 +79,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             ->middleware('throttle:6,1')
             ->name('register.store');
 
-        Route::get('/register/{referral_code}', UserReferralController::class)->name('register.referral');
+        Route::get('/register/{user:referral_code}', UserReferralController::class)->name('register.referral');
 
         // Password
         Route::get('forgot-password', ForgotPasswordController::class)->name('forgot.password.get');
@@ -123,7 +123,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         Route::prefix('home')->as('home.')->group(function () {
             Route::get('/{user:username}', [UserHomeController::class, 'show'])->name('show')->withoutMiddleware('auth');
             Route::get('/{user:username}/placed-items', [UserHomeController::class, 'getPlacedItems'])->name('placed-items')->withoutMiddleware('auth');
-            Route::get('/{user:username}/widget-content/{itemId}', [HomeItemController::class, 'getWidgetContent'])->name('widget-content')->withoutMiddleware('auth');
+            Route::get('/{user:username}/widget-content/{homeItem}', [HomeItemController::class, 'getWidgetContent'])->name('widget-content')->scopeBindings()->withoutMiddleware('auth');
 
             Route::post('/{user:username}/save', [UserHomeController::class, 'save'])->name('save')->middleware('throttle:10,1');
             Route::post('/{user:username}/buy-item', [HomeItemController::class, 'store'])->name('buy-item')->middleware('throttle:30,1');

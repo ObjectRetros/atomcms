@@ -25,15 +25,9 @@ class WebsiteRareValuesController extends Controller
         ]);
     }
 
-    public function category(int $id): View|RedirectResponse
+    public function category(WebsiteRareValueCategory $category): View
     {
-        $category = $this->valueCategoriesService->fetchCategoryById($id);
-
-        if (! $category) {
-            return redirect()->back()->withErrors([
-                'message' => __('The entered category does not exist'),
-            ]);
-        }
+        $category->load('furniture');
 
         return view('rare-values', [
             'categories' => $category,

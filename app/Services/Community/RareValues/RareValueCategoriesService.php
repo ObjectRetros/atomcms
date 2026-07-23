@@ -19,11 +19,6 @@ class RareValueCategoriesService
         return WebsiteRareValueCategory::orderBy('priority')->with('furniture')->get();
     }
 
-    public function fetchCategoryById(int $id): ?WebsiteRareValueCategory
-    {
-        return WebsiteRareValueCategory::orderBy('priority')->whereId($id)->with('furniture')->first();
-    }
-
     /** @return Collection<int, WebsiteRareValueCategory> */
     public function searchCategories(string $searchTerm): Collection
     {
