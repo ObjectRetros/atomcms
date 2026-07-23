@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RareSearchFormRequest extends FormRequest
+class SearchUsersRequest extends FormRequest
 {
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
-            'search' => ['required', 'string', 'min:1', 'max:255'],
+            'q' => ['nullable', 'string', 'max:25'],
         ];
     }
 }

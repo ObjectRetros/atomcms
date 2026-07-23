@@ -30,6 +30,30 @@ test('a shop voucher credits the balance and can only be redeemed once', functio
         ->and($user->usedShopVouchers()->count())->toBe(1);
 });
 
+test('voucher redemption is throttled against brute force', function () {
+    installHotel();
+
+    $user = User::factory()->create();
+
+    foreach (range(1, 5) as $attempt) {
+        $this->actingAs($user)
+            ->post(route('shop.use-voucher'), ['code' => 'GUESS-' . $attempt])
+            ->assertSessionHasErrors('message');
+    }
+
+    $this->actingAs($user)
+        ->post(route('shop.use-voucher'), ['code' => 'GUESS-6'])
+        ->assertStatus(429);
+});
+
+test('an overlong voucher code is rejected by validation', function () {
+    installHotel();
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('shop.use-voucher'), ['code' => str_repeat('A', 65)])
+        ->assertSessionHasErrors('code');
+});
+
 test('an expired voucher is rejected', function () {
     installHotel();
 

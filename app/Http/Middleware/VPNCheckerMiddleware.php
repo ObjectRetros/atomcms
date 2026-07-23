@@ -7,6 +7,7 @@ use App\Models\Miscellaneous\WebsiteIpWhitelist;
 use App\Services\IpLookupService;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,8 +46,8 @@ class VPNCheckerMiddleware
             return $next($request);
         }
 
-        $apiResponse = $this->ipLookup->ipLookup($ip, $apiKey);
-        $asn = $apiResponse['asn']['asn'] ?? '';
+        $reputation = $this->reputation($ip, $apiKey);
+        $asn = $reputation['asn'];
 
         if ($this->asnListed($asn, WebsiteIpWhitelist::class, 'whitelist_asn')) {
             return $next($request);
@@ -56,13 +57,58 @@ class VPNCheckerMiddleware
             return $this->restrict();
         }
 
-        if ($this->isThreat($apiResponse)) {
+        if ($reputation['threat']) {
             WebsiteIpBlacklist::firstOrCreate(['ip_address' => $ip], ['asn' => null]);
 
             return $this->restrict();
         }
 
         return $next($request);
+    }
+
+    /**
+     * Look up the IP's reputation, caching the minimal derived payload so the
+     * client routes do not make a blocking HTTPS call on every request. The
+     * ASN white/blacklists are still evaluated per request against the
+     * database, so admin list changes apply immediately.
+     *
+     * @return array{asn: string, threat: bool}
+     */
+    private function reputation(string $ip, string $apiKey): array
+    {
+        $cacheKey = "ip_reputation:{$ip}";
+
+        $cached = Cache::get($cacheKey);
+
+        if (is_array($cached) && isset($cached['asn'], $cached['threat'])) {
+            return ['asn' => (string) $cached['asn'], 'threat' => (bool) $cached['threat']];
+        }
+
+        $apiResponse = $this->ipLookup->ipLookup($ip, $apiKey);
+
+        $reputation = [
+            'asn' => (string) ($apiResponse['asn']['asn'] ?? ''),
+            'threat' => $this->isThreat($apiResponse),
+        ];
+
+        // Failed lookups fail open, but only briefly: a short TTL stops an
+        // outage from hammering the API without whitelisting the IP for 12h.
+        $ttl = $this->lookupFailed($apiResponse) ? now()->addMinute() : now()->addHours(12);
+
+        Cache::put($cacheKey, $reputation, $ttl);
+
+        return $reputation;
+    }
+
+    /**
+     * IpLookupService flattens transport and API errors into a payload with a
+     * top-level "status" key, which a successful ipdata body never carries.
+     *
+     * @param  array<string, mixed>  $apiResponse
+     */
+    private function lookupFailed(array $apiResponse): bool
+    {
+        return isset($apiResponse['status']);
     }
 
     /**

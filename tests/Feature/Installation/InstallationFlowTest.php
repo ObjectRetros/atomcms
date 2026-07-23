@@ -159,3 +159,44 @@ test('another visitor cannot hijack an installation in progress', function () {
 
     $this->get(route('installation.show-step', 3))->assertForbidden();
 });
+
+test('unknown installation steps are bounced back to the current step', function () {
+    installHotel();
+    $installation = startFreshInstallation();
+    $installation->update(['step' => 1, 'user_ip' => '127.0.0.1']);
+    resetInstallationCaches();
+
+    // The global installation middleware bounces both before routing; the
+    // route's whereNumber constraint and the controller's 404 guard remain
+    // as defense in depth should the middleware ever let one through.
+    $this->get(route('installation.show-step', 99))
+        ->assertRedirect(route('installation.show-step', 1));
+
+    $this->get('/installation/step/not-a-step')
+        ->assertRedirect(route('installation.show-step', 1));
+});
+
+test('saving a step only writes the settings that belong to it', function () {
+    installHotel();
+    $installation = startFreshInstallation();
+    $installation->update(['step' => 1, 'user_ip' => '127.0.0.1']);
+    resetInstallationCaches();
+
+    $keys = WebsiteSetting::query()->orderBy('id')->pluck('key');
+    $chunkSize = max(1, (int) ceil($keys->count() / 4));
+    $chunks = $keys->chunk($chunkSize)->values();
+
+    $stepOneKey = $chunks->get(0)->first();
+    $laterStepKey = $chunks->get(3)->last();
+    $laterStepValue = WebsiteSetting::where('key', $laterStepKey)->value('value');
+
+    $this->post(route('installation.save-step'), [
+        $stepOneKey => 'legit step one value',
+        $laterStepKey => 'smuggled value',
+        'not_a_real_setting' => 'ignored',
+        'installation_key' => ['array' => 'values are not settings'],
+    ])->assertRedirect(route('installation.show-step', 2));
+
+    expect(WebsiteSetting::where('key', $stepOneKey)->value('value'))->toBe('legit step one value')
+        ->and(WebsiteSetting::where('key', $laterStepKey)->value('value'))->toBe($laterStepValue);
+});

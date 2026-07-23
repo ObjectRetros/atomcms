@@ -4,8 +4,7 @@ use App\Actions\Fortify\Controllers\TwoFactorAuthenticatedSessionController;
 use App\Http\Controllers\Articles\ArticleController;
 use App\Http\Controllers\Articles\WebsiteArticleCommentsController;
 use App\Http\Controllers\Badge\BadgeController;
-use App\Http\Controllers\Client\FlashController;
-use App\Http\Controllers\Client\NitroController;
+use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Community\LeaderboardController;
 use App\Http\Controllers\Community\PhotosController;
 use App\Http\Controllers\Community\Staff\StaffApplicationsController;
@@ -48,7 +47,7 @@ Route::get('/language/{locale}', LocaleController::class)->name('language.select
 // Installation routes
 Route::prefix('installation')->controller(InstallationController::class)->group(function () {
     Route::get('/', 'index')->name('installation.index');
-    Route::get('/step/{step}', 'showStep')->name('installation.show-step');
+    Route::get('/step/{step}', 'showStep')->whereNumber('step')->name('installation.show-step');
 
     Route::post('/start-installation', 'storeInstallationKey')->name('installation.start-installation');
     Route::post('/restart-installation', 'restartInstallation')->name('installation.restart');
@@ -65,17 +64,21 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
     // Banned route
     Route::get('/banned', BannedController::class)->name('banned.show');
 
-    // Exceptions to the 2FA check and must only be visited if not logged in
-    Route::middleware(['guest', 'throttle:15,1'])->withoutMiddleware('force.staff.2fa')->group(function () {
+    // Exceptions to the 2FA check and must only be visited if not logged in.
+    // The GET pages are deliberately unthrottled: visitors behind shared NAT
+    // would otherwise 429 on the public homepage. The state-changing POST
+    // endpoints keep tight per-minute limits.
+    Route::middleware('guest')->withoutMiddleware('force.staff.2fa')->group(function () {
         Route::get('/login', static fn () => to_route('welcome'))->name('login');
         Route::get('/', HomeController::class)->name('welcome');
 
-        Route::get('/register', [RegisteredUserController::class, 'create']);
+        Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 
         Route::post('/register', [RegisteredUserController::class, 'store'])
-            ->name('register');
+            ->middleware('throttle:6,1')
+            ->name('register.store');
 
-        Route::get('/register/{referral_code}', UserReferralController::class)->name('register.referral');
+        Route::get('/register/{user:referral_code}', UserReferralController::class)->name('register.referral');
 
         // Password
         Route::get('forgot-password', ForgotPasswordController::class)->name('forgot.password.get');
@@ -113,13 +116,13 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Drawbadge
         Route::get('/draw-badge', [BadgeController::class, 'show'])->name('draw-badge');
-        Route::post('/buy-badge', [BadgeController::class, 'buy'])->name('badge.buy');
+        Route::post('/buy-badge', [BadgeController::class, 'buy'])->name('badge.buy')->middleware('throttle:10,1');
 
         // Homes
         Route::prefix('home')->as('home.')->group(function () {
             Route::get('/{user:username}', [UserHomeController::class, 'show'])->name('show')->withoutMiddleware('auth');
             Route::get('/{user:username}/placed-items', [UserHomeController::class, 'getPlacedItems'])->name('placed-items')->withoutMiddleware('auth');
-            Route::get('/{user:username}/widget-content/{itemId}', [HomeItemController::class, 'getWidgetContent'])->name('widget-content')->withoutMiddleware('auth');
+            Route::get('/{user:username}/widget-content/{homeItem}', [HomeItemController::class, 'getWidgetContent'])->name('widget-content')->scopeBindings()->withoutMiddleware('auth');
 
             Route::post('/{user:username}/save', [UserHomeController::class, 'save'])->name('save')->middleware('throttle:10,1');
             Route::post('/{user:username}/buy-item', [HomeItemController::class, 'store'])->name('buy-item')->middleware('throttle:30,1');
@@ -158,7 +161,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/team-applications/{position}', [WebsiteTeamApplicationsController::class, 'show'])->name('team-applications.show');
             Route::post('/team-applications/{position}', [WebsiteTeamApplicationsController::class, 'store'])->name('team-applications.store');
 
-            Route::post('/article/{article:slug}/comment', [WebsiteArticleCommentsController::class, 'store'])->name('article.comment.store');
+            Route::post('/article/{article:slug}/comment', [WebsiteArticleCommentsController::class, 'store'])->name('article.comment.store')->middleware('throttle:10,1');
             Route::delete('/article/{comment}/comment', [WebsiteArticleCommentsController::class, 'destroy'])->name('article.comment.destroy');
             Route::post('/article/{article:slug}/toggle-reaction', [ArticleController::class, 'toggleReaction'])
                 ->name('article.toggle-reaction')
@@ -173,7 +176,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
             Route::get('/{category:slug?}', ShopController::class)->name('shop.index');
 
             Route::post('/purchase-package/{package}', [ShopController::class, 'purchasePackage'])->name('shop.buy-package')->middleware('throttle:10,1');
-            Route::post('/voucher', ShopVoucherController::class)->name('shop.use-voucher');
+            Route::post('/voucher', ShopVoucherController::class)->name('shop.use-voucher')->middleware('throttle:5,1');
         });
 
         // Help center
@@ -182,7 +185,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
             Route::prefix('tickets')->as('ticket.')->group(function () {
                 Route::get('/create', [TicketController::class, 'create'])->name('create');
-                Route::post('/store', [TicketController::class, 'store'])->name('store');
+                Route::post('/store', [TicketController::class, 'store'])->name('store')->middleware('throttle:10,1');
 
                 Route::get('/show/{ticket}', [TicketController::class, 'show'])->name('show');
                 Route::get('/edit/{ticket}', [TicketController::class, 'edit'])->name('edit');
@@ -191,7 +194,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
                 Route::put('/toggle-status/{ticket}', [TicketController::class, 'toggleTicketStatus'])->name('toggle-status');
 
-                Route::post('/reply/{ticket}/store', [TicketReplyController::class, 'store'])->name('reply.store');
+                Route::post('/reply/{ticket}/store', [TicketReplyController::class, 'store'])->name('reply.store')->middleware('throttle:10,1');
                 Route::delete('/reply/{reply}/delete', [TicketReplyController::class, 'destroy'])->name('reply.destroy');
 
                 // All open tickets
@@ -220,8 +223,8 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         // Client route
         Route::prefix('game')->middleware(['findretros.redirect', 'vpn.checker'])->group(function () {
-            Route::get('/nitro', NitroController::class)->name('nitro-client');
-            Route::get('/flash', FlashController::class)->name('flash-client');
+            Route::get('/nitro', ClientController::class)->name('nitro-client')->defaults('client', 'nitro');
+            Route::get('/flash', ClientController::class)->name('flash-client')->defaults('client', 'flash');
         });
 
         // Logo generator

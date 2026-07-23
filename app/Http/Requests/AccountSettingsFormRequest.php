@@ -37,9 +37,4 @@ class AccountSettingsFormRequest extends FormRequest
     {
         return $user->mail !== $this->input('mail');
     }
-
-    public function authorize(): bool
-    {
-        return true;
-    }
 }

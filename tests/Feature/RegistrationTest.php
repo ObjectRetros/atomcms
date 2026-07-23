@@ -2,6 +2,15 @@
 
 use App\Providers\RouteServiceProvider;
 
+test('the register routes follow the fortify naming convention', function () {
+    installHotel();
+
+    expect(route('register', absolute: false))->toBe('/register')
+        ->and(route('register.store', absolute: false))->toBe('/register');
+
+    $this->get(route('register'))->assertOk();
+});
+
 test('new users can register', function () {
     $response = $this->post('/register', [
         'username' => 'Test_User',

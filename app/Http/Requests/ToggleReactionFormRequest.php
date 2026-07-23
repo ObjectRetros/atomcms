@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\WebsiteWordfilterRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class ArticleCommentFormRequest extends FormRequest
+class ToggleReactionFormRequest extends FormRequest
 {
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
-            'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule],
+            'reaction' => ['required', 'string', Rule::in(config('habbo.reactions'))],
         ];
     }
 }
