@@ -93,8 +93,8 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! $this->app->isProduction());
 
         Blaze::optimize()
-            ->in(resource_path('themes/atom/components'))
-            ->in(resource_path('themes/dusk/components'));
+            ->in(resource_path('themes/atom/views/components'))
+            ->in(resource_path('themes/dusk/views/components'));
 
         if (config('habbo.site.force_https')) {
             URL::forceScheme('https');
