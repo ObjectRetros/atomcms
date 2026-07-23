@@ -6,7 +6,7 @@ use App\Contracts\Rcon;
 use App\Emulator\Contracts\FurnitureRepository;
 use App\Models\User;
 
-class SendFurniture
+final readonly class SendFurniture
 {
     public function __construct(
         private readonly Rcon $rcon,

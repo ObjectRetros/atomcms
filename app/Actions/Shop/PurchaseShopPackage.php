@@ -12,7 +12,7 @@ use App\Support\StorefrontMoney;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class PurchaseShopPackage
+final readonly class PurchaseShopPackage
 {
     public function __construct(
         private readonly Rcon $rcon,

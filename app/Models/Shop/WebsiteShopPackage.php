@@ -74,14 +74,18 @@ class WebsiteShopPackage extends Model
         return $this->hasMany(WebsiteShopPurchase::class);
     }
 
-    public function price(): Money
+    /**
+     * The package price as a money object; named to avoid colliding with
+     * the integer `price` attribute.
+     */
+    public function priceMoney(): Money
     {
         return StorefrontMoney::fromMinor($this->price);
     }
 
     public function formattedPrice(): string
     {
-        return (string) $this->price();
+        return (string) $this->priceMoney();
     }
 
     public function isAvailable(): bool

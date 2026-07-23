@@ -2,6 +2,7 @@
 
 namespace App\Models\Shop;
 
+use App\Enums\PaypalTransactionStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $user_id
  * @property string $transaction_id
- * @property string|null $status
+ * @property PaypalTransactionStatus|null $status
  * @property string|null $description
  * @property int $amount Amount in the currency's minor unit
  * @property string $currency
@@ -39,15 +40,15 @@ use Illuminate\Support\Carbon;
  */
 class WebsitePaypalTransaction extends Model
 {
-    public const STATUS_CANCELLED = 'CANCELLED';
+    public const PaypalTransactionStatus STATUS_CANCELLED = PaypalTransactionStatus::Cancelled;
 
-    public const STATUS_COMPLETED = 'COMPLETED';
+    public const PaypalTransactionStatus STATUS_COMPLETED = PaypalTransactionStatus::Completed;
 
-    public const STATUS_CREATED = 'CREATED';
+    public const PaypalTransactionStatus STATUS_CREATED = PaypalTransactionStatus::Created;
 
-    public const STATUS_LEGACY_CREATED = 'LEGACY_CREATED';
+    public const PaypalTransactionStatus STATUS_LEGACY_CREATED = PaypalTransactionStatus::LegacyCreated;
 
-    public const STATUS_REVIEW = 'REVIEW';
+    public const PaypalTransactionStatus STATUS_REVIEW = PaypalTransactionStatus::Review;
 
     protected $fillable = [
         'transaction_id',
@@ -64,6 +65,7 @@ class WebsitePaypalTransaction extends Model
     {
         return [
             'amount' => 'integer',
+            'status' => PaypalTransactionStatus::class,
             'credited_at' => 'datetime',
             'last_reconciled_at' => 'datetime',
         ];

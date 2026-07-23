@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaypalGateway;
+use App\Enums\PaypalTransactionStatus;
 use App\Exceptions\PaypalPaymentException;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Models\User;
@@ -12,7 +13,7 @@ use Brick\Money\Exception\MoneyException;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class PaypalPaymentService
+final readonly class PaypalPaymentService
 {
     private const WEBHOOK_CAPTURE_COMPLETED = 'PAYMENT.CAPTURE.COMPLETED';
 
@@ -111,7 +112,7 @@ class PaypalPaymentService
 
             if ($locked !== null && $locked->credited_at === null) {
                 $locked->update([
-                    'status' => WebsitePaypalTransaction::STATUS_CANCELLED,
+                    'status' => PaypalTransactionStatus::Cancelled,
                     'description' => 'The user cancelled the transaction.',
                 ]);
             }
@@ -134,10 +135,12 @@ class PaypalPaymentService
             return $transaction !== null && $this->capture($transaction);
         }
 
-        if (is_string($status) && in_array($status, ['CANCELLED', 'VOIDED'], true)) {
+        $mapped = is_string($status) ? PaypalTransactionStatus::tryFrom($status) : null;
+
+        if ($mapped === PaypalTransactionStatus::Cancelled || $mapped === PaypalTransactionStatus::Voided) {
             WebsitePaypalTransaction::where('transaction_id', $orderId)
                 ->whereNull('credited_at')
-                ->update(['status' => $status]);
+                ->update(['status' => $mapped->value]);
         }
 
         return false;
@@ -145,7 +148,7 @@ class PaypalPaymentService
 
     private function prepareLegacyTransaction(WebsitePaypalTransaction $transaction): WebsitePaypalTransaction
     {
-        if ($transaction->status !== WebsitePaypalTransaction::STATUS_LEGACY_CREATED) {
+        if ($transaction->status !== PaypalTransactionStatus::LegacyCreated) {
             return $transaction;
         }
 
@@ -181,10 +184,10 @@ class PaypalPaymentService
 
         DB::transaction(function () use ($transaction, $amount, $money): void {
             WebsitePaypalTransaction::whereKey($transaction->getKey())
-                ->where('status', WebsitePaypalTransaction::STATUS_LEGACY_CREATED)
+                ->where('status', PaypalTransactionStatus::LegacyCreated->value)
                 ->where('amount', 0)
                 ->update([
-                    'status' => WebsitePaypalTransaction::STATUS_CREATED,
+                    'status' => PaypalTransactionStatus::Created->value,
                     'amount' => $amount,
                     'currency' => $money->getCurrency()->getCurrencyCode(),
                 ]);

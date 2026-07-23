@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  * so a rolled-back purchase never grants items in the emulator. Outside a
  * transaction the callback runs immediately, leaving normal calls unchanged.
  */
-class AfterCommitRcon implements Rcon
+final readonly class AfterCommitRcon implements Rcon
 {
     public function __construct(private readonly Rcon $inner) {}
 

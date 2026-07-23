@@ -5,7 +5,7 @@ namespace App\Services\Auth;
 use Closure;
 use Illuminate\Support\Facades\DB;
 
-final class RegistrationMutex
+final readonly class RegistrationMutex
 {
     /**
      * @template TResult

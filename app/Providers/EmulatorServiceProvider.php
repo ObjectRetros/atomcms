@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Emulator\EmulatorManager;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 
 /**
  * Binds the emulator contracts to the implementations of the configured driver,
@@ -12,13 +14,22 @@ class EmulatorServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $driver = config('emulator.driver');
+        $this->app->singleton(EmulatorManager::class);
+
+        $driver = (string) config('emulator.driver');
+        $drivers = config('emulator.drivers', []);
+
+        if (! is_array($drivers) || ! array_key_exists($driver, $drivers)) {
+            throw new InvalidArgumentException("Unknown emulator driver [{$driver}]");
+        }
 
         /** @var array<class-string, class-string> $bindings */
         $bindings = config("emulator.drivers.{$driver}.bindings", []);
 
         foreach ($bindings as $contract => $implementation) {
-            $this->app->bind($contract, $implementation);
+            // The repositories are stateless, so one instance can serve the
+            // whole process.
+            $this->app->singleton($contract, $implementation);
         }
     }
 }

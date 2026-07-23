@@ -5,19 +5,19 @@ namespace App\Emulator;
 use App\Emulator\Data\Feature;
 
 /**
- * Answers questions about the configured emulator driver.
+ * Thin static entry point over the EmulatorManager singleton, kept because
+ * feature checks are sprinkled across Filament resources, middleware and
+ * observers. Swap the EmulatorManager binding to fake it in tests.
  */
 class Emulator
 {
     public static function driver(): string
     {
-        return (string) config('emulator.driver');
+        return app(EmulatorManager::class)->driver();
     }
 
     public static function supports(Feature $feature): bool
     {
-        $features = config('emulator.drivers.' . self::driver() . '.features', []);
-
-        return in_array($feature, $features, true);
+        return app(EmulatorManager::class)->supports($feature);
     }
 }
