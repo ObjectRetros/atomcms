@@ -3,13 +3,13 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaypalGateway;
+use App\Enums\PaypalTransactionStatus;
 use App\Exceptions\PaypalPaymentException;
-use App\Models\Shop\WebsitePaypalTransaction;
 use App\Models\User;
 use App\Support\StorefrontMoney;
 use Throwable;
 
-class PaypalOrderCreator
+final readonly class PaypalOrderCreator
 {
     public function __construct(private readonly PaypalGateway $gateway) {}
 
@@ -32,7 +32,7 @@ class PaypalOrderCreator
 
         $user->transactions()->create([
             'transaction_id' => $orderId,
-            'status' => WebsitePaypalTransaction::STATUS_CREATED,
+            'status' => PaypalTransactionStatus::Created,
             'amount' => StorefrontMoney::minorAmount($money),
             'currency' => $money->getCurrency()->getCurrencyCode(),
         ]);
