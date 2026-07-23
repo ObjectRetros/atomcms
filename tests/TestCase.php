@@ -5,17 +5,16 @@ namespace Tests;
 use App\Contracts\Rcon;
 use App\Services\FakeRcon;
 use Database\Seeders\TestingSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase;
+    use CreatesApplication;
 
     /**
-     * Seed once with migrate:fresh. Pest re-applies the RefreshDatabase trait,
-     * which shadows any method overrides here - these properties are the
-     * supported way to hook the stock refresh flow.
+     * Seed once with migrate:fresh. Pest applies the RefreshDatabase trait
+     * (see tests/Pest.php), which shadows any method overrides here - these
+     * properties are the supported way to hook the stock refresh flow.
      */
     protected $seed = true;
 
