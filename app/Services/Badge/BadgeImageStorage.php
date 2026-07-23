@@ -7,7 +7,7 @@ use App\Support\BadgeCode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-class BadgeImageStorage
+final readonly class BadgeImageStorage
 {
     public function __construct(
         private readonly RemoteBadgeImageFetcher $remoteImages,
