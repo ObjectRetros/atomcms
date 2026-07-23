@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Contracts\Rcon;
+use App\Actions\User\UpdateAccountSettings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountSettingsFormRequest;
 use App\Services\User\SessionService;
@@ -16,7 +16,7 @@ class AccountSettingsController extends Controller
     public function edit(): View
     {
         return view('user.settings.account', [
-            'user' => AuthenticatedUser::current()->load('settings:allow_name_change'),
+            'user' => AuthenticatedUser::current()->load('settings:id,user_id,allow_name_change'),
         ]);
     }
 
@@ -29,31 +29,10 @@ class AccountSettingsController extends Controller
         ]);
     }
 
-    public function update(AccountSettingsFormRequest $request, Rcon $rcon): RedirectResponse
+    public function update(AccountSettingsFormRequest $request, UpdateAccountSettings $updateAccountSettings): RedirectResponse
     {
-        $user = AuthenticatedUser::from($request);
-
-        if (! $rcon->isConnected() && $user->online) {
-            return back()->withErrors('You must be offline to change your account settings');
-        }
-
-        if ($user->mail !== $request->input('mail')) {
-            $user->update(['mail' => $request->input('mail')]);
-        }
-
-        // The motto is nullable in validation; clearing it means an empty string.
-        $motto = (string) $request->input('motto');
-
-        if ($user->motto !== $motto) {
-            $rcon->setMotto($user, $motto);
-            $user->update(['motto' => $motto]);
-        }
+        $updateAccountSettings->execute(AuthenticatedUser::from($request), $request->validated());
 
         return redirect()->route('settings.account.show')->with('success', __('Your account settings has been updated'));
-    }
-
-    public function twoFactor(): View
-    {
-        return view('user.settings.two-factor');
     }
 }
