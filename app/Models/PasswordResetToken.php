@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $email
- * @property int $token
+ * @property string $token
  * @property Carbon $created_at
  * @property-read User|null $user
  *
@@ -31,9 +31,12 @@ class PasswordResetToken extends Model
 
     protected $fillable = ['email', 'token', 'created_at'];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+        ];
+    }
 
     // timestamps = true, but we don't have "UPDATED_AT". To prevent an error, we set the default value to `null`.
     public const UPDATED_AT = null;
