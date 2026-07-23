@@ -3,16 +3,29 @@
 use App\Services\RconService;
 
 test('rcon follows the arcturus one-command-per-connection protocol', function () {
+    $script = <<<'PHP'
     $errorCode = 0;
     $errorMessage = '';
     $server = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
 
-    expect($server)->not->toBeFalse();
+    if ($server === false) {
+        fwrite(STDERR, "Unable to create RCON test server: {$errorMessage} ({$errorCode})");
+        exit(1);
+    }
 
     $address = stream_socket_get_name($server, false);
-    $port = (int) substr((string) $address, strrpos((string) $address, ':') + 1);
-    $script = <<<'PHP'
-    $server = fopen('php://fd/3', 'r+');
+    $separator = is_string($address) ? strrpos($address, ':') : false;
+    $port = $separator === false ? 0 : (int) substr($address, $separator + 1);
+
+    if ($port < 1 || $port > 65535) {
+        fwrite(STDERR, 'Unable to determine RCON test server port');
+        fclose($server);
+        exit(1);
+    }
+
+    fwrite(STDOUT, $port . PHP_EOL);
+    fflush(STDOUT);
+
     $commands = ['first', 'second'];
     $valid = true;
 
@@ -48,18 +61,24 @@ test('rcon follows the arcturus one-command-per-connection protocol', function (
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
-            3 => $server,
         ],
         $pipes,
     );
 
     expect($process)->not->toBeFalse();
 
-    fclose($server);
     fclose($pipes[0]);
 
     try {
-        $rcon = new RconService('127.0.0.1', $port);
+        $portLine = fgets($pipes[1]);
+        $port = filter_var(trim((string) $portLine), FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 65535],
+        ]);
+
+        expect($portLine)->not->toBeFalse()
+            ->and($port)->not->toBeFalse();
+
+        $rcon = new RconService('127.0.0.1', (int) $port);
         $first = $rcon->sendCommand('first', ['sequence' => 1]);
         $second = $rcon->sendCommand('second', ['sequence' => 2]);
     } finally {
