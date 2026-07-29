@@ -28,3 +28,35 @@ if (frame && frame.contentWindow) {
     });
 }
 // Disconnected from client end
+
+// Nitro is a single page app, so the frame only ever loads once. A later load means
+// something inside it navigated away - "Go to hotel" on Nitro's own disconnected
+// screen, for instance - which would leave the client buttons on top of the website.
+if (frame) {
+    const clientSource = new URL(
+        frame.getAttribute("src") || "",
+        window.location.href
+    );
+    const clientBase =
+        clientSource.origin + clientSource.pathname.replace(/[^/]*$/, "");
+
+    frame.addEventListener("load", () => {
+        let destination;
+
+        try {
+            destination = frame.contentWindow.location.href;
+        } catch (error) {
+            // Nitro is hosted on another origin, so we cannot tell where it went.
+            return;
+        }
+
+        if (
+            !destination.startsWith("http") ||
+            destination.startsWith(clientBase)
+        ) {
+            return;
+        }
+
+        window.location.replace(destination);
+    });
+}

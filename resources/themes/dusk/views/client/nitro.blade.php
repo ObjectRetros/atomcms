@@ -60,7 +60,7 @@
                 {{ __('Reload client') }}
             </button>
 
-            <a href="{{ route('me.show') }}">
+            <a data-turbolinks="false" href="{{ route('me.show') }}">
                 <x-form.secondary-button>
                     {{ __('Back to website') }}
                 </x-form.secondary-button>
