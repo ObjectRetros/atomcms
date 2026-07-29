@@ -22,8 +22,6 @@
     <env name="DB_PORT" value="3306"/>
     <env name="DB_DATABASE" value="testing"/>
     <env name="DB_ADA_DATABASE" value="testing_ada"/>
-    <env name="DB_USERNAME" value="root"/>
-    <env name="DB_PASSWORD" value="password"/>
     <env name="MAIL_MAILER" value="array"/>
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="SESSION_DRIVER" value="array"/>
