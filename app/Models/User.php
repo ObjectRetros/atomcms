@@ -12,7 +12,7 @@ use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Models\Builders\UserBuilder;
 use App\Models\Community\Staff\WebsiteStaffApplications;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Compositions\HasHome;
 use App\Models\Game\Player\UserSetting;
 use App\Models\Help\WebsiteHelpCenterTicket;
@@ -153,7 +153,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereReferralCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereSecretKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTeamId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorConfirmed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorConfirmedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorRecoveryCodes($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTwoFactorSecret($value)
@@ -200,18 +199,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         'motto',
         'look',
         'gender',
-        'rank',
-        'credits',
         'online',
-        'auth_ticket',
         'ip_register',
         'ip_current',
         'home_room',
         'referral_code',
-        'extra_rank',
-        'team_id',
-        'hidden_staff',
-        'two_factor_confirmed',
         'two_factor_confirmed_at',
     ];
 
@@ -233,7 +225,6 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'hidden_staff' => 'boolean',

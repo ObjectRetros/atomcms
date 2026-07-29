@@ -3,9 +3,10 @@
 namespace App\Filament\Resources\User\Bans;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\User\Bans\Pages\ManageBans;
+use App\Filament\Support\TruncatedTooltip;
 use App\Filament\Tables\Columns\UserAvatarColumn;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\User\Ban;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -94,15 +95,7 @@ class BanResource extends Resource
 
                 TextColumn::make('ban_reason')
                     ->label(__('filament::resources.columns.reason'))
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-
-                        return $state;
-                    })
+                    ->tooltip(fn (TextColumn $column): ?string => TruncatedTooltip::of($column))
                     ->limit(15)
                     ->searchable(),
 

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Game\Room;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,7 +39,10 @@ class ChatlogRoom extends Model
 
     public $timestamps = false;
 
-    protected $primaryKey = 'timestamp';
+    // chatlogs_room has no primary key, so keyed operations are unsupported.
+    protected $primaryKey = null;
+
+    public $incrementing = false;
 
     /** @return BelongsTo<Room, $this> */
     public function room(): BelongsTo

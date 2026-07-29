@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Atom\CameraWebs;
 
 use App\Emulator\Data\Feature;
 use App\Filament\Concerns\RequiresEmulatorFeature;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\CameraWebs\Pages\EditCameraWeb;
 use App\Filament\Resources\Atom\CameraWebs\Pages\ListCameraWeb;
 use App\Models\Miscellaneous\CameraWeb;
@@ -20,6 +21,7 @@ use Filament\Tables\Table;
 class CameraWebResource extends Resource
 {
     use RequiresEmulatorFeature;
+    use TranslatableResource;
 
     protected static ?string $model = CameraWeb::class;
 
@@ -29,9 +31,7 @@ class CameraWebResource extends Resource
 
     protected static ?string $slug = 'camera-web';
 
-    protected static ?string $pluralModelLabel = 'photos';
-
-    protected static ?string $navigationLabel = 'Web Camera';
+    public static string $translateIdentifier = 'camera-web';
 
     protected static function requiredEmulatorFeature(): Feature
     {

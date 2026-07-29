@@ -2,6 +2,7 @@
 
 namespace App\Models\Shop;
 
+use App\Enums\ShopItemType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $id
  * @property string $name
  * @property string|null $image
- * @property string $type One of: currency, furniture, badge, rank
+ * @property ShopItemType $type
  * @property string $type_value Currency "type:amount" (credits:100), furniture item id, badge code or rank id
  * @property bool $is_active
  * @property-read WebsiteShopPackageItem|null $pivot Present when accessed through a package's items() relation
@@ -23,6 +24,7 @@ class WebsiteShopItem extends Model
     protected function casts(): array
     {
         return [
+            'type' => ShopItemType::class,
             'is_active' => 'boolean',
         ];
     }

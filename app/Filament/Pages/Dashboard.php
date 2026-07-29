@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Concerns\TranslatableResource;
 use Filament\Pages\Dashboard as FilamentDashboard;
 
 class Dashboard extends FilamentDashboard
@@ -16,11 +16,4 @@ class Dashboard extends FilamentDashboard
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
 
     public static string $translateIdentifier = 'dashboard';
-
-    public static string $roleName = 'dashboard';
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can('view::admin::' . static::$roleName) ?? false;
-    }
 }

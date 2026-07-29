@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\AdaCatalogPages;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatesNavigationGroup;
 use App\Filament\Resources\Hotel\AdaCatalogPages\Pages\ManageAdaCatalogPages;
-use App\Filament\Traits\TranslatesNavigationGroup;
 use App\Models\Ada\AdaCatalogPage;
 use App\Models\Ada\AdaRole;
 use Filament\Actions\CreateAction;

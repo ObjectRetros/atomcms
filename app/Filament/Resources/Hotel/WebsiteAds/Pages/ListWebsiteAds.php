@@ -6,6 +6,7 @@ use App\Filament\Resources\Hotel\WebsiteAds\WebsiteAdResource;
 use App\Models\WebsiteAd;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
 
@@ -13,7 +14,7 @@ class ListWebsiteAds extends ListRecords
 {
     protected static string $resource = WebsiteAdResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make()
@@ -24,7 +25,11 @@ class ListWebsiteAds extends ListRecords
                 ->color('info')
                 ->action(function () {
                     Artisan::call('import:ads-data');
-                    session()->flash('success', 'ADS data imported successfully!');
+
+                    Notification::make()
+                        ->title('ADS data imported successfully!')
+                        ->success()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Import ADS Data')
@@ -33,9 +38,17 @@ class ListWebsiteAds extends ListRecords
             Action::make('emptyTable')
                 ->label('Empty Database Table')
                 ->color('danger')
+                ->visible(fn (): bool => auth()->user()?->can('deleteAny', WebsiteAd::class) ?? false)
                 ->action(function () {
-                    WebsiteAd::truncate();
-                    session()->flash('success', 'The table has been emptied successfully!');
+                    // Delete one by one so the model's deleting hook removes
+                    // the uploaded files from the ads disk; truncate would
+                    // orphan them.
+                    WebsiteAd::query()->each(fn (WebsiteAd $ad) => $ad->delete());
+
+                    Notification::make()
+                        ->title('The table has been emptied successfully!')
+                        ->success()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Empty Table')

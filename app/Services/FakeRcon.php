@@ -20,6 +20,12 @@ class FakeRcon implements Rcon
      */
     public array $calls = [];
 
+    /**
+     * How many times isConnected() was probed. Tracked separately from
+     * $calls so existing call-sequence assertions stay unaffected.
+     */
+    public int $connectivityProbes = 0;
+
     /** @var list<RconResponse> */
     private array $responses = [];
 
@@ -41,6 +47,8 @@ class FakeRcon implements Rcon
 
     public function isConnected(): bool
     {
+        $this->connectivityProbes++;
+
         return $this->connected;
     }
 

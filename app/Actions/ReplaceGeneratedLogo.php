@@ -52,7 +52,7 @@ final class ReplaceGeneratedLogo
                 'comment' => 'CMS logo path',
             ]);
 
-            SettingsService::clearCache();
+            app(SettingsService::class)->refresh();
         } catch (Throwable $exception) {
             $this->delete($storedPath, 'new');
 

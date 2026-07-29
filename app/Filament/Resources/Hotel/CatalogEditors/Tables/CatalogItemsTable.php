@@ -30,14 +30,14 @@ class CatalogItemsTable
             ->defaultSort('order_number')
             ->paginated(false)
             ->columns(self::columns($icons))
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->label('Edit')
                     ->icon('heroicon-m-pencil-square')
                     ->url(fn (CatalogItem $record) => CatalogEditorResource::getUrl('edit-item', ['item' => $record->id]))
                     ->extraAttributes(['wire:navigate' => true]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     self::massEditAction(),
                     self::moveToPageAction($reorder),

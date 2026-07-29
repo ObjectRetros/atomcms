@@ -15,6 +15,7 @@ class UserObserver
         private readonly CurrencyRepository $currencies,
         private readonly PlayerRepository $players,
         private readonly PlayerSettingsRepository $settings,
+        private readonly CreateDefaultHome $defaultHome,
     ) {}
 
     public function created(User $user): void
@@ -25,7 +26,7 @@ class UserObserver
 
         $this->grantStartingBalances($user);
 
-        CreateDefaultHome::for($user);
+        $this->defaultHome->execute($user);
     }
 
     public function updated(User $user): void

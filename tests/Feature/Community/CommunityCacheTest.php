@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\Game\Permission;
 use App\Models\User;
 use App\Services\Community\StaffService;
@@ -73,12 +73,12 @@ test('staff caches are invalidated when displayed users and permissions change',
         ->and($service->fetchEmployeeIds())
         ->toContain($staff->id);
 
-    $staff->update(['rank' => 1]);
+    $staff->forceFill(['rank' => 1])->save();
 
     expect($service->fetchEmployeeIds())->not->toContain($staff->id);
 
     Permission::findOrFail(5)->update(['rank_name' => 'Cache Updated Rank']);
-    $staff->update(['rank' => 5]);
+    $staff->forceFill(['rank' => 5])->save();
 
     expect($service->fetchStaffPositions($viewer)->firstWhere('id', 5)->rank_name)
         ->toBe('Cache Updated Rank');

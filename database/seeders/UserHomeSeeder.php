@@ -13,11 +13,11 @@ class UserHomeSeeder extends Seeder
      * Users who already own these items are left untouched, so the
      * seeder is safe to re-run on existing hotels.
      */
-    public function run(): void
+    public function run(CreateDefaultHome $defaultHome): void
     {
-        User::query()->chunkById(100, function ($users) {
+        User::query()->chunkById(100, function ($users) use ($defaultHome) {
             foreach ($users as $user) {
-                CreateDefaultHome::for($user);
+                $defaultHome->execute($user);
             }
         });
     }

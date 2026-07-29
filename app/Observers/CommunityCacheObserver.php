@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Emulator\Contracts\RankRepository;
 use App\Emulator\Models\Rank;
-use App\Models\Community\Staff\WebsiteTeam as StaffWebsiteTeam;
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\User;
 use App\Support\CommunityCache;
@@ -82,7 +81,7 @@ class CommunityCacheObserver
             return;
         }
 
-        if ($model instanceof StaffWebsiteTeam || $model instanceof WebsiteTeam) {
+        if ($model instanceof WebsiteTeam) {
             CommunityCache::forgetTeams();
         }
     }

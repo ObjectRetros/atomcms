@@ -5,6 +5,7 @@ namespace App\Models\Miscellaneous;
 use App\Models\Room;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $timestamp
  * @property string $url
  * @property int $visible
- * @property-read mixed $formatted_date
+ * @property-read string $formatted_date
  * @property-read Room|null $room
  * @property-read User|null $user
  *
@@ -42,12 +43,21 @@ class CameraWeb extends Model
 
     public $timestamps = false;
 
-    protected $casts = [
-        'timestamp' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'timestamp' => 'datetime',
+        ];
+    }
 
-    /** @param Builder<static> $query */
-    public function scopePeriod(Builder $query, string $period): void
+    /**
+     * The column stores raw unix seconds, so the comparisons stay in
+     * timestamp form even though reads are cast to Carbon.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function period(Builder $query, string $period): void
     {
         if ($period == 'today') {
             $query->where('timestamp', '>=', Carbon::today()->timestamp);
@@ -78,7 +88,7 @@ class CameraWeb extends Model
     public function formattedDate(): Attribute
     {
         return new Attribute(
-            get: fn () => Carbon::parse($this->timestamp)->format('Y-m-d H:i'),
+            get: fn (): string => $this->timestamp->format('Y-m-d H:i'),
         );
     }
 }

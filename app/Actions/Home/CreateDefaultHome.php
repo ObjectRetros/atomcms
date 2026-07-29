@@ -8,7 +8,7 @@ use App\Models\User;
 
 class CreateDefaultHome
 {
-    public static function for(User $user): void
+    public function execute(User $user): void
     {
         $ownedItemIds = $user->homeItems()->pluck('home_item_id');
 
@@ -25,8 +25,8 @@ class CreateDefaultHome
         $widget = $hasProfileWidget ? null : HomeItem::where('type', HomeItemType::Widget)->where('name', 'My Profile')->first();
 
         $items = array_values(array_filter([
-            $background ? self::placedItem($user, $background, x: 0, y: 0, z: 0, theme: null) : null,
-            $widget ? self::placedItem($user, $widget, x: 300, y: 100, z: 1, theme: 'default') : null,
+            $background ? $this->placedItem($user, $background, x: 0, y: 0, z: 0, theme: null) : null,
+            $widget ? $this->placedItem($user, $widget, x: 300, y: 100, z: 1, theme: 'default') : null,
         ]));
 
         if ($items) {
@@ -37,7 +37,7 @@ class CreateDefaultHome
     /**
      * @return array<string, mixed>
      */
-    private static function placedItem(User $user, HomeItem $item, int $x, int $y, int $z, ?string $theme): array
+    private function placedItem(User $user, HomeItem $item, int $x, int $y, int $z, ?string $theme): array
     {
         $now = now();
 

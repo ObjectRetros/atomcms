@@ -10,6 +10,7 @@ return [
         'User Management' => 'Gerenciamento de Usuários',
         'Profile Management' => 'Gerenciamento de Perfil',
         'Shop' => 'Loja',
+        'Shop Management' => 'Gerenciamento da loja',
         'Logs' => 'Logs',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Gerenciar Mensagens de Quartos',
             'label' => 'Mensagem',
             'plural' => 'Mensagens',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Câmera web',
+            'label' => 'Foto',
+            'plural' => 'Fotos',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Emblemas desenhados',
+            'label' => 'Emblema desenhado',
+            'plural' => 'Emblemas desenhados',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Editor de emblemas',
+            'label' => 'Texto do emblema',
+            'plural' => 'Textos dos emblemas',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Candidaturas para staff',
+            'label' => 'Candidatura',
+            'plural' => 'Candidaturas',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Vagas abertas',
+            'label' => 'Vaga aberta',
+            'plural' => 'Vagas abertas',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Imagens de anúncios',
+            'label' => 'Anúncio',
+            'plural' => 'Anúncios',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Gerenciar itens',
+            'label' => 'Item',
+            'plural' => 'Itens',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Gerenciar pacotes',
+            'label' => 'Pacote',
+            'plural' => 'Pacotes',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Páginas do catálogo',
+            'label' => 'Página do catálogo',
+            'plural' => 'Páginas do catálogo',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Editor do catálogo',
+            'label' => 'Item do catálogo',
+            'plural' => 'Itens do catálogo',
         ],
 
         // Relations
@@ -335,7 +386,7 @@ return [
 
     'columns' => [
         'id' => 'ID',
-		`'user_id' => 'User ID',
+		'user_id' => 'User ID',
 		'room_id' => 'Room ID',
         'badge' => 'Emblema',
         'name' => 'Nome',

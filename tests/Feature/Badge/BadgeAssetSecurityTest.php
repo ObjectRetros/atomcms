@@ -88,5 +88,13 @@ test('badge storage rejects invalid dimensions and never writes outside its disk
 
     Storage::disk('badges')->assertExists('BADGE.gif');
 
-    expect(fileperms(Storage::disk('badges')->path('BADGE.gif')) & 0777)->toBe(0644);
+    $permissions = fileperms(Storage::disk('badges')->path('BADGE.gif'));
+    expect($permissions)->not->toBeFalse();
+
+    $mode = (int) $permissions & 0777;
+    expect($mode & 0111)->toBe(0);
+
+    if (PHP_OS_FAMILY !== 'Windows') {
+        expect($mode)->toBe(0644);
+    }
 });

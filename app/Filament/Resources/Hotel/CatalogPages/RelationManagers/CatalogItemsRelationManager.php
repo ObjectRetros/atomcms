@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hotel\CatalogPages\RelationManagers;
 
+use App\Filament\Resources\Hotel\CatalogEditors\Forms\ItemBaseForm;
 use App\Models\Game\Furniture\ItemBase;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -42,90 +43,7 @@ class CatalogItemsRelationManager extends RelationManager
                     ->searchable()
                     ->required()
                     ->preload()
-                    ->createOptionForm([
-                        TextInput::make('sprite_id')
-                            ->label('Sprite ID')
-                            ->numeric()
-                            ->default(0),
-                        TextInput::make('public_name')
-                            ->maxLength(56),
-                        TextInput::make('item_name')
-                            ->required()
-                            ->maxLength(70),
-                        TextInput::make('type')
-                            ->default('s')
-                            ->maxLength(3),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('width')
-                                    ->numeric()
-                                    ->default(1),
-                                TextInput::make('length')
-                                    ->numeric()
-                                    ->default(1),
-                                TextInput::make('stack_height')
-                                    ->numeric()
-                                    ->default(0.00),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_stack')
-                                    ->default(true),
-                                Toggle::make('allow_sit')
-                                    ->default(false),
-                                Toggle::make('allow_lay')
-                                    ->default(false),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_walk')
-                                    ->default(false),
-                                Toggle::make('allow_gift')
-                                    ->default(true),
-                                Toggle::make('allow_trade')
-                                    ->default(true),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_recycle')
-                                    ->default(false),
-                                Toggle::make('allow_marketplace_sell')
-                                    ->default(false),
-                                Toggle::make('allow_inventory_stack')
-                                    ->default(true),
-                            ]),
-                        TextInput::make('interaction_type')
-                            ->default('default')
-                            ->maxLength(500),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('interaction_modes_count')
-                                    ->numeric()
-                                    ->default(1),
-                                TextInput::make('vending_ids')
-                                    ->default('0')
-                                    ->maxLength(255),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('multiheight')
-                                    ->default('0')
-                                    ->maxLength(50),
-                                TextInput::make('customparams')
-                                    ->maxLength(256),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('effect_id_male')
-                                    ->numeric()
-                                    ->default(0),
-                                TextInput::make('effect_id_female')
-                                    ->numeric()
-                                    ->default(0),
-                            ]),
-                        TextInput::make('clothing_on_walk')
-                            ->maxLength(255),
-                    ])
+                    ->createOptionForm(ItemBaseForm::schema())
                     ->columnSpanFull(),
 
                 TextInput::make('catalog_name')
@@ -348,100 +266,7 @@ class CatalogItemsRelationManager extends RelationManager
                             'clothing_on_walk' => $itemBase->clothing_on_walk,
                         ];
                     })
-                    ->schema([
-                        TextInput::make('sprite_id')
-                            ->label('Sprite ID')
-                            ->numeric()
-                            ->nullable()
-                            ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                        TextInput::make('public_name')
-                            ->label('Public Name')
-                            ->maxLength(56)
-                            ->nullable()
-                            ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                        TextInput::make('item_name')
-                            ->label('Item Name')
-                            ->required()
-                            ->maxLength(70),
-                        TextInput::make('type')
-                            ->maxLength(3)
-                            ->nullable()
-                            ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('width')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                                TextInput::make('length')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                                TextInput::make('stack_height')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_stack'),
-                                Toggle::make('allow_sit'),
-                                Toggle::make('allow_lay'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_walk'),
-                                Toggle::make('allow_gift'),
-                                Toggle::make('allow_trade'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('allow_recycle'),
-                                Toggle::make('allow_marketplace_sell'),
-                                Toggle::make('allow_inventory_stack'),
-                            ]),
-                        TextInput::make('interaction_type')
-                            ->maxLength(500)
-                            ->nullable()
-                            ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('interaction_modes_count')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                                TextInput::make('vending_ids')
-                                    ->maxLength(255)
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('multiheight')
-                                    ->maxLength(50)
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                                TextInput::make('customparams')
-                                    ->maxLength(256)
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('effect_id_male')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                                TextInput::make('effect_id_female')
-                                    ->numeric()
-                                    ->nullable()
-                                    ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                            ]),
-                        TextInput::make('clothing_on_walk')
-                            ->maxLength(255)
-                            ->nullable()
-                            ->dehydrateStateUsing(fn ($state) => $state === null ? '' : $state),
-                    ])
+                    ->schema(ItemBaseForm::schema())
                     ->action(function (array $data, $record): void {
                         // Transform any null or empty values to empty strings
                         $data = collect($data)->map(function ($value) {
@@ -455,7 +280,7 @@ class CatalogItemsRelationManager extends RelationManager
                             return $value;
                         })->toArray();
 
-                        $record->itemBase->forceFill($data)->save();
+                        $record->itemBase->update($data);
                     })
                     ->visible(fn ($record) => $record->itemBase !== null),
                 DeleteAction::make(),
