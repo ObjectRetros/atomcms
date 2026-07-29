@@ -20,7 +20,7 @@
 
             {{-- Title --}}
             <div class="mb-2 flex flex-col items-center" :id="$id('modal-title')">
-                {{ $title }}
+                {{ $title ?? '' }}
             </div>
 
             {{-- Content --}}
