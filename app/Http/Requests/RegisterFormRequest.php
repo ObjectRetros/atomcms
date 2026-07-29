@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use App\Actions\Fortify\Rules\PasswordValidationRules;
 use App\Emulator\Emulator;
+use App\Rules\CloudflareTurnstileRule;
 use App\Rules\GoogleRecaptchaRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class RegisterFormRequest extends FormRequest
 {
@@ -24,7 +24,7 @@ class RegisterFormRequest extends FormRequest
             'password' => $this->passwordRules(),
             'terms' => ['required', 'accepted'],
             'g-recaptcha-response' => [new GoogleRecaptchaRule],
-            'cf-turnstile-response' => [app(Turnstile::class)],
+            'cf-turnstile-response' => [new CloudflareTurnstileRule],
         ];
     }
 

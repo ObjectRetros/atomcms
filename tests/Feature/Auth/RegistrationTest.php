@@ -131,3 +131,34 @@ test('the register routes follow the fortify naming convention', function () {
 
     $this->get(route('register'))->assertOk();
 });
+
+test('an enabled turnstile rejects a missing captcha token with a validation error', function () {
+    installHotel();
+    setSetting('cloudflare_turnstile_enabled', '1');
+    config()->set('turnstile.turnstile_secret_key', 'test-secret');
+
+    register()->assertSessionHasErrors('cf-turnstile-response');
+
+    $this->assertGuest();
+
+    expect(User::where('username', 'Tester')->exists())->toBeFalse();
+});
+
+test('a disabled turnstile never blocks registration', function () {
+    installHotel();
+    setSetting('cloudflare_turnstile_enabled', '0');
+
+    register()->assertRedirect(RouteServiceProvider::HOME);
+
+    $this->assertAuthenticated();
+});
+
+test('an enabled turnstile without configured keys does not block registration', function () {
+    installHotel();
+    setSetting('cloudflare_turnstile_enabled', '1');
+    config()->set('turnstile.turnstile_secret_key', null);
+
+    register()->assertRedirect(RouteServiceProvider::HOME);
+
+    $this->assertAuthenticated();
+});

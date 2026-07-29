@@ -182,7 +182,7 @@ class WebsiteSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'cloudflare_turnstile_enabled',
-                'value' => '1',
+                'value' => '0',
                 'comment' => 'Determines whether cloudflare turnstile is enabled or not - Do not enable if google recaptche is enabled',
             ],
             [
