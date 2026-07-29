@@ -6,11 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class PurchasePackageRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, mixed>
      */

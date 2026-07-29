@@ -13,7 +13,7 @@
 
             <div class="flex w-full justify-between">
                 <div class="w-full !lg:w-[420px]">
-                    <form method="POST" action="{{ route('register') }}">
+                    <form method="POST" action="{{ route('register.store') }}">
                         @csrf
 
                         <div>

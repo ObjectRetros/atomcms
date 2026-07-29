@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Home;
 use App\Exceptions\HomePurchaseException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Home\BuyHomeItemRequest;
+use App\Models\Home\UserHomeItem;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use Illuminate\Http\JsonResponse;
@@ -40,30 +41,21 @@ class ItemController extends Controller
         ]);
     }
 
-    public function getWidgetContent(User $user, int $itemId): JsonResponse
+    public function getWidgetContent(User $user, UserHomeItem $homeItem): JsonResponse
     {
-        $item = $user->homeItems()->defaultRelationships()->find($itemId);
+        // The scoped route binding already 404s when the item does not belong
+        // to the user; an orphaned item definition renders the same JSON 404
+        // through the exception handler.
+        $definition = $homeItem->load('homeItem:id,type,name,image')->homeItem;
 
-        if ($item === null) {
-            return $this->jsonResponse([
-                'message' => __('Home item not found.'),
-            ], 404);
-        }
+        abort_if($definition === null, 404);
 
-        $homeItem = $item->homeItem;
-
-        if ($homeItem === null) {
-            return $this->jsonResponse([
-                'message' => __('Home item not found.'),
-            ], 404);
-        }
-
-        $item->setWidgetContent($user);
+        $homeItem->setWidgetContent($user);
 
         return $this->jsonResponse([
-            'name' => $homeItem->name,
-            'widget_type' => $item->widget_type,
-            'content' => $item->content,
+            'name' => $definition->name,
+            'widget_type' => $homeItem->widget_type,
+            'content' => $homeItem->content,
         ]);
     }
 }

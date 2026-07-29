@@ -2,7 +2,9 @@
 
 use App\Livewire\ArticleComments;
 use App\Models\Articles\WebsiteArticle;
+use App\Models\Articles\WebsiteArticleReaction;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 function publishArticle(User $author): WebsiteArticle
@@ -125,6 +127,51 @@ test('a locked article reports the failure instead of flashing success', functio
         ->assertSessionMissing('success');
 
     expect($article->comments()->count())->toBe(0);
+});
+
+test('an invalid reaction is rejected with a validation error', function () {
+    $article = publishArticle($this->author);
+
+    $this->actingAs($this->reader)
+        ->postJson(route('article.toggle-reaction', $article->slug), ['reaction' => 'not-a-reaction'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('reaction');
+
+    $this->actingAs($this->reader)
+        ->postJson(route('article.toggle-reaction', $article->slug), [])
+        ->assertUnprocessable();
+
+    expect($article->reactions()->count())->toBe(0);
+});
+
+test('a duplicate-key race while reacting toggles instead of erroring', function () {
+    $article = publishArticle($this->author);
+    $reader = $this->reader;
+
+    // Simulate a concurrent tap that wins the insert between the service's
+    // existence check and its own insert: sneak the row in right before the
+    // model persists, so the unique index rejects the second insert.
+    WebsiteArticleReaction::creating(function (WebsiteArticleReaction $model) use ($article, $reader) {
+        DB::table('website_article_reactions')->insert([
+            'article_id' => $article->id,
+            'user_id' => $reader->id,
+            'reaction' => 'like',
+            'active' => true,
+        ]);
+    });
+
+    try {
+        $this->actingAs($reader)
+            ->postJson(route('article.toggle-reaction', $article->slug), ['reaction' => 'like'])
+            ->assertOk()
+            ->assertJson(['success' => true, 'added' => false]);
+    } finally {
+        WebsiteArticleReaction::flushEventListeners();
+    }
+
+    // The concurrent pair of taps ends as a clean toggle: one row, inactive.
+    expect(WebsiteArticleReaction::where('article_id', $article->id)->count())->toBe(1)
+        ->and($article->reactions()->count())->toBe(0);
 });
 
 test('a reader can toggle a reaction', function () {

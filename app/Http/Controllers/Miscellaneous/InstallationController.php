@@ -54,9 +54,10 @@ class InstallationController extends Controller
 
     public function saveStepSettings(Request $request): RedirectResponse
     {
-        $this->updateSettings($request);
-
         $installation = $this->installation();
+
+        $this->updateSettings($request, (int) $installation->step);
+
         $installation->update(['step' => $this->clamp($installation->step + 1)]);
 
         return to_route('installation.show-step', $installation->step);
@@ -104,9 +105,20 @@ class InstallationController extends Controller
         return to_route('welcome');
     }
 
-    private function updateSettings(Request $request): void
+    /**
+     * Only the keys that belong to the step being saved may be written, and
+     * only with scalar string values; everything else in the request payload
+     * is ignored.
+     */
+    private function updateSettings(Request $request, int $step): void
     {
+        $allowedKeys = $this->getSettingsForStep($step)->pluck('key');
+
         foreach ($request->except('_token') as $key => $value) {
+            if (! $allowedKeys->contains($key) || (! is_string($value) && $value !== null)) {
+                continue;
+            }
+
             WebsiteSetting::where('key', '=', $key)->update([
                 'value' => $value ?? '',
             ]);
@@ -125,11 +137,18 @@ class InstallationController extends Controller
         return max(WebsiteInstallation::FIRST_STEP, min(WebsiteInstallation::LAST_STEP, $step));
     }
 
-    /** @return Collection<int, WebsiteSetting> */
+    /**
+     * The wizard splits every setting into SETTING_STEPS equal chunks; the
+     * final step is the completion screen and carries none.
+     *
+     * @return Collection<int, WebsiteSetting>
+     */
     private function getSettingsForStep(int $step): Collection
     {
-        $chunkSize = max(1, (int) ceil(WebsiteSetting::count() / WebsiteInstallation::SETTING_STEPS));
-        $chunks = array_chunk(WebsiteSetting::all()->pluck('key')->toArray(), $chunkSize);
+        $keys = WebsiteSetting::query()->orderBy('id')->pluck('key')->all();
+
+        $chunkSize = max(1, (int) ceil(count($keys) / WebsiteInstallation::SETTING_STEPS));
+        $chunks = array_chunk($keys, $chunkSize);
 
         // The completion step carries no settings, and so does any chunk the
         // split did not produce.
@@ -137,7 +156,8 @@ class InstallationController extends Controller
 
         return WebsiteSetting::query()
             ->whereIn('key', $settings)
-            ->select(['key', 'value', 'comment'])
+            ->orderBy('id')
+            ->select(['id', 'key', 'value', 'comment'])
             ->get();
     }
 }

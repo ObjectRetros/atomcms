@@ -47,23 +47,6 @@ class WebsiteArticleReaction extends Model
         'article_id',
     ];
 
-    public static function toggleFor(WebsiteArticle $article, User $user, string $reaction): self
-    {
-        $record = self::query()->firstOrCreate([
-            'article_id' => $article->id,
-            'user_id' => $user->id,
-            'reaction' => $reaction,
-        ], [
-            'active' => true,
-        ]);
-
-        if (! $record->wasRecentlyCreated) {
-            $record->update(['active' => ! $record->active]);
-        }
-
-        return $record;
-    }
-
     /** @return BelongsTo<WebsiteArticle, $this> */
     public function article(): BelongsTo
     {
