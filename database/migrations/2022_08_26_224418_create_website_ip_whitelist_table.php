@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_ip_whitelist')) {
-            Schema::rename('website_ip_whitelist', sprintf('website_ip_whitelist_%s', time()));
-        }
-
         Schema::create('website_ip_whitelist', function (Blueprint $table) {
             $table->id();
             $table->string('ip_address');

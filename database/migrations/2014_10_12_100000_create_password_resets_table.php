@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('password_resets')) {
-            Schema::rename('password_resets', sprintf('password_resets_%s', time()));
-        }
-
         Schema::create('password_resets', function (Blueprint $table) {
             $table->string('email')->index();
             $table->string('token');

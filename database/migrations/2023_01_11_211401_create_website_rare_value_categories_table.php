@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_rare_value_categories')) {
-            Schema::rename('website_rare_value_categories', sprintf('website_rare_value_categories_%s', time()));
-        }
-
         Schema::create('website_rare_value_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();

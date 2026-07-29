@@ -11,11 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('sessions')) {
-            dropForeignKeyIfExists('sessions', 'user_id');
-            Schema::rename('sessions', sprintf('sessions_%s', time()));
-        }
-
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
