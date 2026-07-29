@@ -2,9 +2,8 @@
 
 namespace App\Models\Game\Guild;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -12,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $user_id
  * @property int $level_id
  * @property int $member_since
- * @property-read Collection<int, Guild> $guilds
- * @property-read int|null $guilds_count
+ * @property-read Guild|null $guild
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GuildMember newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GuildMember newQuery()
@@ -34,9 +32,9 @@ class GuildMember extends Model
 
     public $timestamps = false;
 
-    /** @return HasMany<Guild, $this> */
-    public function guilds(): HasMany
+    /** @return BelongsTo<Guild, $this> */
+    public function guild(): BelongsTo
     {
-        return $this->hasMany(Guild::class);
+        return $this->belongsTo(Guild::class, 'guild_id');
     }
 }

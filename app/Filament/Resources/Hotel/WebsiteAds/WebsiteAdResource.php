@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Hotel\WebsiteAds;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\WebsiteAds\Pages\CreateWebsiteAd;
 use App\Filament\Resources\Hotel\WebsiteAds\Pages\ListWebsiteAds;
 use App\Models\WebsiteAd;
@@ -18,13 +19,15 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class WebsiteAdResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteAd::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
 
-    protected static ?string $navigationLabel = 'ADS Images';
-
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
+
+    public static string $translateIdentifier = 'website-ads';
 
     public static function form(Schema $schema): Schema
     {

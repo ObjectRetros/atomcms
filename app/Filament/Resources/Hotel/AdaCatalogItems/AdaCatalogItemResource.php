@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\AdaCatalogItems;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatesNavigationGroup;
 use App\Filament\Resources\Hotel\AdaCatalogItems\Pages\ManageAdaCatalogItems;
-use App\Filament\Traits\TranslatesNavigationGroup;
 use App\Models\Ada\AdaCatalogItem;
 use App\Models\Ada\AdaCatalogPage;
 use App\Models\Ada\AdaFurnitureItem;

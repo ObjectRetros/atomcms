@@ -27,14 +27,13 @@ class ArcturusBadgeRepository implements BadgeRepository
 
     public function grant(User $user, string $badge): void
     {
-        // users_badges has no single-column key Eloquent can address, so guard
-        // for idempotency and insert through the query builder.
+        // Neither emulator constrains ownership in the database, so the
+        // driver guarantees idempotency itself.
         if ($this->relation($user)->where('badge_code', $badge)->exists()) {
             return;
         }
 
-        UserBadge::query()->insert([
-            'user_id' => $user->id,
+        $this->relation($user)->create([
             'slot_id' => 0,
             'badge_code' => $badge,
         ]);

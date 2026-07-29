@@ -34,15 +34,21 @@ class CommandLog extends Model
 
     protected $table = 'commandlogs';
 
-    protected $primaryKey = 'timestamp';
+    // commandlogs has no primary key, so keyed operations are unsupported.
+    protected $primaryKey = null;
+
+    public $incrementing = false;
 
     protected $guarded = [];
 
     public $timestamps = false;
 
-    protected $casts = [
-        'timestamp' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'timestamp' => 'datetime',
+        ];
+    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

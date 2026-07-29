@@ -1,5 +1,7 @@
 <?php
 
+use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\Login;
 use App\Models\Miscellaneous\WebsitePermission;
 use App\Models\User;
 use App\Models\User\Ban;
@@ -7,12 +9,52 @@ use App\Models\WebsiteHousekeepingPermission;
 use App\Policies\BanPolicy;
 use App\Policies\HousekeepingPolicy;
 use App\Policies\WebsiteHelpCenterTicketPolicy;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Livewire\Livewire;
 
 test('guests are redirected away from the housekeeping panel', function () {
     installHotel();
 
     $this->get('/housekeeping')->assertRedirect();
+});
+
+test('housekeeping routes use the application login and dashboard pages', function () {
+    expect(Route::getRoutes()->getByName('filament.housekeeping.auth.login')?->getActionName())
+        ->toBe(Login::class)
+        ->and(Route::getRoutes()->getByName('filament.housekeeping.pages.dashboard')?->getActionName())
+        ->toBe(Dashboard::class);
+});
+
+test('staff can log into housekeeping with their username', function () {
+    installHotel();
+    grantHousekeepingPermission('can_access_housekeeping', 6);
+
+    $staff = User::factory()->create(['rank' => 6]);
+
+    Filament::setCurrentPanel(Filament::getPanel('housekeeping'));
+
+    Livewire::test(Login::class)
+        ->set('data.username', $staff->username)
+        ->set('data.password', 'password')
+        ->set('data.remember', false)
+        ->call('authenticate')
+        ->assertHasNoErrors();
+
+    $this->assertAuthenticatedAs($staff);
+});
+
+test('staff with housekeeping access can view the dashboard', function () {
+    installHotel();
+    grantHousekeepingPermission('can_access_housekeeping', 6);
+    setSetting('force_staff_2fa', '0');
+
+    $staff = User::factory()->create(['rank' => 6]);
+
+    $this->actingAs($staff)
+        ->get('/housekeeping')
+        ->assertOk();
 });
 
 test('users without the housekeeping permission are forbidden', function () {

@@ -36,7 +36,9 @@ class ArcturusPlayerRepository implements PlayerRepository
             $sso = sprintf('%s-%s', Str::replace(' ', '', setting('hotel_name', 'Atom')), Str::uuid());
 
             if (! User::where('auth_ticket', $sso)->exists()) {
-                $user->update(['auth_ticket' => $sso]);
+                // auth_ticket is guarded against mass assignment, so this
+                // trusted path has to write it explicitly.
+                $user->forceFill(['auth_ticket' => $sso])->save();
 
                 return $sso;
             }
@@ -53,7 +55,10 @@ class ArcturusPlayerRepository implements PlayerRepository
                 MessengerFriendship::query()->where('user_one_id', $user->id)->select('user_two_id'),
             ),
         )
-            ->inRandomOrder()
+            // Ordered by recency rather than at random: inRandomOrder()
+            // makes the server sort the whole matching set on every
+            // profile view, and the widget only shows a handful.
+            ->orderByDesc('users.last_online')
             ->limit($limit)
             ->get(['users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online']);
     }

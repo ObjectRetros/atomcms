@@ -10,6 +10,7 @@ return [
         'User Management' => 'Gebruikersbeheer',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Shop',
+        'Shop Management' => 'Shopbeheer',
         'Logs' => 'Logs',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Webcamera',
+            'label' => 'Foto',
+            'plural' => 'Foto\'s',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Getekende badges',
+            'label' => 'Getekende badge',
+            'plural' => 'Getekende badges',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Badge-editor',
+            'label' => 'Badgetekst',
+            'plural' => 'Badgeteksten',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Staffsollicitaties',
+            'label' => 'Sollicitatie',
+            'plural' => 'Sollicitaties',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Openstaande vacatures',
+            'label' => 'Vacature',
+            'plural' => 'Vacatures',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Advertentieafbeeldingen',
+            'label' => 'Advertentie',
+            'plural' => 'Advertenties',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Items beheren',
+            'label' => 'Item',
+            'plural' => 'Items',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Pakketten beheren',
+            'label' => 'Pakket',
+            'plural' => 'Pakketten',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Cataloguspagina\'s',
+            'label' => 'Cataloguspagina',
+            'plural' => 'Cataloguspagina\'s',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Cataloguseditor',
+            'label' => 'Catalogusitem',
+            'plural' => 'Catalogusitems',
         ],
 
         // Relations

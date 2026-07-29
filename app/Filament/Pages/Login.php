@@ -2,99 +2,19 @@
 
 namespace App\Filament\Pages;
 
-use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
-use Filament\Facades\Filament;
-use Filament\Forms\Components\Checkbox;
+use Filament\Auth\Pages\Login as FilamentLogin;
 use Filament\Forms\Components\TextInput;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
+use SensitiveParameter;
 
-class Login extends \Filament\Auth\Pages\Login
+class Login extends FilamentLogin
 {
-    public string $username = '';
-
-    public function authenticate(): ?LoginResponse
-    {
-        try {
-            $this->rateLimit(5);
-        } catch (TooManyRequestsException $exception) {
-            Notification::make()
-                ->title(__('filament-panels::pages/auth/login.notifications.throttled.title', [
-                    'seconds' => $exception->secondsUntilAvailable,
-                    'minutes' => ceil($exception->secondsUntilAvailable / 60),
-                ]))
-                ->body($this->throttledNotificationBody($exception))
-                ->danger()
-                ->send();
-
-            return null;
-        }
-
-        $data = $this->form->getState();
-
-        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
-            $this->throwFailureValidationException();
-        }
-
-        $user = Filament::auth()->user();
-        $panel = Filament::getCurrentOrDefaultPanel();
-
-        if (
-            ($user instanceof FilamentUser) &&
-            ($panel === null || ! $user->canAccessPanel($panel))
-        ) {
-            Filament::auth()->logout();
-
-            $this->throwFailureValidationException();
-        }
-
-        session()->regenerate();
-
-        return app(LoginResponse::class);
-    }
-
     protected function throwFailureValidationException(): never
     {
         throw ValidationException::withMessages([
-            'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
+            'data.username' => __('filament-panels::auth/pages/login.messages.failed'),
         ]);
-    }
-
-    private function throttledNotificationBody(TooManyRequestsException $exception): ?string
-    {
-        $key = 'filament-panels::pages/auth/login.notifications.throttled.body';
-
-        if (! Lang::has($key)) {
-            return null;
-        }
-
-        $body = __($key, [
-            'seconds' => $exception->secondsUntilAvailable,
-            'minutes' => ceil($exception->secondsUntilAvailable / 60),
-        ]);
-
-        return is_string($body) ? $body : null;
-    }
-
-    /** @return array<int, Component> */
-    protected function getFormSchema(): array
-    {
-        return [
-            TextInput::make('username')
-                ->label(__('filament::login.fields.username.label'))
-                ->required()
-                ->autocomplete(),
-            TextInput::make('password')
-                ->label(__('filament::login.fields.password.label'))
-                ->password()
-                ->required(),
-            Checkbox::make('remember')
-                ->label(__('filament::login.fields.remember.label')),
-        ];
     }
 
     protected function getEmailFormComponent(): Component
@@ -112,7 +32,7 @@ class Login extends \Filament\Auth\Pages\Login
      *
      * @return array<string, mixed>
      */
-    protected function getCredentialsFromFormData(array $data): array
+    protected function getCredentialsFromFormData(#[SensitiveParameter] array $data): array
     {
         return [
             'username' => $data['username'],

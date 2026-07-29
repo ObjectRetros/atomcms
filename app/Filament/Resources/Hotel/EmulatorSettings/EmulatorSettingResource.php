@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Hotel\EmulatorSettings;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\CreateEmulatorSetting;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\EditEmulatorSetting;
 use App\Filament\Resources\Hotel\EmulatorSettings\Pages\ListEmulatorSettings;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\EmulatorSetting;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -20,13 +20,12 @@ use Filament\Tables\Table;
 class EmulatorSettingResource extends Resource
 {
     use RequiresEmulatorDriver;
+    use TranslatableResource;
 
     protected static function requiredEmulatorDriver(): string
     {
         return 'arcturus';
     }
-
-    use TranslatableResource;
 
     protected static ?string $model = EmulatorSetting::class;
 

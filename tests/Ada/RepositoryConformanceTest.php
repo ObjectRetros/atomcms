@@ -347,3 +347,35 @@ test('a grant that cannot take the lock does not write a duplicate', function ()
 
     expect(DB::table('player_badges')->where('player_id', $user->id)->count())->toBe(1);
 });
+
+test('ada grants a large quantity in bounded chunks', function () {
+    $furniture = app(FurnitureRepository::class);
+    $itemId = makeAdaFurnitureItem('Ada bulk chair');
+    $user = User::factory()->create();
+    $amount = 1200;
+
+    $inserts = 0;
+    DB::listen(function ($query) use (&$inserts): void {
+        if (str_starts_with(strtolower(ltrim($query->sql)), 'insert into `player_furniture_items`')) {
+            $inserts++;
+        }
+    });
+
+    $furniture->grant($user, $itemId, $amount);
+
+    expect(DB::table('player_furniture_items')->where('player_id', $user->id)->count())->toBe($amount)
+        // Matches the Arcturus driver: ceil(1200 / 500) statements, never one
+        // per item, so a big package cannot exceed max_allowed_packet.
+        ->and($inserts)->toBe(3);
+});
+
+test('ada ignores a grant of nothing', function () {
+    $furniture = app(FurnitureRepository::class);
+    $itemId = makeAdaFurnitureItem('Ada empty grant');
+    $user = User::factory()->create();
+
+    $furniture->grant($user, $itemId, 0);
+    $furniture->grant($user, $itemId, -5);
+
+    expect(DB::table('player_furniture_items')->where('player_id', $user->id)->count())->toBe(0);
+});

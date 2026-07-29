@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\User\AdaIpBans;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatesNavigationGroup;
 use App\Filament\Resources\User\AdaIpBans\Pages\ManageAdaIpBans;
-use App\Filament\Traits\TranslatesNavigationGroup;
 use App\Models\Ada\AdaIpBan;
 use App\Support\AuthenticatedUser;
 use Filament\Actions\CreateAction;

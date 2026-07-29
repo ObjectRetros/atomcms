@@ -12,7 +12,7 @@ use RuntimeException;
  * Removes every trace of a drawn badge before its record is deleted: the
  * owner's granted badge, the external texts entries and the image file.
  */
-class PurgeDrawnBadge
+final readonly class PurgeDrawnBadge
 {
     public function __construct(
         private readonly BadgeRepository $badges,

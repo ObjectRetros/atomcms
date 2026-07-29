@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\AdaServerLocaleTexts;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatesNavigationGroup;
 use App\Filament\Resources\Hotel\AdaServerLocaleTexts\Pages\ManageAdaServerLocaleTexts;
-use App\Filament\Traits\TranslatesNavigationGroup;
 use App\Models\Ada\AdaServerLocaleText;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;

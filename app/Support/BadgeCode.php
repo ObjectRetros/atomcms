@@ -19,11 +19,6 @@ final class BadgeCode
         return $value;
     }
 
-    public static function ensure(string $value): string
-    {
-        return self::normalize($value);
-    }
-
     public static function tryNormalize(mixed $value): ?string
     {
         if (! is_string($value)) {

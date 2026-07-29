@@ -98,7 +98,9 @@ class CreateNewUser implements CreatesNewUsers
         $motto = mb_substr($motto, 0, $constraints->mottoLength);
         $look = mb_substr($look, 0, $constraints->figureLength);
 
-        $user = User::create([
+        // credits and auth_ticket are guarded against mass assignment, so this
+        // trusted registration path assigns the full attribute set explicitly.
+        $user = User::query()->forceCreate([
             'username' => $input['username'],
             'mail' => $input['mail'],
             'password' => $password,

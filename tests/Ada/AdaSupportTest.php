@@ -113,12 +113,14 @@ test('ada creates and synchronizes the complete player aggregate', function () {
         ->and(DB::table('player_website_data')->where('player_id', $user->id)->exists())->toBeTrue()
         ->and(DB::table('player_role')->where('player_id', $user->id)->value('role_id'))->toBe(1);
 
-    $user->update([
+    // rank is guarded against mass assignment, so the trusted paths that set
+    // it (the housekeeping editor, seeders) force-fill - do the same here.
+    $user->forceFill([
         'mail' => 'ada@example.com',
         'motto' => 'Updated motto',
         'password' => Hash::make('new-password'),
         'rank' => 5,
-    ]);
+    ])->save();
 
     expect(DB::table('players')->where('id', $user->id)->value('email'))->toBe('ada@example.com')
         ->and(DB::table('player_avatar_data')->where('player_id', $user->id)->value('motto'))->toBe('Updated motto')
@@ -257,7 +259,7 @@ test('ada only writes the aggregates whose columns actually changed', function (
     DB::flushQueryLog();
     DB::enableQueryLog();
 
-    $user->update(['hidden_staff' => true]);
+    $user->forceFill(['hidden_staff' => true])->save();
 
     $writes = collect(DB::getQueryLog())
         ->filter(fn (array $query) => str_starts_with(strtolower(trim($query['query'])), 'update'));

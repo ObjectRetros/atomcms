@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Atom\Articles\RelationManagers;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\Tags\TagResource;
-use App\Filament\Traits\TranslatableResource;
 use Filament\Actions\AttachAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DetachAction;

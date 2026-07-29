@@ -29,4 +29,8 @@ class Session extends Model
     protected $guarded = ['id'];
 
     public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    public $timestamps = false;
 }

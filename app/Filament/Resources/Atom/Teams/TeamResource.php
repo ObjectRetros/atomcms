@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Atom\Teams;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\Teams\Pages\CreateTeam;
 use App\Filament\Resources\Atom\Teams\Pages\EditTeam;
 use App\Filament\Resources\Atom\Teams\Pages\ListTeams;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Traits\TranslatableResource;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;

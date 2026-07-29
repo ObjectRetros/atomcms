@@ -56,7 +56,7 @@ function setSetting(string $key, string $value): void
 {
     WebsiteSetting::query()->updateOrCreate(['key' => $key], ['value' => $value, 'comment' => '']);
 
-    SettingsService::clearCache();
+    app(SettingsService::class)->refresh();
 }
 
 function makePackage(array $attributes = []): WebsiteShopPackage

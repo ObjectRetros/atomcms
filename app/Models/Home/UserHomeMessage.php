@@ -3,13 +3,26 @@
 namespace App\Models\Home;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $recipient_user_id
+ * @property string $content
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read string $rendered_content
+ * @property-read User|null $recipientUser
+ * @property-read User|null $user
+ */
 class UserHomeMessage extends Model
 {
     /** @use HasFactory<Factory<static>> */
@@ -30,7 +43,8 @@ class UserHomeMessage extends Model
     }
 
     /** @param Builder<static> $query */
-    public function scopeDefaultUserData(Builder $query): void
+    #[Scope]
+    protected function defaultUserData(Builder $query): void
     {
         $query->with('user:id,username,look,online');
     }

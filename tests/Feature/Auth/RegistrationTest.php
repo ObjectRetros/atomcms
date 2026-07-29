@@ -3,6 +3,7 @@
 use App\Jobs\SendRegisteredUserWebhook;
 use App\Models\Miscellaneous\WebsiteBetaCode;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
@@ -22,7 +23,7 @@ function register(array $overrides = []): TestResponse
 test('a visitor can register an account', function () {
     installHotel();
 
-    register()->assertRedirect();
+    register()->assertRedirect(RouteServiceProvider::HOME);
 
     $this->assertAuthenticated();
 
