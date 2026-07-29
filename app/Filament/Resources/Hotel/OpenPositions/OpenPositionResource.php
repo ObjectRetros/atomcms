@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Hotel\OpenPositions;
 
 use App\Emulator\Contracts\RankRepository;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\OpenPositions\Pages\CreateOpenPosition;
 use App\Filament\Resources\Hotel\OpenPositions\Pages\EditOpenPosition;
 use App\Filament\Resources\Hotel\OpenPositions\Pages\ListOpenPositions;
@@ -24,11 +25,15 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OpenPositionResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteOpenPosition::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
+    public static string $translateIdentifier = 'open-positions';
 
     public static function form(Schema $schema): Schema
     {

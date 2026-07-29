@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
 use App\Contracts\Rcon;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;

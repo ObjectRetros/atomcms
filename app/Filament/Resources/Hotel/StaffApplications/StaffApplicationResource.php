@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Hotel\StaffApplications;
 
 use App\Emulator\Contracts\RankRepository;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\StaffApplications\Pages\ListStaffApplications;
 use App\Models\Community\Staff\WebsiteStaffApplications;
 use Filament\Actions\Action;
@@ -19,11 +20,15 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StaffApplicationResource extends Resource
 {
+    use TranslatableResource;
+
     protected static ?string $model = WebsiteStaffApplications::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Hotel';
+
+    public static string $translateIdentifier = 'staff-applications';
 
     public static function canCreate(): bool
     {
@@ -77,7 +82,7 @@ class StaffApplicationResource extends Resource
                             ->orWhereHas('rank', fn ($q) => $q->where($rankName, 'like', "%{$search}%"))
                             ->orWhereHas('team', fn ($q) => $q->where('rank_name', 'like', "%{$search}%"));
                     })
-                    ->sortable(),
+                    ->sortable(['team_id', 'rank_id']),
 
                 TextColumn::make('status')
                     ->label('Status')

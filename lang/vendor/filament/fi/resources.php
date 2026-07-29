@@ -10,6 +10,7 @@ return [
         'User Management' => 'Käyttäjien hallinta',
         'Profile Management' => 'Profile Management',
         'Shop' => 'Kauppa',
+        'Shop Management' => 'Kaupan hallinta',
         'Logs' => 'Logit',
     ],
 
@@ -136,6 +137,56 @@ return [
             'navigation_label' => 'Manage Room Chatlogs',
             'label' => 'Room Chatlog',
             'plural' => 'Room Chatlogs',
+        ],
+        'camera-web' => [
+            'navigation_label' => 'Verkkokamera',
+            'label' => 'Kuva',
+            'plural' => 'Kuvat',
+        ],
+        'draw-badges' => [
+            'navigation_label' => 'Piirretyt merkit',
+            'label' => 'Piirretty merkki',
+            'plural' => 'Piirretyt merkit',
+        ],
+        'badge-text-editor' => [
+            'navigation_label' => 'Merkkieditori',
+            'label' => 'Merkin teksti',
+            'plural' => 'Merkkien tekstit',
+        ],
+        'staff-applications' => [
+            'navigation_label' => 'Henkilökuntahakemukset',
+            'label' => 'Hakemus',
+            'plural' => 'Hakemukset',
+        ],
+        'open-positions' => [
+            'navigation_label' => 'Avoimet paikat',
+            'label' => 'Avoin paikka',
+            'plural' => 'Avoimet paikat',
+        ],
+        'website-ads' => [
+            'navigation_label' => 'Mainoskuvat',
+            'label' => 'Mainos',
+            'plural' => 'Mainokset',
+        ],
+        'shop-items' => [
+            'navigation_label' => 'Hallinnoi tuotteita',
+            'label' => 'Tuote',
+            'plural' => 'Tuotteet',
+        ],
+        'shop-packages' => [
+            'navigation_label' => 'Hallinnoi paketteja',
+            'label' => 'Paketti',
+            'plural' => 'Paketit',
+        ],
+        'catalog-pages' => [
+            'navigation_label' => 'Katalogin sivut',
+            'label' => 'Katalogin sivu',
+            'plural' => 'Katalogin sivut',
+        ],
+        'catalog-editor' => [
+            'navigation_label' => 'Katalogieditori',
+            'label' => 'Katalogin tuote',
+            'plural' => 'Katalogin tuotteet',
         ],
 
         // Relations

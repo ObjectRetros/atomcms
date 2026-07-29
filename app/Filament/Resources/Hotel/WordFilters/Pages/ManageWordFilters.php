@@ -10,7 +10,7 @@ class ManageWordFilters extends ManageRecords
 {
     protected static string $resource = WordFilterResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make(),

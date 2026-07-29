@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
 use App\Emulator\Contracts\BadgeRepository;
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\Ada\AdaPlayerBadge;
 use App\Models\User;
 use Filament\Actions\CreateAction;

@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\EmulatorTexts;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\EmulatorTexts\Pages\ManageEmulatorTexts;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\EmulatorText;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -18,13 +18,12 @@ use Filament\Tables\Table;
 class EmulatorTextResource extends Resource
 {
     use RequiresEmulatorDriver;
+    use TranslatableResource;
 
     protected static function requiredEmulatorDriver(): string
     {
         return 'arcturus';
     }
-
-    use TranslatableResource;
 
     protected static ?string $model = EmulatorText::class;
 

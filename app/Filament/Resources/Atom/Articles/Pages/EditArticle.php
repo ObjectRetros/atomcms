@@ -15,7 +15,7 @@ class EditArticle extends EditRecord
 {
     protected static string $resource = ArticleResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make(),

@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\Atom\Permissions;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\Permissions\Pages\CreatePermission;
 use App\Filament\Resources\Atom\Permissions\Pages\EditPermission;
 use App\Filament\Resources\Atom\Permissions\Pages\ListPermissions;
 use App\Filament\Resources\Atom\Permissions\Pages\ViewPermission;
+use App\Filament\Support\TruncatedTooltip;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Game\Permission;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -49,9 +50,23 @@ class PermissionResource extends Resource
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
+    /** @var array<int, array<string, mixed>>|null */
+    protected static ?array $permissionTableColumns = null;
+
     protected static function requiredEmulatorDriver(): string
     {
         return 'arcturus';
+    }
+
+    /**
+     * The permissions table schema only changes on migration, so introspect
+     * it once per request instead of on every form build and mutation.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected static function permissionTableColumns(): array
+    {
+        return static::$permissionTableColumns ??= Schema::getColumns('permissions');
     }
 
     /**
@@ -73,7 +88,7 @@ class PermissionResource extends Resource
             $data[$currencyColumn] ??= 0;
         }
 
-        foreach (Schema::getColumns('permissions') as $column) {
+        foreach (static::permissionTableColumns() as $column) {
             $columnName = $column['name'] ?? null;
 
             if (! $columnName) {
@@ -167,7 +182,7 @@ class PermissionResource extends Resource
                                                 'lg' => 3,
                                             ])
                                             ->schema(function () use ($groupedToggleButton) {
-                                                $columns = Schema::getColumns('permissions');
+                                                $columns = static::permissionTableColumns();
 
                                                 $arcturusPermissions = collect($columns)->filter(function (array $column) {
                                                     $columnName = $column['name'] ?? null;
@@ -274,15 +289,7 @@ class PermissionResource extends Resource
                 TextColumn::make('rank_name')
                     ->label(__('filament::resources.columns.name'))
                     ->description(fn (Permission $record) => Str::limit($record->job_description, 40))
-                    ->tooltip(function (Permission $record): ?string {
-                        $description = $record->job_description;
-
-                        if (strlen($description) <= 40) {
-                            return null;
-                        }
-
-                        return $description;
-                    })
+                    ->tooltip(fn (Permission $record): ?string => TruncatedTooltip::when($record->job_description, 40))
                     ->searchable(),
 
                 TextColumn::make('prefix')

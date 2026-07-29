@@ -8,13 +8,19 @@ use Filament\Schemas\Components\Grid;
 
 class ItemBaseForm
 {
-    /** @return array<int, Component> */
+    /**
+     * Shared items_base form; the max lengths mirror the emulator schema
+     * (item_name varchar(70), public_name varchar(56), interaction_type
+     * varchar(500), clothing_on_walk varchar(255)).
+     *
+     * @return array<int, Component>
+     */
     public static function schema(): array
     {
         return [
             Grid::make(2)->schema([
-                Forms\Components\TextInput::make('item_name')->label('Item name')->maxLength(80)->required(),
-                Forms\Components\TextInput::make('public_name')->label('Public name')->maxLength(80),
+                Forms\Components\TextInput::make('item_name')->label('Item name')->maxLength(70)->required(),
+                Forms\Components\TextInput::make('public_name')->label('Public name')->maxLength(56),
                 Forms\Components\TextInput::make('sprite_id')->label('Sprite ID')->numeric()->required(),
                 Forms\Components\Select::make('type')
                     ->options(['s' => 'Floor (s)', 'i' => 'Wall (i)', 'e' => 'Effect (e)', 'h' => 'Habbo (h)', 'b' => 'Badge (b)'])
@@ -41,20 +47,20 @@ class ItemBaseForm
             ]),
 
             Grid::make(2)->schema([
-                Forms\Components\TextInput::make('interaction_type')->label('Interaction type')->maxLength(50),
+                Forms\Components\TextInput::make('interaction_type')->label('Interaction type')->maxLength(500),
                 Forms\Components\TextInput::make('interaction_modes_count')->label('Modes')->numeric()->minValue(0),
             ]),
 
-            Forms\Components\Textarea::make('vending_ids')->label('Vending IDs')->rows(2),
-            Forms\Components\Textarea::make('multiheight')->label('Multi-height')->rows(2),
-            Forms\Components\Textarea::make('customparams')->label('Custom params')->rows(2),
+            Forms\Components\Textarea::make('vending_ids')->label('Vending IDs')->rows(2)->maxLength(255),
+            Forms\Components\Textarea::make('multiheight')->label('Multi-height')->rows(2)->maxLength(50),
+            Forms\Components\Textarea::make('customparams')->label('Custom params')->rows(2)->maxLength(256),
 
             Grid::make(2)->schema([
                 Forms\Components\TextInput::make('effect_id_male')->label('Effect male')->numeric(),
                 Forms\Components\TextInput::make('effect_id_female')->label('Effect female')->numeric(),
             ]),
 
-            Forms\Components\TextInput::make('clothing_on_walk')->label('Clothing on walk')->maxLength(50),
+            Forms\Components\TextInput::make('clothing_on_walk')->label('Clothing on walk')->maxLength(255),
         ];
     }
 }
