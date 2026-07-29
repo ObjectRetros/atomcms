@@ -3,7 +3,9 @@
 namespace App\Models\Community\Teams;
 
 use App\Models\Community\Staff\WebsiteOpenPosition;
+use App\Models\Compositions\HasBadge;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -41,11 +43,9 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class WebsiteTeam extends Model
+class WebsiteTeam extends Model implements HasBadge
 {
     protected $table = 'website_teams';
-
-    protected $guarded = ['id'];
 
     protected $fillable = [
         'rank_name',
@@ -73,8 +73,19 @@ class WebsiteTeam extends Model
      *
      * @return Builder<static>
      */
-    public function scopeVisible(Builder $query): Builder
+    #[Scope]
+    protected function visible(Builder $query): Builder
     {
         return $query->where('hidden_rank', false);
+    }
+
+    public function getBadgePath(): string
+    {
+        return sprintf('%s%s.gif', setting('badges_path'), $this->getBadgeName());
+    }
+
+    public function getBadgeName(): string
+    {
+        return $this->badge ?: '';
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models\Articles;
 
 use App\Casts\PurifiedHtml;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -60,11 +61,27 @@ class WebsiteArticle extends Model
 
     protected $guarded = ['id'];
 
+    protected $attributes = [
+        'image' => '',
+    ];
+
     protected function casts(): array
     {
         return [
             'full_story' => PurifiedHtml::class,
         ];
+    }
+
+    /**
+     * The column is NOT NULL, so a cleared upload must persist as an empty string.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): string => $value ?? '',
+        );
     }
 
     public function getSlugOptions(): SlugOptions
@@ -97,17 +114,6 @@ class WebsiteArticle extends Model
     public function userHasReachedArticleCommentLimit(User $user): bool
     {
         return $this->comments()->where('user_id', $user->id)->count() >= (int) setting('max_comment_per_article');
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($model) {
-            if (empty($model->image)) {
-                $model->image = '';
-            }
-        });
     }
 
     /** @return MorphToMany<Tag, $this> */

@@ -4,7 +4,7 @@ namespace App\Emulator\Drivers\Arcturus;
 
 use App\Emulator\Contracts\RoomRepository;
 use App\Emulator\Data\RoomSummary;
-use App\Models\Game\Room;
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Support\Collection;
 

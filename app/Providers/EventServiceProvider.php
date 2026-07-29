@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Emulator\Contracts\RankRepository;
-use App\Models\Community\Staff\WebsiteTeam as StaffWebsiteTeam;
+use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\User;
+use App\Models\WebsiteAd;
 use App\Observers\CommunityCacheObserver;
 use App\Observers\UserObserver;
+use App\Observers\WebsiteAdObserver;
+use App\Observers\WebsiteOpenPositionObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -28,8 +31,9 @@ class EventServiceProvider extends ServiceProvider
 
     protected $observers = [
         User::class => [UserObserver::class, CommunityCacheObserver::class],
-        StaffWebsiteTeam::class => [CommunityCacheObserver::class],
         WebsiteTeam::class => [CommunityCacheObserver::class],
+        WebsiteAd::class => [WebsiteAdObserver::class],
+        WebsiteOpenPosition::class => [WebsiteOpenPositionObserver::class],
     ];
 
     /**

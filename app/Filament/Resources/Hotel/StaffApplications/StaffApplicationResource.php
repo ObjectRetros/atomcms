@@ -132,7 +132,7 @@ class StaffApplicationResource extends Resource
                         }
 
                         if ((int) $user->team_id !== (int) $team->id) {
-                            $user->update(['team_id' => $team->id]);
+                            $user->forceFill(['team_id' => $team->id])->save();
                         }
 
                         $r->update([
@@ -180,7 +180,7 @@ class StaffApplicationResource extends Resource
                         }
 
                         if ($r->status === 'approved' && (int) $user->team_id === (int) $team->id) {
-                            $user->update(['team_id' => null]);
+                            $user->forceFill(['team_id' => null])->save();
                         }
 
                         $r->update([

@@ -12,7 +12,7 @@ use App\Filament\Resources\User\Users\Pages\EditUser;
 use App\Filament\Resources\User\Users\Pages\ListUsers;
 use App\Filament\Resources\User\Users\Pages\ViewUser;
 use App\Filament\Tables\Columns\UserAvatarColumn;
-use App\Models\Community\Staff\WebsiteTeam;
+use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;

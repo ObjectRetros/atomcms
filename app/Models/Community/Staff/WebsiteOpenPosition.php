@@ -5,6 +5,7 @@ namespace App\Models\Community\Staff;
 use App\Emulator\Contracts\RankRepository;
 use App\Emulator\Models\Rank;
 use App\Models\Community\Teams\WebsiteTeam;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -52,8 +53,6 @@ class WebsiteOpenPosition extends Model
 
     protected $table = 'website_open_positions';
 
-    protected $guarded = ['id'];
-
     protected $fillable = [
         'position_kind',
         'permission_id',
@@ -63,20 +62,12 @@ class WebsiteOpenPosition extends Model
         'apply_to',
     ];
 
-    protected $casts = [
-        'apply_from' => 'datetime',
-        'apply_to' => 'datetime',
-    ];
-
-    protected static function boot()
+    protected function casts(): array
     {
-        parent::boot();
-
-        static::deleting(function ($openPosition) {
-            if ($openPosition->position_kind === 'rank' && $openPosition->permission_id) {
-                WebsiteStaffApplications::where('rank_id', $openPosition->permission_id)->delete();
-            }
-        });
+        return [
+            'apply_from' => 'datetime',
+            'apply_to' => 'datetime',
+        ];
     }
 
     /** @return BelongsTo<Rank, $this> */
@@ -105,7 +96,8 @@ class WebsiteOpenPosition extends Model
      *
      * @return Builder<static>
      */
-    public function scopeCanApply(Builder $query): Builder
+    #[Scope]
+    protected function canApply(Builder $query): Builder
     {
         $now = now();
 

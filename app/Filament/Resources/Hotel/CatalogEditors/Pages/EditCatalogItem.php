@@ -8,7 +8,7 @@ use App\Filament\Resources\Hotel\CatalogEditors\Forms\ItemBaseForm;
 use App\Models\Game\Furniture\CatalogItem;
 use App\Models\Game\Furniture\Item;
 use App\Models\Game\Furniture\ItemBase;
-use App\Models\Game\Room;
+use App\Models\Room;
 use App\Models\User;
 use App\Services\Catalog\FurniIconService;
 use Filament\Actions\Action;

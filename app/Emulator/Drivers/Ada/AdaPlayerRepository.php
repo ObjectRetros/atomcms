@@ -254,10 +254,16 @@ class AdaPlayerRepository implements PlayerRepository
 
     public function onlineFriends(User $user, int $limit): Collection
     {
-        return $this->whereOnline(User::query()->whereKey($this->friendIds($user)))
-            ->inRandomOrder()
+        // Presence and recency both live on player_data; users.last_online is
+        // only the mirror and is not written back, so ordering by it here
+        // would sort on whatever the compatibility import last left behind.
+        return User::query()
+            ->whereKey($this->friendIds($user))
+            ->join('player_data', 'player_data.player_id', '=', 'users.id')
+            ->where('player_data.is_online', true)
+            ->orderByDesc('player_data.last_online')
             ->limit($limit)
-            ->get();
+            ->get(['users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online']);
     }
 
     /** @return LengthAwarePaginator<int, HomeFriend> */
