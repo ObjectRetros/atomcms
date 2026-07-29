@@ -20,7 +20,7 @@
             </button>
 
             <div class="my-4 flex flex-col items-center" :id="$id('modal-title')">
-                {{ $title }}
+                {{ $title ?? '' }}
             </div>
 
             {{ $slot }}
