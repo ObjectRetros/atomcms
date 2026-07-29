@@ -30,7 +30,6 @@ use Illuminate\Translation\TranslationServiceProvider;
 use Illuminate\Validation\ValidationServiceProvider;
 use Illuminate\View\ViewServiceProvider;
 use Spatie\Activitylog\ActivitylogServiceProvider;
-use Spatie\Activitylog\Facades\Activity;
 
 return [
 
@@ -222,7 +221,6 @@ return [
         AppServiceProvider::class,
         EmulatorServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
         EventServiceProvider::class,
         AdminFilamentPanelProvider::class,
         RouteServiceProvider::class,
@@ -241,7 +239,6 @@ return [
     |
     */
 
-    'Activity' => Activity::class,
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
