@@ -12,6 +12,8 @@ class SettingsService
     /** @var Collection<string, mixed>|null */
     private ?Collection $cachedSettings = null;
 
+    public function __construct(private readonly InstallationService $installation) {}
+
     /** @return Collection<string, mixed> */
     protected function settings(): Collection
     {
@@ -44,15 +46,20 @@ class SettingsService
         return $this->settings()->get($key, $default);
     }
 
-    public static function clearCache(): void
+    /**
+     * Drop the persisted and memoized settings so the next read refetches.
+     * Instance-level, so objects already holding the singleton see fresh
+     * values instead of a stale forgotten instance.
+     */
+    public function refresh(): void
     {
         Cache::forget('website_settings');
-        app()->forgetInstance(self::class);
+        $this->cachedSettings = null;
     }
 
     private function isInstallationIncomplete(): bool
     {
-        return ! app(InstallationService::class)->isComplete();
+        return ! $this->installation->isComplete();
     }
 
     /** @return Collection<string, mixed> */

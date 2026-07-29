@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\PaypalTransactionStatus;
 use App\Exceptions\PaypalPaymentException;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Services\Payments\PaypalPaymentService;
@@ -21,7 +22,7 @@ class ReconcilePaypalOrders extends Command
 
         $transactions = WebsitePaypalTransaction::query()
             ->whereNull('credited_at')
-            ->whereNotIn('status', [WebsitePaypalTransaction::STATUS_CANCELLED, WebsitePaypalTransaction::STATUS_REVIEW])
+            ->whereNotIn('status', [PaypalTransactionStatus::Cancelled->value, PaypalTransactionStatus::Review->value])
             ->where('created_at', '>=', now()->subDays(30))
             ->orderBy('last_reconciled_at')
             ->oldest()

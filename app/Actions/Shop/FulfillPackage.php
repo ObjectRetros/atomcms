@@ -6,13 +6,14 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Emulator\Contracts\FurnitureRepository;
 use App\Enums\CurrencyTypes;
+use App\Enums\ShopItemType;
 use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopItem;
 use App\Models\Shop\WebsiteShopPackage;
 use App\Models\User;
 use RuntimeException;
 
-class FulfillPackage
+final readonly class FulfillPackage
 {
     public function __construct(
         private readonly CurrencyRepository $currencies,
@@ -48,11 +49,10 @@ class FulfillPackage
             }
 
             match ($item->type) {
-                'currency' => $this->giveCurrency($user, $item, $quantity),
-                'furniture' => $this->giveFurniture($user, $item, $quantity),
-                'badge' => $this->giveBadges($user, $item),
-                'rank' => $this->giveRank($user, $item),
-                default => throw self::misconfigured($item),
+                ShopItemType::Currency => $this->giveCurrency($user, $item, $quantity),
+                ShopItemType::Furniture => $this->giveFurniture($user, $item, $quantity),
+                ShopItemType::Badge => $this->giveBadges($user, $item),
+                ShopItemType::Rank => $this->giveRank($user, $item),
             };
         }
     }
@@ -111,7 +111,7 @@ class FulfillPackage
 
     private static function misconfigured(WebsiteShopItem $item): ShopPurchaseException
     {
-        report(new RuntimeException("Misconfigured shop item {$item->id}: {$item->type} => {$item->type_value}"));
+        report(new RuntimeException("Misconfigured shop item {$item->id}: {$item->type->value} => {$item->type_value}"));
 
         return new ShopPurchaseException(__('This package is currently unavailable'));
     }

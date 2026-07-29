@@ -14,7 +14,7 @@ function grantPanelPermission(string $permission, int $minRank): void
         ['min_rank' => $minRank, 'description' => "Testing {$permission}"],
     );
 
-    HousekeepingPermissionsService::clearCache();
+    app(HousekeepingPermissionsService::class)->refresh();
 }
 
 beforeEach(function () {

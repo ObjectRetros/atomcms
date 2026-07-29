@@ -32,7 +32,7 @@ class WebsiteHousekeepingPermission extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => HousekeepingPermissionsService::clearCache());
-        static::deleted(fn () => HousekeepingPermissionsService::clearCache());
+        static::saved(fn () => app(HousekeepingPermissionsService::class)->refresh());
+        static::deleted(fn () => app(HousekeepingPermissionsService::class)->refresh());
     }
 }

@@ -42,11 +42,11 @@ class WebsiteSetting extends Model
     protected static function booted(): void
     {
         static::saved(function (): void {
-            SettingsService::clearCache();
+            app(SettingsService::class)->refresh();
             CommunityCache::forgetAll();
         });
         static::deleted(function (): void {
-            SettingsService::clearCache();
+            app(SettingsService::class)->refresh();
             CommunityCache::forgetAll();
         });
     }
