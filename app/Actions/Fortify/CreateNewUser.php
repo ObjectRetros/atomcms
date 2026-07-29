@@ -8,6 +8,7 @@ use App\Jobs\SendRegisteredUserWebhook;
 use App\Models\Miscellaneous\WebsiteBetaCode;
 use App\Models\User;
 use App\Rules\BetaCodeRule;
+use App\Rules\CloudflareTurnstileRule;
 use App\Rules\GoogleRecaptchaRule;
 use App\Rules\WebsiteWordfilterRule;
 use App\Services\Auth\RegistrationMutex;
@@ -17,7 +18,6 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -183,7 +183,7 @@ class CreateNewUser implements CreatesNewUsers
             'referral_code' => ['nullable', 'string', 'max:255'],
             'terms' => ['required', 'accepted'],
             'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule],
-            'cf-turnstile-response' => [app(Turnstile::class)],
+            'cf-turnstile-response' => [new CloudflareTurnstileRule],
         ];
 
         $messages = [

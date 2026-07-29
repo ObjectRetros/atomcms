@@ -4,13 +4,13 @@ namespace App\Http\Requests;
 
 use App\Emulator\Emulator;
 use App\Models\User;
+use App\Rules\CloudflareTurnstileRule;
 use App\Rules\CurrentPasswordRule;
 use App\Rules\GoogleRecaptchaRule;
 use App\Rules\WebsiteWordfilterRule;
 use App\Support\AuthenticatedUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class AccountSettingsFormRequest extends FormRequest
 {
@@ -23,7 +23,7 @@ class AccountSettingsFormRequest extends FormRequest
             'mail' => ['required', 'email', 'max:' . Emulator::constraints()->emailLength, Rule::unique('users')->ignore($user->id), new WebsiteWordfilterRule],
             'motto' => ['nullable', 'string', 'max:' . Emulator::constraints()->mottoLength, new WebsiteWordfilterRule],
             'g-recaptcha-response' => [new GoogleRecaptchaRule],
-            'cf-turnstile-response' => [app(Turnstile::class)],
+            'cf-turnstile-response' => [new CloudflareTurnstileRule],
         ];
 
         // Re-authenticate before a security-sensitive email change.
