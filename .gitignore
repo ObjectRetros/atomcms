@@ -4,6 +4,7 @@
 /public/client
 /public/storage
 /storage/*.key
+/storage/app/livewire-tmp/
 /storage/app/public
 /storage/framework/*
 /vendor

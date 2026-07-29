@@ -16,11 +16,4 @@ class Dashboard extends FilamentDashboard
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
 
     public static string $translateIdentifier = 'dashboard';
-
-    public static function canAccess(): bool
-    {
-        // Panel access is already gated by User::canAccessPanel(); every
-        // authenticated housekeeping user may see the dashboard.
-        return auth()->check();
-    }
 }
