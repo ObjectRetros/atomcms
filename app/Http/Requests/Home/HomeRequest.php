@@ -32,7 +32,10 @@ abstract class HomeRequest extends FormRequest
     protected function isHomeVisitor(): bool
     {
         $owner = $this->homeOwner();
+        $visitor = $this->user();
 
-        return $owner instanceof User && ! $this->user()?->is($owner);
+        // Guests must never pass this guard on their own; a null user made
+        // the previous nullsafe comparison truthy.
+        return $owner instanceof User && $visitor instanceof User && ! $visitor->is($owner);
     }
 }

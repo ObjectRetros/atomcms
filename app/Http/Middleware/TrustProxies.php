@@ -28,11 +28,15 @@ class TrustProxies extends Middleware
     /**
      * The headers that should be used to detect proxies.
      *
+     * X-Forwarded-Host is deliberately not trusted: with the permissive "*"
+     * proxy default, honouring it would let anyone who can reach the origin
+     * directly poison generated absolute URLs (e.g. password-reset links)
+     * with an attacker-controlled host.
+     *
      * @var int
      */
     protected $headers =
         Request::HEADER_X_FORWARDED_FOR |
-        Request::HEADER_X_FORWARDED_HOST |
         Request::HEADER_X_FORWARDED_PORT |
         Request::HEADER_X_FORWARDED_PROTO |
         Request::HEADER_X_FORWARDED_AWS_ELB;

@@ -122,3 +122,12 @@ test('registration and observer side effects roll back together', function () {
         ->and(DB::table('website_registration_locks')->count())
         ->toBe(0);
 });
+
+test('the register routes follow the fortify naming convention', function () {
+    installHotel();
+
+    expect(route('register', absolute: false))->toBe('/register')
+        ->and(route('register.store', absolute: false))->toBe('/register');
+
+    $this->get(route('register'))->assertOk();
+});

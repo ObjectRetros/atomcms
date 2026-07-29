@@ -3,7 +3,10 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Psr\Log\LogLevel;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -44,6 +47,20 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // The home widget endpoint is consumed by JavaScript that expects a
+        // stable JSON error shape, regardless of the Accept header. Missing
+        // route bindings and controller aborts both funnel through here.
+        $this->renderable(function (NotFoundHttpException $e, Request $request): ?JsonResponse {
+            if (! $request->routeIs('home.widget-content')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Home item not found.'),
+            ], 404);
         });
     }
 }

@@ -9,11 +9,6 @@ class ResetPasswordRequest extends FormRequest
 {
     use PasswordValidationRules;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, mixed>
      */
