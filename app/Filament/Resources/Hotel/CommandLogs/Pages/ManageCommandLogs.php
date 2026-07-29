@@ -12,7 +12,7 @@ class ManageCommandLogs extends ManageRecords
 
     protected static string $resource = CommandLogResource::class;
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [];
     }

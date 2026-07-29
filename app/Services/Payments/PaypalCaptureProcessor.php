@@ -3,14 +3,17 @@
 namespace App\Services\Payments;
 
 use App\Data\PaypalCapture;
+use App\Enums\CaptureOutcome;
+use App\Enums\PaypalTransactionStatus;
 use App\Exceptions\PaypalPaymentException;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
-class PaypalCaptureProcessor
+final readonly class PaypalCaptureProcessor
 {
     /**
      * @param  array<string, mixed>  $response
@@ -28,7 +31,7 @@ class PaypalCaptureProcessor
         }
 
         foreach ($captures as $capture) {
-            if (is_array($capture) && ($capture['status'] ?? null) === WebsitePaypalTransaction::STATUS_COMPLETED) {
+            if (is_array($capture) && ($capture['status'] ?? null) === PaypalTransactionStatus::Completed->value) {
                 return $this->applyCompletedCapture($orderId, $capture);
             }
         }
@@ -47,62 +50,20 @@ class PaypalCaptureProcessor
             throw new PaypalPaymentException($exception->getMessage(), previous: $exception);
         }
 
-        $result = DB::transaction(function () use ($orderId, $capture): string {
-            $transaction = WebsitePaypalTransaction::where('transaction_id', $orderId)->lockForUpdate()->first();
+        try {
+            $outcome = DB::transaction(function () use ($orderId, $capture): CaptureOutcome {
+                return $this->creditLockedTransaction($orderId, $capture);
+            }, attempts: 3);
+        } catch (UniqueConstraintViolationException) {
+            // The exists() pre-check raced a concurrent webhook: the unique
+            // index on capture_id rejected the second credit. Hold the order
+            // for review instead of surfacing a 500 to PayPal's retries.
+            $this->holdForReview($orderId, 'Capture ID was already assigned to another order.');
 
-            if ($transaction === null) {
-                return 'missing';
-            }
+            $outcome = CaptureOutcome::Mismatch;
+        }
 
-            if ($transaction->credited_at !== null) {
-                return 'credited';
-            }
-
-            if ($transaction->amount !== $capture->amount || $transaction->currency !== $capture->currency) {
-                $transaction->update([
-                    'status' => WebsitePaypalTransaction::STATUS_REVIEW,
-                    'description' => 'Captured amount or currency did not match the order.',
-                ]);
-
-                return 'mismatch';
-            }
-
-            $captureUsed = WebsitePaypalTransaction::where('capture_id', $capture->id)
-                ->whereKeyNot($transaction->getKey())
-                ->exists();
-
-            if ($captureUsed) {
-                $transaction->update([
-                    'status' => WebsitePaypalTransaction::STATUS_REVIEW,
-                    'description' => 'Capture ID was already assigned to another order.',
-                ]);
-
-                return 'mismatch';
-            }
-
-            $user = User::whereKey($transaction->user_id)->lockForUpdate()->first();
-
-            if ($user === null) {
-                $transaction->update([
-                    'status' => WebsitePaypalTransaction::STATUS_REVIEW,
-                    'description' => 'The transaction owner no longer exists.',
-                ]);
-
-                return 'mismatch';
-            }
-
-            $user->increment('website_balance', $capture->amount);
-            $transaction->update([
-                'capture_id' => $capture->id,
-                'status' => WebsitePaypalTransaction::STATUS_COMPLETED,
-                'description' => null,
-                'credited_at' => now(),
-            ]);
-
-            return 'credited';
-        }, attempts: 3);
-
-        if ($result === 'mismatch') {
+        if ($outcome === CaptureOutcome::Mismatch) {
             Log::critical('PayPal capture requires manual review.', [
                 'order_id' => $orderId,
                 'capture_id' => $capture->id,
@@ -111,6 +72,72 @@ class PaypalCaptureProcessor
             return false;
         }
 
-        return $result === 'credited';
+        return $outcome === CaptureOutcome::Credited;
+    }
+
+    private function creditLockedTransaction(string $orderId, PaypalCapture $capture): CaptureOutcome
+    {
+        $transaction = WebsitePaypalTransaction::where('transaction_id', $orderId)->lockForUpdate()->first();
+
+        if ($transaction === null) {
+            return CaptureOutcome::Missing;
+        }
+
+        if ($transaction->credited_at !== null) {
+            return CaptureOutcome::Credited;
+        }
+
+        if ($transaction->amount !== $capture->amount || $transaction->currency !== $capture->currency) {
+            $transaction->update([
+                'status' => PaypalTransactionStatus::Review,
+                'description' => 'Captured amount or currency did not match the order.',
+            ]);
+
+            return CaptureOutcome::Mismatch;
+        }
+
+        $captureUsed = WebsitePaypalTransaction::where('capture_id', $capture->id)
+            ->whereKeyNot($transaction->getKey())
+            ->exists();
+
+        if ($captureUsed) {
+            $transaction->update([
+                'status' => PaypalTransactionStatus::Review,
+                'description' => 'Capture ID was already assigned to another order.',
+            ]);
+
+            return CaptureOutcome::Mismatch;
+        }
+
+        $user = User::whereKey($transaction->user_id)->lockForUpdate()->first();
+
+        if ($user === null) {
+            $transaction->update([
+                'status' => PaypalTransactionStatus::Review,
+                'description' => 'The transaction owner no longer exists.',
+            ]);
+
+            return CaptureOutcome::Mismatch;
+        }
+
+        $user->increment('website_balance', $capture->amount);
+        $transaction->update([
+            'capture_id' => $capture->id,
+            'status' => PaypalTransactionStatus::Completed,
+            'description' => null,
+            'credited_at' => now(),
+        ]);
+
+        return CaptureOutcome::Credited;
+    }
+
+    private function holdForReview(string $orderId, string $reason): void
+    {
+        WebsitePaypalTransaction::where('transaction_id', $orderId)
+            ->whereNull('credited_at')
+            ->update([
+                'status' => PaypalTransactionStatus::Review->value,
+                'description' => $reason,
+            ]);
     }
 }

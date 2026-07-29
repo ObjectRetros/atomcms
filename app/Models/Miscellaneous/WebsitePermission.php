@@ -32,7 +32,7 @@ class WebsitePermission extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => PermissionsService::clearCache());
-        static::deleted(fn () => PermissionsService::clearCache());
+        static::saved(fn () => app(PermissionsService::class)->refresh());
+        static::deleted(fn () => app(PermissionsService::class)->refresh());
     }
 }

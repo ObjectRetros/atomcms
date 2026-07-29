@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\AdaServerSettings;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatesNavigationGroup;
 use App\Filament\Resources\Hotel\AdaServerSettings\Pages\ManageAdaServerSettings;
-use App\Filament\Traits\TranslatesNavigationGroup;
 use App\Models\Ada\AdaServerSettings;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;

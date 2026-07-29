@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Atom\Tags;
 
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Atom\Tags\Pages\CreateTag;
 use App\Filament\Resources\Atom\Tags\Pages\EditTag;
 use App\Filament\Resources\Atom\Tags\Pages\ListTags;
 use App\Filament\Resources\Atom\Tags\Pages\ViewTag;
 use App\Filament\Resources\Atom\Tags\RelationManagers\ArticlesRelationManager;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\Articles\Tag;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;

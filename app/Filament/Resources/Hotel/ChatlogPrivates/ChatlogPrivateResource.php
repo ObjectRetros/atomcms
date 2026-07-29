@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Hotel\ChatlogPrivates;
 
 use App\Filament\Concerns\RequiresEmulatorDriver;
+use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Resources\Hotel\ChatlogPrivates\Pages\ManageChatlogPrivates;
-use App\Filament\Traits\TranslatableResource;
 use App\Models\ChatlogPrivate;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -19,13 +19,12 @@ use Illuminate\Database\Eloquent\Builder;
 class ChatlogPrivateResource extends Resource
 {
     use RequiresEmulatorDriver;
+    use TranslatableResource;
 
     protected static function requiredEmulatorDriver(): string
     {
         return 'arcturus';
     }
-
-    use TranslatableResource;
 
     protected static ?string $model = ChatlogPrivate::class;
 
@@ -87,7 +86,7 @@ class ChatlogPrivateResource extends Resource
             TextColumn::make('message')
                 ->label(__('filament::resources.columns.message'))
                 ->limit(40)
-                ->searchable(isIndividual: true),
+                ->searchable(isIndividual: true, isGlobal: false),
 
             TextColumn::make('timestamp')
                 ->label(__('filament::resources.columns.executed_at'))

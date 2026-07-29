@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Atom\HousekeepingPermissions;
 
 use App\Filament\Resources\Atom\HousekeepingPermissions\Pages\ListHousekeepingPermissions;
+use App\Filament\Support\TruncatedTooltip;
 use App\Models\WebsiteHousekeepingPermission;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -77,15 +78,7 @@ class HousekeepingPermissionResource extends Resource
                     ->label(__('filament::resources.columns.description'))
                     ->toggleable()
                     ->searchable()
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-
-                        return $state;
-                    })
+                    ->tooltip(fn (TextColumn $column): ?string => TruncatedTooltip::of($column))
                     ->limit(60),
             ])
             ->filters([

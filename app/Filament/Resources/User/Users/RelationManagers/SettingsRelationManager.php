@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
-use App\Filament\Traits\TranslatableResource;
+use App\Filament\Concerns\TranslatableResource;
 use App\Models\User;
 use Carbon\CarbonInterval;
 use Filament\Actions\Action;

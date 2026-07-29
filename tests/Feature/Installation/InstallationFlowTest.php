@@ -35,7 +35,7 @@ function resetInstallationCaches(): void
 {
     Cache::flush();
     app()->forgetInstance(InstallationService::class);
-    SettingsService::clearCache();
+    app()->forgetInstance(SettingsService::class);
 }
 
 test('the wizard walks from key entry to the hotel without falling back', function () {

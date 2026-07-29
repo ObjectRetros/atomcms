@@ -4,9 +4,6 @@ namespace App\Filament\Resources\Hotel\BadgeUploads;
 
 use App\Filament\Resources\Hotel\BadgeUploads\Pages\ManageBadgeUploads;
 use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class BadgeUploadResource extends Resource
 {
@@ -21,33 +18,10 @@ class BadgeUploadResource extends Resource
         return hasHousekeepingPermission('manage_badges');
     }
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('filename')
-                    ->label('File Name')
-                    ->sortable(),
-            ])
-            ->filters([]);
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => ManageBadgeUploads::route('/'),
         ];
-    }
-
-    /** @return array<int, array{filename: string, path: string}> */
-    public static function getFiles(): array
-    {
-        $files = Storage::disk('badges')->files();
-
-        return collect($files)
-            ->filter(fn (string $file): bool => strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'gif')
-            ->map(fn (string $file): array => ['filename' => basename($file)])
-            ->values()
-            ->toArray();
     }
 }

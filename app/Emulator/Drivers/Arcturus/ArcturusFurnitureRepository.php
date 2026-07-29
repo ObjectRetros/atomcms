@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
  */
 class ArcturusFurnitureRepository implements FurnitureRepository
 {
+    /** Keeps a large grant inside the server's placeholder and packet limits. */
+    private const INSERT_CHUNK = 500;
+
     public function definitionCount(): int
     {
         return DB::table('items_base')->count();
@@ -29,11 +32,20 @@ class ArcturusFurnitureRepository implements FurnitureRepository
 
     public function grant(User $user, int $baseItemId, int $amount): void
     {
-        for ($i = 0; $i < $amount; $i++) {
-            Item::query()->create([
-                'user_id' => $user->id,
-                'item_id' => $baseItemId,
-            ]);
+        if ($amount < 1) {
+            return;
+        }
+
+        // One multi-row insert instead of a query per item; the remaining
+        // columns fall back to the table defaults. Chunked so a large-quantity
+        // package stays inside the server's placeholder and packet limits.
+        $row = [
+            'user_id' => $user->id,
+            'item_id' => $baseItemId,
+        ];
+
+        foreach (array_chunk(array_fill(0, $amount, $row), self::INSERT_CHUNK) as $chunk) {
+            Item::query()->insert($chunk);
         }
     }
 

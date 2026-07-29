@@ -4,7 +4,7 @@ namespace App\Services\Files;
 
 use RuntimeException;
 
-class AtomicFileWriter
+final readonly class AtomicFileWriter
 {
     public function replace(string $path, string $contents): void
     {
@@ -16,21 +16,14 @@ class AtomicFileWriter
      */
     public function update(string $path, callable $mutate): void
     {
-        if (! is_writable(dirname($path))) {
-            throw new RuntimeException("File is not readable and writable: {$path}");
+        $directory = dirname($path);
+
+        if (! is_writable($directory)) {
+            throw new RuntimeException("Directory is not writable: {$directory}");
         }
 
-        $lock = fopen($path . '.lock', 'c');
-
-        if ($lock === false) {
-            throw new RuntimeException("Unable to lock file: {$path}");
-        }
-
-        if (! flock($lock, LOCK_EX)) {
-            fclose($lock);
-
-            throw new RuntimeException("Unable to lock file: {$path}");
-        }
+        $lockPath = $path . '.lock';
+        $lock = $this->acquireLock($lockPath);
 
         $temporaryPath = null;
 
@@ -48,7 +41,7 @@ class AtomicFileWriter
             }
 
             $updated = $mutate($current);
-            $candidatePath = tempnam(dirname($path), '.atom-');
+            $candidatePath = tempnam($directory, '.atom-');
 
             if ($candidatePath === false) {
                 throw new RuntimeException("Unable to create temporary file for: {$path}");
@@ -76,8 +69,54 @@ class AtomicFileWriter
                 unlink($temporaryPath);
             }
 
+            $this->releaseLock($lockPath, $lock);
+        }
+    }
+
+    /**
+     * Open and lock the sidecar, retrying when the inode we locked was
+     * unlinked by a holder that finished between our open and our lock.
+     *
+     * @return resource
+     */
+    private function acquireLock(string $lockPath)
+    {
+        while (true) {
+            $lock = fopen($lockPath, 'c');
+
+            if ($lock === false) {
+                throw new RuntimeException("Unable to lock file: {$lockPath}");
+            }
+
+            if (! flock($lock, LOCK_EX)) {
+                fclose($lock);
+
+                throw new RuntimeException("Unable to lock file: {$lockPath}");
+            }
+
+            $opened = fstat($lock);
+            clearstatcache(true, $lockPath);
+            $onDisk = @stat($lockPath);
+
+            if ($opened !== false && $onDisk !== false && $opened['ino'] === $onDisk['ino']) {
+                return $lock;
+            }
+
             flock($lock, LOCK_UN);
             fclose($lock);
         }
+    }
+
+    /**
+     * Unlink the sidecar before releasing the lock, so managed files do not
+     * leak a permanent .lock companion.
+     *
+     * @param  resource  $lock
+     */
+    private function releaseLock(string $lockPath, $lock): void
+    {
+        @unlink($lockPath);
+        flock($lock, LOCK_UN);
+        fclose($lock);
     }
 }
