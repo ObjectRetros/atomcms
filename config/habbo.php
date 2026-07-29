@@ -31,7 +31,10 @@ return [
     ],
 
     'migrations' => [
-        // Only set this to true in the .env file if your CERTAIN that you want to rename coliding table names
+        // When enabled, migrations move colliding tables and columns (plus
+        // their indexes and foreign keys) aside as old_<timestamp>_<name> so
+        // the CMS schema can take the canonical names. Only enable it if you
+        // are certain the colliding data is safe to archive.
         'rename_tables' => env('RENAME_COLLIDING_TABLES', false),
     ],
 

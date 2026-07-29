@@ -8,11 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('referrals')) {
-            dropForeignKeyIfExists('referrals', 'user_id');
-            Schema::rename('referrals', sprintf('referrals_%s', time()));
-        }
-
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id')->index();

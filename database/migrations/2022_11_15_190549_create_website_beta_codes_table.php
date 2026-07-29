@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_beta_codes')) {
-            Schema::rename('website_beta_codes', sprintf('website_beta_codes_%s', time()));
-        }
-
         Schema::create('website_beta_codes', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();

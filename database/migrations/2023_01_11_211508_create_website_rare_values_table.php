@@ -8,11 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_rare_values')) {
-            dropForeignKeyIfExists('website_rare_values', 'category_id');
-            Schema::rename('website_rare_values', sprintf('website_rare_values_%s', time()));
-        }
-
         Schema::create('website_rare_values', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('category_id');

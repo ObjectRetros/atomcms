@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('personal_access_tokens')) {
-            Schema::rename('personal_access_tokens', sprintf('personal_access_tokens_%s', time()));
-        }
-
         Schema::create('personal_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->morphs('tokenable');

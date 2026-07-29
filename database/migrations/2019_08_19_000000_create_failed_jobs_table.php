@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('failed_jobs')) {
-            Schema::rename('failed_jobs', sprintf('failed_jobs_%s', time()));
-        }
-
         Schema::create('failed_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();

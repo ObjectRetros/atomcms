@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Contracts\PaypalGateway;
+use App\Database\CollisionAwareMariaDbConnection;
+use App\Database\CollisionAwareMySqlConnection;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
 use App\Services\HousekeepingPermissionsService;
@@ -14,6 +16,7 @@ use App\Services\ViteService;
 use Filament\Tables\Table;
 use GuzzleHttp\Client as HttpClient;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Facades\URL;
@@ -29,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Collision-aware connections rename tables and columns left behind
+        // by the emulator database out of the way during migrations, or turn
+        // the raw "already exists" SQL errors into actionable ones.
+        Connection::resolverFor('mysql', fn ($connection, $database, $prefix, $config) => new CollisionAwareMySqlConnection($connection, $database, $prefix, $config));
+        Connection::resolverFor('mariadb', fn ($connection, $database, $prefix, $config) => new CollisionAwareMariaDbConnection($connection, $database, $prefix, $config));
+
         // Scoped per request so a webhook that verifies and captures reuses a
         // single gateway (and therefore a single PayPal client and token).
         $this->app->scoped(PaypalGateway::class, SrmklivePaypalGateway::class);

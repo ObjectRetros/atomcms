@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_permissions')) {
-            Schema::rename('website_permissions', sprintf('website_permissions_%s', time()));
-        }
-
         Schema::create('website_permissions', function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique();

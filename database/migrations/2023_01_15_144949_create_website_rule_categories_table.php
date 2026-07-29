@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (config('habbo.migrations.rename_tables') && Schema::hasTable('website_rule_categories')) {
-            Schema::rename('website_rule_categories', sprintf('website_rule_categories_%s', time()));
-        }
-
         Schema::create('website_rule_categories', function (Blueprint $table) {
             $table->id();
 
