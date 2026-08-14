@@ -97,6 +97,8 @@ composer setup
 
 The installer asks which emulator you use. Arcturus imports the bundled base SQL automatically. For Ada, start the emulator once first so its EF migrations create the database, then run `php artisan atom:install --emulator=ada` against that same database. The installer then activates and builds your chosen theme. When it finishes, serve the site and visit `/installation` to configure your hotel.
 
+The installer never writes over a database it did not build. If the target already holds an emulator's schema - Arcturus tables, Polaris' Flyway history, or Ada's Entity Framework history - the base import is refused rather than offered, `--fresh` included. Point Atom at that same database with `--skip-arcturus` (or the matching `--emulator`) and it adds only its own tables. Atom keeps its password reset tokens in `website_password_resets` for the same reason: `password_resets` belongs to the emulator, and an existing one is left untouched.
+
 Docker Compose includes separate `mariadb` and `mariadb-ada` services with independent volumes, so testing Ada never requires clearing the Arcturus database. Use `mariadb-ada:3306` from another Compose service, or `127.0.0.1:3308` from the host. The default Ada database and credentials are `atomcms_ada`, `atomcms`, and `password`. Point Ada at it first so EF applies its migrations, then set Atom to the same database with `EMULATOR_DRIVER=ada`.
 
 Useful variations:
@@ -106,7 +108,7 @@ php artisan atom:install                            # Re-run just the installer 
 php artisan atom:install --sql=/path/to/db.sql      # Use your own Arcturus dump (.sql or .sql.gz)
 php artisan atom:install --emulator=ada             # Install against an EF-migrated Ada database
 php artisan atom:install --catalog-sql=/path/to.sql # Use your own catalog dump on top of the base
-php artisan atom:install --fresh                    # Clear the target database first (destroys existing data)
+php artisan atom:install --fresh                    # Clear the target database first (destroys existing data, refused on a hotel)
 php artisan atom:install --skip-catalog             # Keep the stock catalog from the base database
 php artisan atom:install --skip-arcturus            # Skip the base database + catalog import entirely
 php artisan atom:install --theme=dusk               # Pick the theme without being asked
