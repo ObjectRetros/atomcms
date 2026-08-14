@@ -23,6 +23,9 @@ use Illuminate\Support\Carbon;
  */
 class PasswordResetToken extends Model
 {
+    // Namespaced away from `password_resets`, which emulators own.
+    protected $table = 'website_password_resets';
+
     protected $primaryKey = 'token';
 
     public $incrementing = false;

@@ -3,6 +3,8 @@
 namespace App\Emulator\Drivers\Arcturus;
 
 use App\Emulator\Contracts\EmulatorInstaller;
+use App\Enums\HotelSchemaState;
+use App\Support\HotelSchemaPreflight;
 use Generator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +61,19 @@ class ArcturusInstaller implements EmulatorInstaller
             return false;
         }
 
-        if (! $this->ensureEmptyDatabase($command)) {
+        $schema = HotelSchemaPreflight::inspect();
+
+        if ($schema->state === HotelSchemaState::Hotel) {
+            error('This database already belongs to an emulator that built it itself - importing the Arcturus base over it would destroy the hotel.');
+            note(
+                'Emulators that manage their own schema (Polaris through Flyway, Ada through Entity Framework)' . PHP_EOL
+                . 'need no base import. Install with --skip-arcturus, or with the --emulator matching the one running here.',
+            );
+
+            return false;
+        }
+
+        if (! $this->ensureEmptyDatabase($command, $schema)) {
             return false;
         }
 
@@ -83,16 +97,25 @@ class ArcturusInstaller implements EmulatorInstaller
      * run collide with the dump's CREATE TABLE statements, and a half-imported
      * database is the state this whole class exists to avoid. Offer to clear
      * it, but never without being told to.
+     *
+     * A database an emulator manages never reaches here - `prepare()` refuses
+     * it outright - so what is left is Atom's own tables, or leftovers nobody
+     * claims. Both are the operator's call, not Atom's.
      */
-    private function ensureEmptyDatabase(Command $command): bool
+    private function ensureEmptyDatabase(Command $command, HotelSchemaPreflight $schema): bool
     {
-        $tables = $this->tables();
-
-        if ($tables === []) {
+        if ($schema->tables === []) {
             return true;
         }
 
-        warning(sprintf('The database already contains %d table(s).', count($tables)));
+        warning(sprintf('The database already contains %d table(s).', count($schema->tables)));
+
+        if ($schema->unrecognised !== []) {
+            note(
+                'These were not created by Atom: ' . implode(', ', array_slice($schema->unrecognised, 0, 5))
+                . (count($schema->unrecognised) > 5 ? sprintf(' and %d more', count($schema->unrecognised) - 5) : ''),
+            );
+        }
 
         $clear = (bool) $command->option('fresh') || (
             ! $command->option('no-interaction') && confirm(
@@ -148,15 +171,6 @@ class ArcturusInstaller implements EmulatorInstaller
         info(ucfirst($label) . ' imported.');
 
         return true;
-    }
-
-    /** @return list<string> */
-    private function tables(): array
-    {
-        return array_values(array_map(
-            fn (array $table): string => (string) $table['name'],
-            Schema::getTables(),
-        ));
     }
 
     private function dropAllTables(): void

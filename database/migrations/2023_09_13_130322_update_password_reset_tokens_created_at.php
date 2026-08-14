@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Absent on databases where an emulator owned `password_resets` and Atom
+        // therefore never created its own table - see 2026_08_14_000000.
+        if (! Schema::hasTable('password_reset_tokens')) {
+            return;
+        }
+
         Schema::table('password_reset_tokens', function (Blueprint $table) {
             $table->timestamp('created_at')->useCurrent()->change();
         });
