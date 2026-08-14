@@ -151,7 +151,7 @@ final class HotelSchemaPreflight
      */
     private static function missingSignature(Builder $schema, array $tables): array
     {
-        $closest = null;
+        $closest = [];
         $closestFound = -1;
 
         foreach (self::HOTEL_SIGNATURES as $signature) {
@@ -172,7 +172,7 @@ final class HotelSchemaPreflight
             }
         }
 
-        return $closest ?? [];
+        return $closest;
     }
 
     /**
