@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\User\Users\RelationManagers;
 
 use App\Contracts\Rcon;
+use App\Emulator\Contracts\BadgeRepository;
 use App\Filament\Concerns\TranslatableResource;
 use App\Filament\Tables\Columns\HabboBadgeColumn;
 use App\Models\User;
@@ -16,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use LogicException;
 
 class BadgesRelationManager extends RelationManager
@@ -71,6 +73,14 @@ class BadgesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->using(function (array $data, RelationManager $livewire): Model {
+                        $user = self::owner($livewire);
+                        $badges = app(BadgeRepository::class);
+
+                        $badges->grant($user, $data['badge_code']);
+
+                        return $badges->relation($user)->where('badge_code', $data['badge_code'])->firstOrFail();
+                    })
                     ->before(function (CreateAction $action, RelationManager $livewire): void {
                         $user = self::owner($livewire);
 
