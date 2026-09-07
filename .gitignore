@@ -21,7 +21,6 @@ npm-debug.log
 /.vscode
 /public/assets/images/generated-logos
 CLAUDE.md
-AGENTS.md
 AUDIT.md
 .agents/
 _ide_helper.php
@@ -34,12 +33,12 @@ public/vendor
 .opencode
 .junie
 .claude
-.ai
+.ai/*
+!.ai/guidelines/
 .codex
 .cursor
 opencode.json
 .mcp.json
-boost.json
 RELEASE.md
 .env.preview
 
