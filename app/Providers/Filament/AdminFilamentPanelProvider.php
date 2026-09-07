@@ -60,7 +60,7 @@ class AdminFilamentPanelProvider extends PanelProvider
                 BannedMiddleware::class,
                 MaintenanceMiddleware::class,
                 ForceStaffTwoFactorMiddleware::class,
-            ])
+            ], isPersistent: true)
             ->plugins([]);
     }
 }
