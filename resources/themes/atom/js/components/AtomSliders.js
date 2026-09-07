@@ -9,7 +9,7 @@ const AtomSliders = {
     },
 
     initArticleSlider() {
-        if (!document.querySelector(".article-slider")) return;
+        if (!document.querySelector(".articles-slider")) return;
 
         new Swiper(".articles-slider", {
             modules: [Autoplay, Pagination],
