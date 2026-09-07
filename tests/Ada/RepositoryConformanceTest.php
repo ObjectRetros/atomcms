@@ -21,9 +21,8 @@ use App\Services\HousekeepingPermissionsService;
 use App\Services\PermissionsService;
 use Database\Seeders\HousekeepingPermissionSeeder;
 use Database\Seeders\WebsitePermissionSeeder;
-use Illuminate\Contracts\Cache\LockTimeoutException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -303,23 +302,14 @@ test('the ada installer waits on a database ada has not finished building', func
     }
 });
 
-test('a grant held up by a competing one still leaves a single row', function () {
-    // The race is read-then-insert with no constraint behind it, so a
-    // sequential duplicate cannot reproduce it. Holding the lock and writing
-    // the row underneath stands in for the competing process: the grant has
-    // to notice the row appeared while it was waiting.
+test('owning a duplicate definition still makes a badge grant a no-op', function () {
     $badges = app(BadgeRepository::class);
     $user = User::factory()->create();
     $code = 'ACH_Race';
 
-    $lock = Cache::lock("ada-badge-grant:{$user->id}:" . sha1($code), 10);
-
-    expect($lock->get())->toBeTrue();
-
+    DB::table('badges')->insert(['code' => $code]);
     $badgeId = DB::table('badges')->insertGetId(['code' => $code]);
     DB::table('player_badges')->insert(['player_id' => $user->id, 'badge_id' => $badgeId, 'slot' => 0]);
-
-    $lock->release();
 
     $badges->grant($user, $code);
 
@@ -327,26 +317,45 @@ test('a grant held up by a competing one still leaves a single row', function ()
         ->and(DB::table('player_badges')->where('player_id', $user->id)->count())->toBe(1);
 });
 
-test('a grant that cannot take the lock does not write a duplicate', function () {
+test('rolling back a badge grant permits a subsequent successful grant', function () {
     $badges = app(BadgeRepository::class);
     $user = User::factory()->create();
     $code = 'ACH_Contended';
 
+    expect(fn () => DB::transaction(function () use ($badges, $user, $code): void {
+        $badges->grant($user, $code);
+
+        throw new RuntimeException('Purchase failed');
+    }))->toThrow(RuntimeException::class, 'Purchase failed');
+
+    expect($badges->codes($user))->toBe([])
+        ->and(DB::table('badges')->where('code', $code)->count())->toBe(0)
+        ->and(DB::table('website_badge_grant_locks')->count())->toBe(0);
+
     $badges->grant($user, $code);
-
-    // A competitor holding the lock past the wait window must make the grant
-    // fail loudly rather than fall through and insert a second row.
-    $lock = Cache::lock("ada-badge-grant:{$user->id}:" . sha1($code), 30);
-    expect($lock->get())->toBeTrue();
-
-    try {
-        expect(fn () => $badges->grant($user, $code))->toThrow(LockTimeoutException::class);
-    } finally {
-        $lock->release();
-    }
 
     expect(DB::table('player_badges')->where('player_id', $user->id)->count())->toBe(1);
 });
+
+test('concurrent Ada grants share one definition through outer transactions', function (bool $differentPlayers) {
+    $result = Process::env([
+        'APP_ENV' => 'testing',
+        'DB_DATABASE' => DB::connection()->getDatabaseName(),
+        'EMULATOR_DRIVER' => 'ada',
+    ])->timeout(15)->run([
+        PHP_BINARY, base_path('tests/Fixtures/concurrent-badge-grants.php'),
+        'ada', 'coordinator', sys_get_temp_dir() . '/atom-badge-race-' . bin2hex(random_bytes(8)),
+        $differentPlayers ? 'different' : 'same',
+    ]);
+
+    expect($result->successful())->toBeTrue($result->errorOutput())
+        ->and(json_decode(trim($result->output()), true, flags: JSON_THROW_ON_ERROR))
+        ->toBe([
+            'driver' => 'ada',
+            'ownership_rows' => $differentPlayers ? 2 : 1,
+            'definition_rows' => 1,
+        ]);
+})->with([true, false]);
 
 test('ada grants a large quantity in bounded chunks', function () {
     $furniture = app(FurnitureRepository::class);
