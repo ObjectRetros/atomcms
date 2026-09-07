@@ -36,9 +36,11 @@ return [
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
+            // Laravel uses a scheme; retain older MAIL_ENCRYPTION=ssl setups,
+            // including servers that provide implicit TLS on a custom port.
+            'scheme' => env('MAIL_SCHEME') ?: (env('MAIL_ENCRYPTION') === 'ssl' ? 'smtps' : null),
             'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
             'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
