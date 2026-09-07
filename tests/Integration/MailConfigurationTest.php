@@ -1,15 +1,15 @@
 <?php
 
-use Illuminate\Container\Container;
-use Illuminate\Foundation\Application;
 use Illuminate\Mail\MailManager;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream;
+use Tests\TestCase;
+
+uses(TestCase::class);
 
 it('configures the SMTP transport with the requested encryption', function (?string $scheme, ?string $legacyEncryption, int $port, bool $encrypted) {
     $originalEnvironment = $_ENV;
     $originalServer = $_SERVER;
-    $originalContainer = Container::getInstance();
 
     try {
         foreach ([
@@ -23,9 +23,8 @@ it('configures the SMTP transport with the requested encryption', function (?str
             $_ENV[$key] = $_SERVER[$key] = $value;
         }
 
-        $app = new Application(dirname(__DIR__, 2));
-        $config = require $app->configPath('mail.php');
-        $transport = (new MailManager($app))->createSymfonyTransport($config['mailers']['smtp']);
+        $config = require config_path('mail.php');
+        $transport = app(MailManager::class)->createSymfonyTransport($config['mailers']['smtp']);
 
         expect($transport)->toBeInstanceOf(EsmtpTransport::class)
             ->and($transport->isAutoTls())->toBeTrue()
@@ -35,7 +34,6 @@ it('configures the SMTP transport with the requested encryption', function (?str
     } finally {
         $_ENV = $originalEnvironment;
         $_SERVER = $originalServer;
-        Container::setInstance($originalContainer);
     }
 })->with([
     'explicit SMTPS on a custom port' => ['smtps', null, 2525, true],
