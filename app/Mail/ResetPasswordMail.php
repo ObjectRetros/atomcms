@@ -22,6 +22,12 @@ class ResetPasswordMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        return new Content(view: 'email.forgetPassword');
+        return new Content(
+            view: 'email.forgetPassword',
+            with: [
+                'resetUrl' => rtrim((string) config('app.url'), '/')
+                    . route('reset.password.get', $this->token, absolute: false),
+            ],
+        );
     }
 }
