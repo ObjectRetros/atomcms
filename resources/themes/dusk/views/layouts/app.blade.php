@@ -93,6 +93,10 @@
 
         <x-fancybox-assets />
 
+        @if (setting('google_recaptcha_enabled'))
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        @endif
+
         @stack('javascript')
 
         @stack('scripts')
