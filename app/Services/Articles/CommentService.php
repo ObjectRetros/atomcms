@@ -11,8 +11,12 @@ use Illuminate\Validation\ValidationException;
 
 class CommentService
 {
+    public function __construct(private readonly InteractionRateLimiter $rateLimiter) {}
+
     public function store(User $user, string $comment, WebsiteArticle $article): WebsiteArticleComment
     {
+        $this->rateLimiter->hit($user, 'comments', 10);
+
         return DB::transaction(function () use ($user, $comment, $article): WebsiteArticleComment {
             $article = WebsiteArticle::whereKey($article->id)->lockForUpdate()->firstOrFail();
 
