@@ -94,12 +94,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --ignore-scripts
 
-      # Scoped to what actually ships. The build-time formatter chain
-      # (@shufo/prettier-plugin-blade -> blade-formatter -> js-beautify)
-      # carries advisories with no fix published upstream, and it only ever
-      # runs on a developer's machine through npm run format.
       - name: Security advisories
-        run: npm audit --omit=dev --audit-level=moderate
+        run: npm audit --audit-level=moderate
 
       - name: Build Atom theme
         run: npm run build:atom
