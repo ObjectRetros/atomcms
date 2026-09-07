@@ -42,6 +42,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -54,6 +55,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $username
  * @property string $real_name
  * @property string $password
+ * @property string|null $website_remember_token
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -172,6 +174,8 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public $timestamps = false;
 
+    protected $rememberTokenName = 'website_remember_token';
+
     /**
      * Every user query is refreshed from the active emulator in one pass.
      *
@@ -211,6 +215,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'id',
         'password',
         'remember_token',
+        'website_remember_token',
         'auth_ticket',
         'mail',
         'ip_register',
@@ -386,6 +391,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function changePassword(string $newPassword): void
     {
         $this->password = Hash::make($newPassword);
+        $this->setRememberToken(Str::random(60));
         $this->save();
     }
 

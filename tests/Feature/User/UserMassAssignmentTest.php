@@ -25,6 +25,7 @@ test('privileged columns cannot be mass assigned', function () {
         'extra_rank' => 7,
         'auth_ticket' => 'hijacked-ticket',
         'team_id' => 1,
+        'website_remember_token' => 'hijacked-token',
         'motto' => 'Updated motto',
     ]);
 
@@ -36,6 +37,7 @@ test('privileged columns cannot be mass assigned', function () {
         ->and($user->extra_rank)->toBeNull()
         ->and($user->auth_ticket)->toBe('')
         ->and($user->team_id)->toBeNull()
+        ->and($user->getRememberToken())->toBe('')
         ->and($user->motto)->toBe('Updated motto');
 });
 
