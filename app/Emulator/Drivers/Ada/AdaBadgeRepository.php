@@ -6,10 +6,10 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Emulator\Data\OwnedBadge;
 use App\Models\Ada\AdaPlayerBadge;
 use App\Models\User;
+use App\Services\Badge\BadgeGrantMutex;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,11 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AdaBadgeRepository implements BadgeRepository
 {
-    /** How long a grant may hold its lock before it is considered abandoned. */
-    private const LOCK_SECONDS = 10;
-
-    /** How long a competing grant waits for its turn before giving up. */
-    private const LOCK_WAIT_SECONDS = 5;
+    public function __construct(private readonly BadgeGrantMutex $mutex = new BadgeGrantMutex) {}
 
     /** @return HasMany<AdaPlayerBadge, User> */
     public function relation(User $user): HasMany
@@ -40,36 +36,19 @@ class AdaBadgeRepository implements BadgeRepository
 
     public function grant(User $user, string $badge): void
     {
-        // Resolving the definition and claiming ownership are both
-        // read-then-insert, and Ada constrains neither table, so a transaction
-        // alone lets two concurrent grants both see absence and both write.
-        // Serialising on the pair keeps Atom's own grants single-file.
-        Cache::lock($this->lockFor($user, $badge), self::LOCK_SECONDS)->block(
-            self::LOCK_WAIT_SECONDS,
-            fn () => DB::transaction(function () use ($user, $badge): void {
-                $badgeId = $this->badgeId($badge);
+        // The code lock also serializes definitions shared by different
+        // players and remains held through an outer purchase transaction.
+        $this->mutex->run($badge, function () use ($user, $badge): void {
+            if ($this->badges($user)->where('badges.code', $badge)->lockForUpdate()->exists()) {
+                return;
+            }
 
-                $owned = DB::table('player_badges')
-                    ->where('player_id', $user->id)
-                    ->where('badge_id', $badgeId)
-                    ->exists();
-
-                if ($owned) {
-                    return;
-                }
-
-                DB::table('player_badges')->insert([
-                    'player_id' => $user->id,
-                    'badge_id' => $badgeId,
-                    'slot' => 0,
-                ]);
-            }),
-        );
-    }
-
-    private function lockFor(User $user, string $badge): string
-    {
-        return sprintf('ada-badge-grant:%d:%s', $user->id, sha1($badge));
+            DB::table('player_badges')->insert([
+                'player_id' => $user->id,
+                'badge_id' => $this->badgeId($badge),
+                'slot' => 0,
+            ]);
+        });
     }
 
     public function revoke(User $user, string $badge): void
@@ -98,7 +77,7 @@ class AdaBadgeRepository implements BadgeRepository
      */
     private function badgeId(string $code): int
     {
-        $existing = DB::table('badges')->where('code', $code)->orderBy('id')->value('id');
+        $existing = DB::table('badges')->where('code', $code)->orderBy('id')->lockForUpdate()->value('id');
 
         return (int) ($existing ?? DB::table('badges')->insertGetId(['code' => $code]));
     }
