@@ -14,6 +14,7 @@
         "laravel-best-practices",
         "testing-best-practices",
         "livewire-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "filament-development"
     ]
 }
