@@ -22,7 +22,7 @@ test('the logo generator is permission gated', function () {
         ->get(route('logo-generator.index'))
         ->assertRedirect(route('me.show'));
 
-    $this->actingAs(User::factory()->create(['rank' => 7]))
+    $this->flushSession()->actingAs(User::factory()->create(['rank' => 7]))
         ->get(route('logo-generator.index'))
         ->assertOk();
 });

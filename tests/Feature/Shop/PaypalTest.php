@@ -328,7 +328,7 @@ test('one PayPal capture cannot credit two different orders', function () {
         ->get(route('paypal.successful-transaction', ['token' => 'ORDER-9']))
         ->assertSessionHas('success');
 
-    $this->actingAs($secondUser)
+    $this->flushSession()->actingAs($secondUser)
         ->get(route('paypal.successful-transaction', ['token' => 'ORDER-10']))
         ->assertSessionHasErrors('message');
 
