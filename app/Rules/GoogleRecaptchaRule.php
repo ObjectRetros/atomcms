@@ -4,15 +4,23 @@ namespace App\Rules;
 
 use App\Support\OutboundHttp;
 use Closure;
-use Illuminate\Contracts\Validation\InvokableRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Client\ConnectionException;
 
-class GoogleRecaptchaRule implements InvokableRule
+class GoogleRecaptchaRule implements ValidationRule
 {
-    public function __invoke(string $attribute, mixed $value, Closure $fail): void
+    public bool $implicit = true;
+
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // If recaptcha is disabled
         if (! (int) setting('google_recaptcha_enabled')) {
+            return;
+        }
+
+        if (! is_string($value) || trim($value) === '') {
+            $fail(__('The Google recaptcha must be completed'));
+
             return;
         }
 
