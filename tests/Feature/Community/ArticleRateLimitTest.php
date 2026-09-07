@@ -74,11 +74,11 @@ test('reaction limits are shared between HTTP and Livewire and recover after a m
     expect($this->article->reactions()->count())->toBe(0);
 
     $otherReader = User::factory()->create();
-    $this->actingAs($otherReader)
+    $this->flushSession()->actingAs($otherReader)
         ->postJson(route('article.toggle-reaction', $this->article->slug), ['reaction' => 'like'])
         ->assertOk();
 
-    $this->actingAs($this->reader);
+    $this->flushSession()->actingAs($this->reader);
     $this->travel(61)->seconds();
 
     Livewire::test(ArticleReactions::class, ['article' => $this->article])
