@@ -11,8 +11,6 @@
 
     <title>{{ setting('hotel_name') }} - {{ __('Client') }}</title>
 
-    <script src="{{ asset('assets/js/jquery-latest.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('assets/js/jquery-ui.js') }}" type="text/javascript"></script>
     <script src="{{ asset('assets/js/flashclient.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/js/swfobject.js') }}"></script>
 
@@ -21,8 +19,8 @@
 
     <script type="text/javascript">
         var flashvars = {
-            "connection.info.host": "{{ config('habbo.flash.host') }}",
-            "connection.info.port": "{{ config('habbo.flash.port') }}",
+            "connection.info.host": @js((string) config('habbo.flash.host')),
+            "connection.info.port": @js((string) config('habbo.flash.port')),
             "site.url": "",
             "url.prefix": "",
             "client.reload.url": "",
@@ -35,32 +33,32 @@
             "client.allow.cross.domain": "1",
             "flash.client.origin": "popup",
             "processlog.enabled": "0",
-            "sso.ticket": "{{ $sso }}",
-            "productdata.load.url": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_productdata')) }}",
-            "furnidata.load.url": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_furnidata')) }}",
-            "external.texts.txt": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_texts')) }}",
-            "external.variables.txt": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_variables')) }}",
-            "external.figurepartlist.txt": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_figuredata')) }}",
-            "flash.dynamic.avatar.download.configuration": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_figuremap')) }}",
-            "external.override.texts.txt": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_override_texts')) }}",
-            "external.override.variables.txt": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_override_variables')) }}",
-            "flash.client.url": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder')) }}/",
+            "sso.ticket": @js($sso),
+            "productdata.load.url": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_productdata'))),
+            "furnidata.load.url": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_furnidata'))),
+            "external.texts.txt": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_texts'))),
+            "external.variables.txt": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_variables'))),
+            "external.figurepartlist.txt": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_figuredata'))),
+            "flash.dynamic.avatar.download.configuration": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_figuremap'))),
+            "external.override.texts.txt": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_override_texts'))),
+            "external.override.variables.txt": @js(sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.external_override_variables'))),
+            "flash.client.url": @js(sprintf('%s/%s/%s/', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder'))),
         };
 
         window.FlashExternalInterface.disconnect = function() {
-            window.location.href = "{{ route('me.show') }}";
+            window.location.href = @js(route('me.show'));
         };
 
         var params = {
-            "base": "{{ sprintf('%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder')) }}/",
+            "base": @js(sprintf('%s/%s/%s/', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder'))),
             "allowScriptAccess": "always",
             "menu": "false",
             "wmode": "opaque"
         };
 
         swfobject.embedSWF(
-            '{{ sprintf('%s/%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder'), config('habbo.flash.habbo_swf')) }}',
-            'client', '100%', '100%', '11.1.0', '{{ asset('assets/js/expressInstall.swf') }}', flashvars, params, null,
+            @js(sprintf('%s/%s/%s/%s', config('habbo.site.site_url'), config('habbo.flash.swf_base_path'), config('habbo.flash.production_folder'), config('habbo.flash.habbo_swf'))),
+            'client', '100%', '100%', '11.1.0', @js(asset('assets/js/expressInstall.swf')), flashvars, params, null,
             null);
     </script>
 </head>
