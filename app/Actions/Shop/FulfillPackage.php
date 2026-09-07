@@ -66,21 +66,18 @@ final readonly class FulfillPackage
 
         [$currencyName, $amount] = explode(':', $item->type_value, 2);
         $currency = CurrencyTypes::fromCurrencyName($currencyName);
+        $amount = $this->positiveInteger($item, $amount);
 
-        if ($currency === null || (int) $amount <= 0) {
+        if ($currency === null || $amount > intdiv(PHP_INT_MAX, $quantity)) {
             throw self::misconfigured($item);
         }
 
-        $this->currencies->give($user, $currency, (int) $amount * $quantity);
+        $this->currencies->give($user, $currency, $amount * $quantity);
     }
 
     private function giveFurniture(User $user, WebsiteShopItem $item, int $quantity): void
     {
-        $baseItemId = (int) $item->type_value;
-
-        if ($baseItemId <= 0) {
-            throw self::misconfigured($item);
-        }
+        $baseItemId = $this->positiveInteger($item, $item->type_value);
 
         $this->furniture->grant($user, $baseItemId, $quantity);
     }
@@ -100,13 +97,20 @@ final readonly class FulfillPackage
 
     private function giveRank(User $user, WebsiteShopItem $item): void
     {
-        $rank = (int) $item->type_value;
+        $rank = $this->positiveInteger($item, $item->type_value);
 
-        if ($rank <= 0) {
+        $user->forceFill(['rank' => $rank])->save();
+    }
+
+    private function positiveInteger(WebsiteShopItem $item, string $value): int
+    {
+        $integer = filter_var(ltrim($value, '0'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        if (! ctype_digit($value) || $integer === false) {
             throw self::misconfigured($item);
         }
 
-        $user->forceFill(['rank' => $rank])->save();
+        return $integer;
     }
 
     private static function misconfigured(WebsiteShopItem $item): ShopPurchaseException
