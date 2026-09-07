@@ -195,7 +195,7 @@ We welcome contributions! To maintain code quality and streamline reviews, pleas
 
 ### Laravel Boost
 
-For development, set `APP_ENV=local` in your local `.env` and run `composer boost:update` after installing dependencies or changing framework packages to refresh the repository's Laravel Boost guidance. Run `php artisan boost:install` to configure your preferred agent, MCP integration and skills locally. See [Laravel Boost documentation](https://laravel.com/docs/13.x/boost).
+For development, set `APP_ENV=local` in your local `.env` and run `php artisan boost:update` after installing dependencies or changing framework packages to refresh the repository's Laravel Boost guidance. Run `php artisan boost:install` to configure your preferred agent, MCP integration and skills locally. See [Laravel Boost documentation](https://laravel.com/docs/13.x/boost).
 
 ## Credits
 
