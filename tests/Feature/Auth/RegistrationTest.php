@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 
 function register(array $overrides = []): TestResponse
@@ -161,4 +162,56 @@ test('an enabled turnstile without configured keys does not block registration',
     register()->assertRedirect(RouteServiceProvider::HOME);
 
     $this->assertAuthenticated();
+});
+
+test('enabled recaptcha rejects missing or malformed registration tokens without making a verification request', function (array $input) {
+    installHotel();
+    setSetting('google_recaptcha_enabled', '1');
+    Http::preventStrayRequests();
+
+    register($input)->assertSessionHasErrors('g-recaptcha-response');
+
+    $this->assertGuest();
+    expect(User::where('username', 'Tester')->exists())->toBeFalse();
+    Http::assertNothingSent();
+})->with([
+    'omitted' => [[]],
+    'blank' => [['g-recaptcha-response' => '   ']],
+    'non-string' => [['g-recaptcha-response' => ['unexpected']]],
+]);
+
+test('a verified recaptcha allows registration', function () {
+    installHotel();
+    setSetting('google_recaptcha_enabled', '1');
+    config()->set('habbo.site.recaptcha_secret_key', 'test-secret');
+    Http::fake(['www.google.com/recaptcha/api/siteverify' => Http::response(['success' => true])]);
+
+    register(['g-recaptcha-response' => 'verified-token'])->assertRedirect(RouteServiceProvider::HOME);
+
+    $this->assertAuthenticated();
+    Http::assertSent(fn ($request) => $request->url() === 'https://www.google.com/recaptcha/api/siteverify'
+        && $request['secret'] === 'test-secret'
+        && $request['response'] === 'verified-token');
+});
+
+test('a rejected recaptcha prevents registration', function () {
+    installHotel();
+    setSetting('google_recaptcha_enabled', '1');
+    Http::fake(['www.google.com/recaptcha/api/siteverify' => Http::response(['success' => false])]);
+
+    register(['g-recaptcha-response' => 'rejected-token'])->assertSessionHasErrors('g-recaptcha-response');
+
+    $this->assertGuest();
+    expect(User::where('username', 'Tester')->exists())->toBeFalse();
+});
+
+test('disabled recaptcha allows registration without contacting Google', function () {
+    installHotel();
+    setSetting('google_recaptcha_enabled', '0');
+    Http::preventStrayRequests();
+
+    register()->assertRedirect(RouteServiceProvider::HOME);
+
+    $this->assertAuthenticated();
+    Http::assertNothingSent();
 });

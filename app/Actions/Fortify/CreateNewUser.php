@@ -182,7 +182,7 @@ class CreateNewUser implements CreatesNewUsers
             'beta_code' => [Rule::requiredIf(setting('requires_beta_code') === '1'), 'nullable', 'string', new BetaCodeRule],
             'referral_code' => ['nullable', 'string', 'max:255'],
             'terms' => ['required', 'accepted'],
-            'g-recaptcha-response' => ['sometimes', 'string', new GoogleRecaptchaRule],
+            'g-recaptcha-response' => [new GoogleRecaptchaRule],
             'cf-turnstile-response' => [new CloudflareTurnstileRule],
         ];
 
