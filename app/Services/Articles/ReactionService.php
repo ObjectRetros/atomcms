@@ -10,9 +10,13 @@ use Illuminate\Support\Collection;
 
 class ReactionService
 {
+    public function __construct(private readonly InteractionRateLimiter $rateLimiter) {}
+
     /** @return array{success: bool, added: bool, username: string} */
     public function toggleReaction(WebsiteArticle $article, User $user, string $reaction): array
     {
+        $this->rateLimiter->hit($user, 'reactions', 30);
+
         $record = $this->toggle($article, $user, $reaction);
 
         return [
