@@ -63,6 +63,10 @@ final readonly class PurchaseShopPackage
 
     private function ensurePackageEligibility(User $recipient, WebsiteShopPackage $package, User $buyer): void
     {
+        if (! $recipient->is($buyer) && ! $package->is_giftable) {
+            throw new ShopPurchaseException(__('This package is not giftable'));
+        }
+
         if (! $package->isAvailable()) {
             throw new ShopPurchaseException(__('This package is no longer available'));
         }
@@ -152,7 +156,7 @@ final readonly class PurchaseShopPackage
                 'website_shop_package_id' => $lockedPackage->id,
                 'gifted_to' => $lockedRecipient->is($lockedBuyer) ? null : $lockedRecipient->id,
             ]);
-        });
+        }, attempts: 3);
     }
 
     private function ensureWithinPurchaseLimit(User $buyer, WebsiteShopPackage $package): void
