@@ -70,7 +70,7 @@ test('a reader cannot delete someone else\'s comment', function () {
     $comment = $article->comments()->first();
     $stranger = User::factory()->create(['rank' => 1]);
 
-    $this->actingAs($stranger)
+    $this->flushSession()->actingAs($stranger)
         ->delete(route('article.comment.destroy', $comment))
         ->assertForbidden();
 
