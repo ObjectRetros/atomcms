@@ -10,6 +10,35 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
+test('a pre-upgrade session cannot survive a password reset before its first upgraded request', function () {
+    $legacySession = [Auth::guard()->getName() => $this->user->id];
+
+    PasswordResetToken::create([
+        'email' => $this->user->mail,
+        'token' => PasswordResetToken::hashToken('legacy-session-reset-token'),
+    ]);
+
+    $this->post(route('reset.password.post', 'legacy-session-reset-token'), [
+        'password' => 'ChangedPassword123!',
+        'password_confirmation' => 'ChangedPassword123!',
+    ])->assertRedirect(route('login'));
+
+    Auth::forgetGuards();
+    $this->withSession($legacySession)->get(route('me.show'))->assertRedirect(route('login'));
+    $this->assertGuest();
+});
+
+test('a fresh password login initializes the session fingerprint immediately', function () {
+    $this->post(route('login.store'), [
+        'username' => $this->user->username,
+        'password' => 'password',
+    ])->assertRedirect(route('me.show'))->assertSessionHas('password_hash_web');
+
+    Auth::forgetGuards();
+    $this->get(route('me.show'))->assertOk();
+    $this->assertAuthenticatedAs($this->user);
+});
+
 test('resetting a password rejects an existing authenticated session', function () {
     $this->actingAs($this->user)->get(route('me.show'))->assertOk();
     $oldSession = session()->all();
