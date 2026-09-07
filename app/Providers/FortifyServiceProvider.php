@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
@@ -35,7 +36,14 @@ class FortifyServiceProvider extends ServiceProvider
 
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->input('username') . $request->ip()));
+        RateLimiter::for('login', function (Request $request): Limit {
+            $username = $request->input('username');
+            $identity = is_string($username)
+                ? 'username:' . Str::transliterate(Str::lower($username))
+                : 'invalid-username';
+
+            return Limit::perMinute(5)->by($identity . '|' . $request->ip());
+        });
         RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->session()->get('login.id')));
         RateLimiter::for('two-factor-settings', fn (Request $request) => Limit::perMinute(6)->by(
             ($request->user()?->getAuthIdentifier() ?? 'guest') . '|' . $request->ip(),
