@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\AuthenticateSession;
 use App\Http\Middleware\BannedMiddleware;
 use App\Http\Middleware\ConfigureRuntimeFilesystems;
 use App\Http\Middleware\EncryptCookies;
@@ -33,7 +34,6 @@ use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Middleware\ValidateSignature;
-use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;

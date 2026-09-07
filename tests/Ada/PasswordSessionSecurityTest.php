@@ -6,6 +6,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
+test('ada rejects a legacy session after a password change', function () {
+    installHotel();
+    $user = User::factory()->create();
+    $legacySession = [Auth::guard()->getName() => $user->id];
+
+    $user->changePassword('ChangedPassword123!');
+
+    $this->withSession($legacySession)->get(route('me.show'))->assertRedirect(route('login'));
+    $this->assertGuest();
+});
+
 test('ada remembered logins persist in CMS storage and are revoked after a password reset', function () {
     installHotel();
     $user = User::factory()->create();
