@@ -31,4 +31,4 @@ Use the CMS Settings and Permissions resources under `/housekeeping` whenever av
 
 ## Keeping the GitHub wiki current
 
-Submit edits here through a pull request against `dev`. The files retain the wiki's page names so a maintainer can publish the reviewed pages to the separate [GitHub wiki](https://github.com/ObjectRetros/atomcms/wiki) after merge, adapting repository-relative links where necessary. A pull request in this repository does not update the public wiki automatically. Use these versioned pages when the public wiki differs.
+Submit edits here through a pull request against `dev`. The files retain the wiki's page names so a maintainer can publish the reviewed pages to the separate [GitHub wiki](https://github.com/DennisObject/atomcms/wiki) after merge, adapting repository-relative links where necessary. A pull request in this repository does not update the public wiki automatically. Use these versioned pages when the public wiki differs.

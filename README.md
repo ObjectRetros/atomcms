@@ -89,7 +89,7 @@ extension=intl
 One command installs everything - dependencies, emulator database integration, app key, storage link, migrations, seeders and your theme's assets:
 
 ```bash
-git clone https://github.com/ObjectRetros/atomcms.git
+git clone https://github.com/DennisObject/atomcms.git
 cd atomcms
 
 composer setup
@@ -178,7 +178,7 @@ php artisan test
 
 ## Documentation
 
-The [versioned documentation](docs/wiki/README.md) covers installation, themes, translations, clients, payments and hotel settings. These pages are reviewed through pull requests and provide the source for updates to the [GitHub wiki](https://github.com/ObjectRetros/atomcms/wiki).
+The [versioned documentation](docs/wiki/README.md) covers installation, themes, translations, clients, payments and hotel settings. These pages are reviewed through pull requests and provide the source for updates to the [GitHub wiki](https://github.com/DennisObject/atomcms/wiki).
 
 ### Learning Laravel
 
