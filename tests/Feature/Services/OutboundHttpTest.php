@@ -92,7 +92,7 @@ test('recaptcha rejects unsuccessful verification responses', function () {
     ]);
     $failure = null;
 
-    (new GoogleRecaptchaRule)('g-recaptcha-response', 'invalid-token', function (string $message) use (&$failure): void {
+    (new GoogleRecaptchaRule)->validate('g-recaptcha-response', 'invalid-token', function (string $message) use (&$failure): void {
         $failure = $message;
     });
 
