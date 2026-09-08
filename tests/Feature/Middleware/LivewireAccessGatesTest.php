@@ -45,6 +45,10 @@ beforeEach(function () {
 
 test('livewire actions honor access restrictions introduced after page load', function (string $gate, string $redirect, string $surface) {
     $housekeeping = $surface === 'housekeeping';
+    if ($housekeeping && $gate === 'two-factor') {
+        $redirect = 'filament.housekeeping.pages.two-factor-authentication';
+    }
+
     $page = $this->get($housekeeping
         ? '/housekeeping/website/articles/' . $this->article->id . '/edit'
         : route('article.show', $this->article->slug))->assertOk();

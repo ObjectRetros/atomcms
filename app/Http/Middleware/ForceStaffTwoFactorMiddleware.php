@@ -22,6 +22,7 @@ class ForceStaffTwoFactorMiddleware
             'user.two-factor.enable',
             'two-factor.verify',
             'user.two-factor.disable',
+            'filament.housekeeping.pages.two-factor-authentication',
         ];
 
         if (
@@ -29,7 +30,9 @@ class ForceStaffTwoFactorMiddleware
             && ! $user->hasEnabledTwoFactorAuthentication()
             && ! $request->routeIs(...$allowedRoutes)
         ) {
-            return to_route('settings.two-factor');
+            return to_route($request->routeIs('filament.housekeeping.*')
+                ? 'filament.housekeeping.pages.two-factor-authentication'
+                : 'settings.two-factor');
         }
 
         return $next($request);

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\FortifyTwoFactorAuthentication;
 use App\Filament\Pages\Login;
 use App\Http\Middleware\AuthenticateHousekeepingSession;
 use App\Http\Middleware\BannedMiddleware;
@@ -32,6 +33,7 @@ class AdminFilamentPanelProvider extends PanelProvider
             ->path('housekeeping')
             ->strictAuthorization()
             ->login(Login::class)
+            ->multiFactorAuthentication(app(FortifyTwoFactorAuthentication::class))
             ->viteTheme('resources/css/filament/housekeeping/theme.css')
             ->colors([
                 'primary' => Color::Amber,
