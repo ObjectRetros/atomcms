@@ -81,6 +81,7 @@
             "npm ci",
             "@php artisan atom:install"
         ],
+        "boost:update": "@php artisan boost:update --no-interaction",
         "test": "pest",
         "lint": "pint --test",
         "fix": "pint",

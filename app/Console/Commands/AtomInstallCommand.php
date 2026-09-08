@@ -316,13 +316,20 @@ class AtomInstallCommand extends Command
 
     private function replaceEnvValue(string $contents, string $key, string $value, string $path): string
     {
-        $line = str_contains($value, ' ') ? sprintf('%s="%s"', $key, $value) : sprintf('%s=%s', $key, $value);
+        $escaped = strtr($value, [
+            '\\' => '\\\\',
+            '"' => '\\"',
+            '$' => '\\$',
+            "\r" => '\\r',
+            "\n" => '\\n',
+        ]);
+        $line = sprintf('%s="%s"', $key, $escaped);
 
         if (preg_match("/^{$key}=.*$/m", $contents) !== 1) {
             return $contents . PHP_EOL . $line;
         }
 
-        $updated = preg_replace("/^{$key}=.*$/m", $line, $contents);
+        $updated = preg_replace_callback("/^{$key}=.*$/m", fn (): string => $line, $contents);
 
         if (! is_string($updated)) {
             throw new \RuntimeException("Unable to update {$key} in environment file: {$path}");

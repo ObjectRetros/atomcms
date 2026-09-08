@@ -6,7 +6,9 @@ use App\Models\WebsiteBadge;
 use App\Services\SettingsService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use RuntimeException;
 use Throwable;
 
 class ImportBadgeData extends Command
@@ -71,7 +73,13 @@ class ImportBadgeData extends Command
 
     private function processBadgeData(string $jsonPath): void
     {
-        $jsonData = File::json($jsonPath);
+        $document = json_decode(File::get($jsonPath), flags: JSON_THROW_ON_ERROR);
+
+        if (! is_object($document)) {
+            throw new RuntimeException('Nitro external texts must contain a JSON object.');
+        }
+
+        $jsonData = get_object_vars($document);
 
         // Extract badge names and descriptions
         $badgeNames = Collection::make($jsonData)
@@ -89,15 +97,18 @@ class ImportBadgeData extends Command
             'badge_description' => $badgeDescriptions->get($key, 'No description available'),
         ])->values();
 
-        // Upsert the combined data in chunks
-        $badgeData->chunk(self::CHUNK_SIZE)->each(function ($chunk) {
-            WebsiteBadge::upsert(
-                $chunk->toArray(),
-                ['badge_key'],
-                ['badge_name', 'badge_description'],
-            );
+        // A later chunk can fail after earlier definitions were updated.
+        // Keep the previous import intact unless every chunk succeeds.
+        DB::transaction(function () use ($badgeData): void {
+            $badgeData->chunk(self::CHUNK_SIZE)->each(function ($chunk) {
+                WebsiteBadge::upsert(
+                    $chunk->toArray(),
+                    ['badge_key'],
+                    ['badge_name', 'badge_description'],
+                );
 
-            $this->info('Processed ' . $chunk->count() . ' badges.');
+                $this->info('Processed ' . $chunk->count() . ' badges.');
+            });
         });
     }
 }

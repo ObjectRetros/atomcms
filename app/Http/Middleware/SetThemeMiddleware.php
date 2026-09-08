@@ -14,9 +14,9 @@ class SetThemeMiddleware
         $theme = setting('theme');
 
         if (empty($theme) || $theme === '1') {
-            Theme::set('atom');
+            Theme::set('atom', config('theme.parent'));
         } else {
-            Theme::set($theme);
+            Theme::set($theme, config('theme.parent'));
         }
 
         return $next($request);

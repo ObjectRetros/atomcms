@@ -7,7 +7,7 @@ A modern, community-driven Retro CMS built with Laravel 13.x
 [![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.5+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
 
-[Live Demos](#live-preview) • [Installation](#installation) • [Documentation](https://github.com/ObjectRetros/atomcms/wiki) • [Contributing](#contributing)
+[Live Demos](#live-preview) • [Installation](#installation) • [Documentation](docs/wiki/README.md) • [Contributing](#contributing)
 
 </div>
 
@@ -89,7 +89,7 @@ extension=intl
 One command installs everything - dependencies, emulator database integration, app key, storage link, migrations, seeders and your theme's assets:
 
 ```bash
-git clone https://github.com/ObjectRetros/atomcms.git
+git clone https://github.com/DennisObject/atomcms.git
 cd atomcms
 
 composer setup
@@ -115,106 +115,9 @@ php artisan atom:install --theme=dusk               # Pick the theme without bei
 php artisan atom:install --skip-build               # Skip building theme assets (npm run build:atom|dusk)
 ```
 
-Prefer to do it step by step? Follow the manual guides below.
+For step-by-step Linux and Windows installation, IIS/NGINX permissions, production deployment, updates and troubleshooting, see the [installation and deployment guide](docs/wiki/1.-Installing-Atom-CMS.md).
 
-### Windows Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/ObjectRetros/atomcms.git
-cd atomcms
-
-# Configure environment
-copy .env.example .env
-# Edit .env and update your database credentials
-
-# Install dependencies
-composer install
-npm install
-
-# Generate key and set up database
-php artisan key:generate
-php artisan migrate --seed
-
-# Build assets
-npm run build:atom
-# For development: npm run dev:atom
-```
-
-#### IIS Configuration
-
-Point your IIS site to the `public` folder inside the `atomcms` directory.
-
-#### Required Permissions
-
-Grant "Full control" to both `IUSR` and `IIS_IUSRS` for the atomcms folder.
-
-**Visual guide:** [Permission setup tutorial](https://gyazo.com/7d5f38525a762c1b26bbd7552ca93478)
-
-#### Troubleshooting cURL SSL Errors
-
-If you encounter cURL 60 errors:
-
-1. Download the latest [cacert.pem](https://curl.se/docs/caextract.html)
-2. Place it in `C:/`
-3. Edit `php.ini` and update:
-   ```ini
-   curl.cainfo = "C:/cacert-2025-09-09.pem"
-   ```
-4. Restart your web server
-
-#### Complete Windows Tutorial
-
-New to retro hotel setup? Follow our comprehensive three-part series:
-
-- [Part 1: Basic Setup](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-1.92532/)
-- [Part 2: Configuration](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-2.92533/)
-- [Part 3: Finalization](https://devbest.com/threads/how-to-set-up-a-retro-in-2022-iis-nitro-html5-part-3.92543/)
-
----
-
-### Linux Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/ObjectRetros/atomcms.git
-cd atomcms
-
-# Configure environment
-cp .env.example .env
-# Edit .env and update your database credentials
-
-# Install dependencies
-composer install
-npm install
-
-# Generate key and set up database
-php artisan key:generate
-php artisan migrate --seed
-
-# Build assets
-npm run build:atom
-# For development: npm run dev:atom
-```
-
-#### Set Permissions
-
-```bash
-sudo chown -R $USER:www-data storage
-sudo chown -R $USER:www-data bootstrap/cache
-chmod -R 775 storage
-chmod -R 775 bootstrap/cache
-```
-
-#### NGINX Configuration
-
-For NGINX setup, refer to Laravel's [deployment documentation](https://laravel.com/docs/13.x/deployment#nginx).
-
-#### Complete Linux Tutorial
-
-Need help setting up your retro hotel on Linux? Follow our comprehensive Ubuntu tutorial:
-
-- [Complete Ubuntu Setup Guide](https://git.krews.org/duckietm/ubuntu-tutorial) - Step-by-step instructions for Ubuntu
+Keep the site restricted to the operator until `/installation` is complete. Serve only the `public/` directory, and give the web process write access to `storage/` and `bootstrap/cache/`; keep source code and `.env` owned by the deployment user.
 
 ---
 
@@ -227,8 +130,12 @@ Update these variables in your `.env` file for production:
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-FORCE_HTTPS=true  # If using Cloudflare's "Always use HTTPS"
+APP_URL=https://hotel.example
+SESSION_SECURE_COOKIE=true
+TRUSTED_PROXIES=
 ```
+
+Use an empty `TRUSTED_PROXIES` for direct visitor traffic, or explicitly list your trusted proxy IPs/CIDRs. `FORCE_HTTPS=true` can force generated URLs to HTTPS; configure TLS on the web server or proxy as well. Rebuild cached configuration after changing `.env`. See [production configuration](docs/wiki/1.-Installing-Atom-CMS.md#production-configuration).
 
 ### Cloudflare Turnstile Captcha
 
@@ -237,6 +144,7 @@ Protect your site from bots:
 1. Visit [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/)
 2. Sign in and select your site
 3. Copy the site and secret keys to `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in your `.env` file
+4. Enable `cloudflare_turnstile_enabled` in Housekeeping's CMS settings and disable `google_recaptcha_enabled`. See [bot protection](docs/wiki/4.-Bot-protection.md).
 
 ### Important: Disable Rocket Loader
 
@@ -248,17 +156,13 @@ Atom CMS uses JavaScript that conflicts with Cloudflare's Rocket Loader. To disa
 
 ### Migrating from Another CMS
 
-If migrating from Cosmic CMS or similar platforms:
-
-Set `RENAME_COLLIDING_TABLES=true` in your `.env` file. Atom CMS will automatically handle table conflicts.
-
-**Note:** We recommend proper manual cleanup, but this feature helps avoid common migration issues.
+Back up the hotel database and review each schema collision before migrating. `RENAME_COLLIDING_TABLES=true` allows migrations to archive colliding tables/columns under `old_<timestamp>_<name>` names; it does not reconcile data for you. Leave it disabled unless the affected data is safe to archive. See [installation and updates](docs/wiki/1.-Installing-Atom-CMS.md).
 
 ---
 
 ## Testing
 
-Atom CMS includes a growing test suite using Pest.
+Atom CMS uses Pest with separate disposable MariaDB databases for Arcturus and Ada (`testing` and `testing_ada` by default). The suite drops and recreates tables with `RefreshDatabase`; configure database credentials restricted to those databases and clear cached configuration before running tests. See [contribution checks](docs/wiki/0.-Contribution-guidelines.md#checks).
 
 ### Run Tests
 
@@ -274,7 +178,7 @@ php artisan test
 
 ## Documentation
 
-For detailed documentation, addons, tips, and tricks, visit our [official wiki](https://github.com/ObjectRetros/atomcms/wiki).
+The [versioned documentation](docs/wiki/README.md) covers installation, themes, translations, clients, payments and hotel settings. These pages are reviewed through pull requests and provide the source for updates to the [GitHub wiki](https://github.com/DennisObject/atomcms/wiki).
 
 ### Learning Laravel
 
@@ -285,9 +189,13 @@ New to Laravel? These free resources will help:
 
 ## Contributing
 
-We welcome contributions! To maintain code quality and streamline reviews, please read our [contribution guidelines](https://github.com/ObjectRetros/atomcms/wiki/0.-Contribution-guidelines) before submitting a pull request.
+We welcome contributions! To maintain code quality and streamline reviews, please read our [contribution guidelines](docs/wiki/0.-Contribution-guidelines.md) before submitting a pull request.
 
 ---
+
+### Laravel Boost
+
+For development, set `APP_ENV=local` in your local `.env` and run `php artisan boost:update` after installing dependencies or changing framework packages to refresh the repository's Laravel Boost guidance. Run `php artisan boost:install` to configure your preferred agent, MCP integration and skills locally. See [Laravel Boost documentation](https://laravel.com/docs/13.x/boost).
 
 ## Credits
 

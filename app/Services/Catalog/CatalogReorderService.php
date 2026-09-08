@@ -5,6 +5,7 @@ namespace App\Services\Catalog;
 use App\Models\Game\Furniture\CatalogItem;
 use App\Models\Game\Furniture\CatalogPage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Order numbers are written as (i+1)*10 so future drops have gaps to slot into.
@@ -35,12 +36,33 @@ class CatalogReorderService
      */
     public function movePage(int $pageId, int $newParentId, int $insertAtIndex): void
     {
-        $page = CatalogPage::find($pageId);
-        if (! $page) {
-            return;
-        }
+        DB::transaction(function () use ($pageId, $newParentId, $insertAtIndex) {
+            // Serialize hierarchy changes: two individually valid moves must
+            // not combine into a cycle after reading the same old parents.
+            $pages = CatalogPage::query()->orderBy('id')->lockForUpdate()
+                ->get(['id', 'parent_id', 'order_num'])->keyBy('id');
+            $page = $pages->get($pageId);
 
-        DB::transaction(function () use ($page, $newParentId, $insertAtIndex) {
+            if (! $page) {
+                return;
+            }
+
+            $visited = [$pageId => true];
+            $parentId = $newParentId;
+
+            while ($parentId !== -1) {
+                $parent = $pages->get($parentId);
+
+                if ($parent === null || isset($visited[$parentId])) {
+                    throw ValidationException::withMessages([
+                        'parent_id' => __('Choose an existing catalog parent outside this page and its descendants.'),
+                    ]);
+                }
+
+                $visited[$parentId] = true;
+                $parentId = $parent->parent_id;
+            }
+
             $siblings = CatalogPage::query()
                 ->where('parent_id', $newParentId)
                 ->where('id', '!=', $page->id)

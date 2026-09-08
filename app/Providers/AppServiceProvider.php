@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Contracts\PaypalGateway;
 use App\Database\CollisionAwareMariaDbConnection;
 use App\Database\CollisionAwareMySqlConnection;
+use App\Http\Middleware\BannedMiddleware;
+use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
+use App\Http\Middleware\MaintenanceMiddleware;
 use App\Models\WebsiteDrawBadge;
 use App\Observers\WebsiteDrawBadgeObserver;
 use App\Services\HousekeepingPermissionsService;
@@ -23,6 +26,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Blaze\Blaze;
+use Livewire\Livewire;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class AppServiceProvider extends ServiceProvider
@@ -75,6 +79,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Livewire::addPersistentMiddleware([
+            BannedMiddleware::class,
+            MaintenanceMiddleware::class,
+            ForceStaffTwoFactorMiddleware::class,
+        ]);
+
         Password::defaults(fn (): Password => Password::min(12)
             ->mixedCase()
             ->numbers()

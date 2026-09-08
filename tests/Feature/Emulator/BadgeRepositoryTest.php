@@ -4,6 +4,8 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Emulator\Data\OwnedBadge;
 use App\Emulator\Drivers\Arcturus\ArcturusBadgeRepository;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Process;
 
 /**
  * Arcturus half of the badge conformance suite. Ada owns overlapping table
@@ -108,4 +110,18 @@ test('deleting a badge model removes only that row', function () {
 
     expect($badges->relation($user)->pluck('badge_code')->all())->toBe(['ACH_Keep1'])
         ->and($keep->fresh())->not->toBeNull();
+});
+
+test('concurrent Arcturus grants remain unique through outer transactions', function () {
+    $result = Process::env([
+        'APP_ENV' => 'testing',
+        'DB_DATABASE' => DB::connection()->getDatabaseName(),
+        'EMULATOR_DRIVER' => 'arcturus',
+    ])->timeout(15)->run([
+        PHP_BINARY, base_path('tests/Fixtures/concurrent-badge-grants.php'), 'arcturus',
+    ]);
+
+    expect($result->successful())->toBeTrue($result->errorOutput())
+        ->and(json_decode(trim($result->output()), true, flags: JSON_THROW_ON_ERROR))
+        ->toBe(['driver' => 'arcturus', 'ownership_rows' => 1, 'definition_rows' => null]);
 });

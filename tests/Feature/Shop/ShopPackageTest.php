@@ -4,7 +4,10 @@ use App\Actions\Shop\PurchaseShopPackage;
 use App\Data\RconResponse;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
+use App\Exceptions\ShopPurchaseException;
 use App\Models\Shop\WebsiteShopCategory;
+use App\Models\Shop\WebsiteShopItem;
+use App\Models\Shop\WebsiteShopPackage;
 use App\Models\Shop\WebsiteShopPurchase;
 use App\Models\User;
 use Database\Seeders\WebsiteShopSeeder;
@@ -146,6 +149,57 @@ test('a gifted package delivers to the recipient and records the gift', function
         ->and((int) $recipient->refresh()->credits)->toBe($recipientCredits + 200)
         ->and(WebsiteShopPurchase::where('user_id', $buyer->id)->where('gifted_to', $recipient->id)->count())->toBe(1);
 });
+
+test('a package that stops being giftable cannot be delivered from a stale model', function () {
+    installHotel();
+
+    $buyer = User::factory()->create(['website_balance' => 10000]);
+    $recipient = User::factory()->create();
+    $package = makePackage(['is_giftable' => true, 'stock' => 1]);
+    $recipientCredits = (int) $recipient->credits;
+
+    WebsiteShopPackage::whereKey($package->id)->update(['is_giftable' => false]);
+
+    expect(fn () => app(PurchaseShopPackage::class)->execute($buyer, $package, $recipient->username))
+        ->toThrow(ShopPurchaseException::class, 'This package is not giftable');
+
+    expect((int) $buyer->refresh()->website_balance)->toBe(10000)
+        ->and((int) $recipient->refresh()->credits)->toBe($recipientCredits)
+        ->and($package->refresh()->stock)->toBe(1)
+        ->and(WebsiteShopPurchase::count())->toBe(0);
+});
+
+test('invalid item numbers reject the purchase and roll back earlier rewards', function (string $type, string $value, int $quantity) {
+    installHotel();
+
+    $buyer = User::factory()->create(['website_balance' => 10000, 'rank' => 1]);
+    $package = makePackage(['stock' => 1]);
+    $credits = (int) $buyer->credits;
+    $rank = (int) $buyer->rank;
+    $item = WebsiteShopItem::create([
+        'name' => 'Misconfigured reward',
+        'type' => $type,
+        'type_value' => $value,
+        'is_active' => true,
+    ]);
+    $package->items()->attach($item->id, ['quantity' => $quantity]);
+
+    $this->actingAs($buyer)
+        ->post(route('shop.buy-package', $package))
+        ->assertSessionHasErrors('message');
+
+    expect((int) $buyer->refresh()->website_balance)->toBe(10000)
+        ->and((int) $buyer->credits)->toBe($credits)
+        ->and((int) $buyer->rank)->toBe($rank)
+        ->and($package->refresh()->stock)->toBe(1)
+        ->and(WebsiteShopPurchase::count())->toBe(0);
+})->with([
+    'currency suffix' => ['currency', 'credits:50bad', 1],
+    'fractional currency' => ['currency', 'credits:50.5', 1],
+    'furniture suffix' => ['furniture', '230bad', 1],
+    'rank suffix' => ['rank', '5bad', 1],
+    'currency multiplication overflow' => ['currency', 'credits:' . PHP_INT_MAX, 2],
+]);
 
 test('an online recipient is disconnected before atomic delivery', function () {
     installHotel();

@@ -28,9 +28,11 @@ class CatalogTreeService
 
         $byId = CatalogPage::query()->get()->keyBy('id');
         $chain = [];
+        $visited = [];
         $current = $byId[$page->id] ?? null;
 
-        while ($current) {
+        while ($current && ! isset($visited[$current->id])) {
+            $visited[$current->id] = true;
             array_unshift($chain, $current);
             $current = $current->parent_id > 0 ? ($byId[$current->parent_id] ?? null) : null;
         }
@@ -50,7 +52,7 @@ class CatalogTreeService
 
         foreach ($hitIds as $id) {
             $cursor = $byId[$id] ?? null;
-            while ($cursor) {
+            while ($cursor && ! isset($reveal[$cursor->id])) {
                 $reveal[$cursor->id] = $cursor->id;
                 $cursor = $cursor->parent_id > 0 ? ($byId[$cursor->parent_id] ?? null) : null;
             }

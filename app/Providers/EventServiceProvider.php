@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Emulator\Contracts\RankRepository;
+use App\Listeners\StoreSessionPasswordHash;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Teams\WebsiteTeam;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Observers\CommunityCacheObserver;
 use App\Observers\UserObserver;
 use App\Observers\WebsiteAdObserver;
 use App\Observers\WebsiteOpenPositionObserver;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -24,6 +26,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        Login::class => [
+            StoreSessionPasswordHash::class,
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
