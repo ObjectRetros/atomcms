@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d35aa3f63f1b4ccee3fdb2a6d79a6172",
+    "content-hash": "59886d66fa36306db0cf474e0bebd8c5",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2643,16 +2643,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.30.1",
+            "version": "v13.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "718d17db56861e0a49f644217c8853dab1bff8ce"
+                "reference": "7c75fbf93f91fa077d3df1c820cc14f4e59a9774"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/718d17db56861e0a49f644217c8853dab1bff8ce",
-                "reference": "718d17db56861e0a49f644217c8853dab1bff8ce",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/7c75fbf93f91fa077d3df1c820cc14f4e59a9774",
+                "reference": "7c75fbf93f91fa077d3df1c820cc14f4e59a9774",
                 "shasum": ""
             },
             "require": {
@@ -2866,7 +2866,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-09-01T21:42:30+00:00"
+            "time": "2026-09-08T14:22:55+00:00"
         },
         {
             "name": "laravel/passkeys",
@@ -6307,29 +6307,31 @@
         },
         {
             "name": "spatie/laravel-activitylog",
-            "version": "4.12.3",
+            "version": "5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-activitylog.git",
-                "reference": "2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0"
+                "reference": "97c9f7e82033b18dc9db25de276f9b71e01449ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-activitylog/zipball/2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0",
-                "reference": "2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0",
+                "url": "https://api.github.com/repos/spatie/laravel-activitylog/zipball/97c9f7e82033b18dc9db25de276f9b71e01449ea",
+                "reference": "97c9f7e82033b18dc9db25de276f9b71e01449ea",
                 "shasum": ""
             },
             "require": {
-                "illuminate/config": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "illuminate/database": "^8.69 || ^9.27 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "illuminate/support": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "php": "^8.1",
+                "illuminate/config": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.4",
                 "spatie/laravel-package-tools": "^1.6.3"
             },
             "require-dev": {
                 "ext-json": "*",
-                "orchestra/testbench": "^6.23 || ^7.0 || ^8.0 || ^9.6 || ^10.0 || ^11.0",
-                "pestphp/pest": "^1.20 || ^2.0 || ^3.0 || ^4.0"
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.29",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^5.0"
             },
             "type": "library",
             "extra": {
@@ -6372,7 +6374,7 @@
                 }
             ],
             "description": "A very simple activity logger to monitor the users of your website or application",
-            "homepage": "https://github.com/spatie/activitylog",
+            "homepage": "https://github.com/spatie/laravel-activitylog",
             "keywords": [
                 "activity",
                 "laravel",
@@ -6382,7 +6384,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-activitylog/issues",
-                "source": "https://github.com/spatie/laravel-activitylog/tree/4.12.3"
+                "source": "https://github.com/spatie/laravel-activitylog/tree/5.1.0"
             },
             "funding": [
                 {
@@ -6394,7 +6396,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-24T12:33:53+00:00"
+            "time": "2026-08-12T12:07:38+00:00"
         },
         {
             "name": "spatie/laravel-package-tools",
@@ -6459,29 +6461,41 @@
         },
         {
             "name": "spatie/laravel-sluggable",
-            "version": "3.8.1",
+            "version": "4.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-sluggable.git",
-                "reference": "3624a2d7d8c8475d8561c53faf63f1af583ef76c"
+                "reference": "572933c61b70103be4b95fe7674070bb60243254"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-sluggable/zipball/3624a2d7d8c8475d8561c53faf63f1af583ef76c",
-                "reference": "3624a2d7d8c8475d8561c53faf63f1af583ef76c",
+                "url": "https://api.github.com/repos/spatie/laravel-sluggable/zipball/572933c61b70103be4b95fe7674070bb60243254",
+                "reference": "572933c61b70103be4b95fe7674070bb60243254",
                 "shasum": ""
             },
             "require": {
-                "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
-                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
-                "php": "^8.2"
+                "illuminate/database": "^12.0|^13.0",
+                "illuminate/support": "^12.0|^13.0",
+                "php": "^8.3"
             },
             "require-dev": {
-                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
-                "pestphp/pest": "^2.0|^3.7|^4.0",
-                "spatie/laravel-translatable": "^5.0|^6.0"
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^10.0|^11.0",
+                "pestphp/pest": "^4.0",
+                "spatie/laravel-translatable": "^6.0"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "SelfHealing": "Spatie\\Sluggable\\Facades\\SelfHealing"
+                    },
+                    "providers": [
+                        "Spatie\\Sluggable\\SluggableServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Spatie\\Sluggable\\": "src"
@@ -6502,11 +6516,18 @@
             "description": "Generate slugs when saving Eloquent models",
             "homepage": "https://github.com/spatie/laravel-sluggable",
             "keywords": [
+                "eloquent",
+                "laravel",
                 "laravel-sluggable",
-                "spatie"
+                "self-healing",
+                "slug",
+                "slugs",
+                "spatie",
+                "translatable"
             ],
             "support": {
-                "source": "https://github.com/spatie/laravel-sluggable/tree/3.8.1"
+                "issues": "https://github.com/spatie/laravel-sluggable/issues",
+                "source": "https://github.com/spatie/laravel-sluggable/tree/4.0.3"
             },
             "funding": [
                 {
@@ -6514,7 +6535,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-23T07:42:02+00:00"
+            "time": "2026-07-28T13:16:49+00:00"
         },
         {
             "name": "spatie/shiki-php",
