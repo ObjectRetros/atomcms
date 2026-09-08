@@ -2,131 +2,44 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Miscellaneous\WebsiteSetting;
+use App\Actions\Fortify\CreateNewUser;
+use App\Emulator\Contracts\RankRepository;
+use App\Models\User;
+use App\Services\InstallationSetup;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
 class AtomSetupCommand extends Command
 {
-    protected $signature = 'atom:setup {--auto=false}';
+    protected $signature = 'atom:setup {--auto=false} {--complete : Finish configuration without the browser wizard} {--settings= : JSON file of essential hotel settings} {--admin= : Existing username to promote, or username to create with protected password input}';
 
     protected $description = 'Takes you through a basic setup, allowing you to define general settings';
 
-    private function progressInfo(int $step): void
+    public function handle(): int
     {
-        $this->info(sprintf('Step %s/13', $step));
-        $this->newLine();
-    }
+        if ($this->option('complete')) {
+            return $this->completeHeadlessSetup();
+        }
 
-    public function handle(): void
-    {
         Artisan::call('db:seed --class=WebsiteSettingsSeeder');
 
         if ($this->option('auto') === 'false') {
-            $step = 1;
-
-            $this->progressInfo($step);
-            $step++;
-
-            $hotelName = $this->ask('Enter your hotel name');
-            WebsiteSetting::where('key', '=', 'hotel_name')->update([
-                'value' => empty($hotelName) ? 'Hotel' : $hotelName,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $colorMode = $this->choice('Enter your preferred CMS color mode', ['light', 'dark'], 0);
-            WebsiteSetting::where('key', '=', 'cms_color_mode')->update([
-                'value' => $colorMode,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $startCredits = $this->ask('Enter the amount of credits new users should start with: (default is 5000)');
-            WebsiteSetting::where('key', '=', 'start_credits')->update([
-                'value' => empty($startCredits) ? '5000' : $startCredits,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $startDuckets = $this->ask('Enter the amount of duckets new users should start with: (default is 5000)');
-            WebsiteSetting::where('key', '=', 'start_duckets')->update([
-                'value' => empty($startDuckets) ? '5000' : $startDuckets,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $startDiamonds = $this->ask('Enter the amount of diamonds new users should start with: (default is 100)');
-            WebsiteSetting::where('key', '=', 'start_diamonds')->update([
-                'value' => empty($startDiamonds) ? '100' : $startDiamonds,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $startPoints = $this->ask('Enter the amount of points new users should start with (default is 0)');
-            WebsiteSetting::where('key', '=', 'start_points')->update([
-                'value' => empty($startPoints) ? '0' : $startPoints,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $maxAccountsPerIP = $this->ask('Enter the amount of accounts a user can register per IP address (default is 2)');
-            WebsiteSetting::where('key', '=', 'max_accounts_per_ip')->update([
-                'value' => empty($maxAccountsPerIP) ? '2' : $maxAccountsPerIP,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $recaptchaEnabled = $this->choice('Google ReCaptcha enabled: (Do not forget to add your keys to your .env file in-case you set this to 1)', ['0', '1'], 0);
-            WebsiteSetting::where('key', '=', 'google_recaptcha_enabled')->update([
-                'value' => $recaptchaEnabled,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $wordfilterEnabled = $this->choice('CMS wordfilter enabled', ['0', '1'], 1);
-            WebsiteSetting::where('key', '=', 'website_wordfilter_enabled')->update([
-                'value' => $wordfilterEnabled,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $requiredBetaCode = $this->choice('Requires beta code to register', ['0', '1'], 0);
-            WebsiteSetting::where('key', '=', 'requires_beta_code')->update([
-                'value' => $requiredBetaCode,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $registrationDisabled = $this->choice('Disable registration (Can be re-enabled later inside website_settings table if set to 1)', ['0', '1'], 0);
-            WebsiteSetting::where('key', '=', 'disable_registration')->update([
-                'value' => $registrationDisabled,
-            ]);
-
-            $this->progressInfo($step);
-            $step++;
-
-            $giveHC = $this->choice('Give all new users HC automatically', ['0', '1'], 0);
-            WebsiteSetting::where('key', '=', 'give_hc_on_register')->update([
-                'value' => $giveHC,
-            ]);
-
-            $this->progressInfo($step);
-
-            $maxCommentArticles = $this->ask('Enter the amount of comments each user can post per article (default is 2)');
-            WebsiteSetting::where('key', '=', 'max_comment_per_article')->update([
-                'value' => empty($maxCommentArticles) ? '2' : $maxCommentArticles,
-            ]);
+            $values = [];
+            $setup = app(InstallationSetup::class);
+            foreach ($setup->rules() as $key => $rules) {
+                $label = ucwords(str_replace('_', ' ', $key));
+                $default = (string) setting($key, '');
+                $choices = null;
+                foreach ($rules as $rule) {
+                    if (str_starts_with($rule, 'in:')) {
+                        $choices = explode(',', substr($rule, 3));
+                    }
+                }
+                $values[$key] = $choices === null
+                    ? $this->ask($label, $default)
+                    : $this->choice($label, $choices, in_array($default, $choices, true) ? $default : $choices[0]);
+            }
+            $setup->configure($values);
         }
 
         $seeders = [
@@ -144,5 +57,61 @@ class AtomSetupCommand extends Command
         }
 
         $this->info('The setup was successful!');
+
+        return self::SUCCESS;
+    }
+
+    private function completeHeadlessSetup(): int
+    {
+        try {
+            $setup = app(InstallationSetup::class);
+            $settings = [];
+            if ($path = $this->option('settings')) {
+                $contents = file_get_contents((string) $path);
+                if (! is_string($contents)) {
+                    throw new \RuntimeException('Unable to read the settings file.');
+                }
+                $settings = json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
+                if (! is_array($settings)) {
+                    throw new \InvalidArgumentException('Settings must be a JSON object.');
+                }
+            } elseif ($this->input->isInteractive()) {
+                $settings['hotel_name'] = $this->ask('Hotel name', setting('hotel_name') ?: 'Hotel');
+            }
+            $setup->configure($settings);
+            $admin = $this->option('admin');
+            $hasUsers = User::query()->exists();
+            if (! $admin && ! $hasUsers && $this->input->isInteractive()) {
+                $admin = $this->ask('Username for the first administrator');
+            }
+            if (! $admin && ! $hasUsers) {
+                throw new \InvalidArgumentException('Specify --admin for an empty hotel. Supply ATOM_ADMIN_EMAIL and ATOM_ADMIN_PASSWORD in protected environment input.');
+            }
+            if (is_string($admin) && $admin !== '') {
+                $user = User::where('username', $admin)->first();
+                if ($user === null) {
+                    $mail = getenv('ATOM_ADMIN_EMAIL') ?: null;
+                    $password = getenv('ATOM_ADMIN_PASSWORD') ?: null;
+                    if ($this->input->isInteractive()) {
+                        $mail = $this->ask('Administrator email', $mail);
+                        $password = $this->secret('Administrator password');
+                    }
+                    $user = app(CreateNewUser::class)->createAdministrator([
+                        'username' => $admin, 'mail' => $mail, 'password' => $password, 'password_confirmation' => $password,
+                    ]);
+                } else {
+                    $user->forceFill(['rank' => app(RankRepository::class)->highestRank()])->save();
+                }
+                $this->info('Administrator configured: ' . $user->username);
+            }
+            $setup->complete();
+            $this->info('Installation complete. Housekeeping is available at /housekeeping.');
+
+            return self::SUCCESS;
+        } catch (\Throwable $exception) {
+            $this->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
     }
 }

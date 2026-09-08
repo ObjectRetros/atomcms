@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Emulator\EmulatorManager;
+use App\Services\OperatingMode;
+use App\Support\EnvironmentFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
@@ -31,7 +33,12 @@ class AtomInstallCommand extends Command
         {--skip-arcturus : Skip importing the bundled Arcturus base database and catalog}
         {--skip-catalog : Skip importing the bundled catalog on top of the base database}
         {--theme= : Theme to activate and build (atom or dusk)}
-        {--skip-build : Skip building theme assets}';
+        {--skip-build : Skip building required assets}
+        {--headless : Install without a public PHP theme}
+        {--frontend-url= : Origin of the independent frontend}
+        {--session-domain= : Explicit shared cookie domain for sibling hosts}
+        {--settings= : JSON file of essential hotel settings}
+        {--admin= : Username of the administrator to create or promote}';
 
     protected $description = 'One-command installer for a supported emulator';
 
@@ -39,6 +46,23 @@ class AtomInstallCommand extends Command
 
     public function handle(EmulatorManager $emulators): int
     {
+        $headless = (bool) $this->option('headless');
+        $modeValues = [];
+        if ($headless) {
+            if ($this->option('theme') !== null) {
+                $this->error('--headless cannot be combined with --theme.');
+
+                return self::FAILURE;
+            }
+            try {
+                $modeValues = app(OperatingMode::class)->environment('headless', $this->option('frontend-url'), $this->option('session-domain'));
+            } catch (\InvalidArgumentException $exception) {
+                $this->error($exception->getMessage());
+
+                return self::FAILURE;
+            }
+        }
+
         $this->attachConsoleInput();
 
         intro('Atom CMS installer');
@@ -74,6 +98,22 @@ class AtomInstallCommand extends Command
             $this->callSilent('db:seed', ['--force' => true]);
         }, 'Running migrations and seeders...');
         info('Migrations and seeders completed.');
+
+        if ($headless) {
+            if ($this->call('atom:setup', array_filter(['--complete' => true, '--settings' => $this->option('settings'), '--admin' => $this->option('admin')], fn ($value) => $value !== null)) !== self::SUCCESS) {
+                return self::FAILURE;
+            }
+            app(EnvironmentFile::class)->write(base_path('.env'), $modeValues);
+            $this->callSilent('config:clear');
+            $this->callSilent('route:clear');
+            if (! $this->option('skip-build') && $this->call('build:theme', ['theme' => 'housekeeping']) !== self::SUCCESS) {
+                return self::FAILURE;
+            }
+            $this->info('Headless installation complete. Frontend: ' . $modeValues['ATOM_FRONTEND_URL']);
+            $this->info('Restart workers. If assets were skipped, run npm run build:housekeeping before using /housekeeping.');
+
+            return self::SUCCESS;
+        }
 
         $this->setUpTheme();
 
@@ -316,26 +356,7 @@ class AtomInstallCommand extends Command
 
     private function replaceEnvValue(string $contents, string $key, string $value, string $path): string
     {
-        $escaped = strtr($value, [
-            '\\' => '\\\\',
-            '"' => '\\"',
-            '$' => '\\$',
-            "\r" => '\\r',
-            "\n" => '\\n',
-        ]);
-        $line = sprintf('%s="%s"', $key, $escaped);
-
-        if (preg_match("/^{$key}=.*$/m", $contents) !== 1) {
-            return $contents . PHP_EOL . $line;
-        }
-
-        $updated = preg_replace_callback("/^{$key}=.*$/m", fn (): string => $line, $contents);
-
-        if (! is_string($updated)) {
-            throw new \RuntimeException("Unable to update {$key} in environment file: {$path}");
-        }
-
-        return $updated;
+        return app(EnvironmentFile::class)->replace($contents, $key, $value);
     }
 
     private function setUpTheme(): void

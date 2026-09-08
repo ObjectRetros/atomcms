@@ -6,6 +6,7 @@ use App\Actions\Community\SubmitStaffApplication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
+use App\Services\Community\CommunityReadService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -14,14 +15,7 @@ class StaffApplicationsController extends Controller
 {
     public function index(): View
     {
-        $positions = WebsiteOpenPosition::query()
-            ->where('position_kind', 'rank')
-            ->whereNotNull('permission_id')
-            ->canApply()
-            ->with('permission')
-            ->whereHas('permission')
-            ->latest()
-            ->get();
+        $positions = app(CommunityReadService::class)->positions('rank');
 
         return view('community.staff-applications', compact('positions'));
     }
@@ -29,8 +23,7 @@ class StaffApplicationsController extends Controller
     public function show(WebsiteOpenPosition $position): View
     {
         abort_unless($position->position_kind === 'rank', 404);
-        $position->loadMissing('permission');
-        abort_unless($position->permission !== null && $position->isAcceptingApplications(), 404);
+        app(CommunityReadService::class)->position($position);
 
         return view('community.staff-apply', compact('position'));
     }
@@ -40,20 +33,8 @@ class StaffApplicationsController extends Controller
         WebsiteOpenPosition $position,
         SubmitStaffApplication $applications,
     ): RedirectResponse {
-        $position->loadMissing('permission');
-        abort_unless(
-            $position->position_kind === 'rank'
-            && $position->permission !== null
-            && $position->permission_id !== null
-            && $position->isAcceptingApplications(),
-            404,
-        );
-
-        $applications->forRank(
-            AuthenticatedUser::from($request),
-            $position->permission_id,
-            $request->string('content')->toString(),
-        );
+        abort_unless($position->position_kind === 'rank', 404);
+        $applications->forPosition(AuthenticatedUser::from($request), $position, $request->string('content')->toString());
 
         return redirect()
             ->route('staff-applications.index')

@@ -2,6 +2,7 @@
 
 namespace App\Emulator\Drivers\Arcturus;
 
+use App\Data\PublicUserData;
 use App\Emulator\Contracts\PlayerRepository;
 use App\Emulator\Data\HomeFriend;
 use App\Models\Game\Player\MessengerFriendship;
@@ -60,7 +61,7 @@ class ArcturusPlayerRepository implements PlayerRepository
             // profile view, and the widget only shows a handful.
             ->orderByDesc('users.last_online')
             ->limit($limit)
-            ->get(['users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online']);
+            ->get([...array_map(fn (string $column): string => 'users.' . $column, PublicUserData::COLUMNS), 'users.last_online']);
     }
 
     /** @return LengthAwarePaginator<int, HomeFriend> */
@@ -69,7 +70,7 @@ class ArcturusPlayerRepository implements PlayerRepository
         $paginator = MessengerFriendship::query()
             ->where('user_one_id', $user->id)
             ->select('user_two_id')
-            ->with('user:id,username,look,online')
+            ->with('user:' . implode(',', PublicUserData::COLUMNS))
             ->orderByDesc('id')
             ->paginate($perPage, ['*'], $pageName);
 

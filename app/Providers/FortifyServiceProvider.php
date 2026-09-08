@@ -7,6 +7,7 @@ use App\Emulator\Data\Feature;
 use App\Emulator\Emulator;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Miscellaneous\CameraWeb;
+use App\Support\FrontendUrls;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -56,7 +57,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::registerView(function (Request $request) {
             if (setting('disable_registration') === '1') {
-                return to_route('welcome')->withErrors(['register' => __('Registration is currently disabled.')]);
+                return redirect(app(FrontendUrls::class)->route('welcome'))->withErrors(['register' => __('Registration is currently disabled.')]);
             }
 
             return view('auth.register', [

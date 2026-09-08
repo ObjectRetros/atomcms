@@ -107,3 +107,14 @@ test('profile widgets reflect user changes immediately', function () {
                 && ! str_contains($content, 'The original motto'),
         );
 });
+
+test('repeated guestbook posts keep the legacy JSON failure contract without an accept header', function () {
+    $visitor = User::factory()->create();
+    $url = route('home.message', $this->owner->username);
+    $this->actingAs($visitor)->post($url, ['content' => 'First message'])->assertOk();
+    $this->post($url, ['content' => 'Repeated message'])->assertStatus(429)->assertExactJson([
+        'success' => false,
+        'message' => __('You are sending messages too fast.'),
+    ]);
+    expect($this->owner->receivedHomeMessages()->count())->toBe(1);
+});

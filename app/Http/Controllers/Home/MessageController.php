@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Home\HomeMessageRequest;
 use App\Models\User;
+use App\Services\Home\HomeService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class MessageController extends Controller
 {
@@ -14,16 +16,11 @@ class MessageController extends Controller
     {
         $authUser = AuthenticatedUser::from($request);
 
-        if ($authUser->sentHomeMessages()->where('created_at', '>', now()->subMinute())->exists()) {
-            return $this->jsonResponse([
-                'message' => __('You are sending messages too fast.'),
-            ], 429);
+        try {
+            app(HomeService::class)->postMessage($authUser, $user, $request->validated('content'));
+        } catch (TooManyRequestsHttpException $exception) {
+            return $this->jsonResponse(['message' => $exception->getMessage()], 429);
         }
-
-        $user->receivedHomeMessages()->create([
-            'user_id' => $authUser->id,
-            'content' => strip_tags($request->validated('content')),
-        ]);
 
         return $this->jsonResponse([
             'message' => __('Your message has been posted.'),

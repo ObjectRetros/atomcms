@@ -16,4 +16,10 @@ class WebsiteTicketFormRequest extends FormRequest
             'content' => ['required', 'string', 'min:10', 'max:65000'],
         ];
     }
+
+    /** @return array{category_id: int, title: string, content: string} */
+    public function ticketData(): array
+    {
+        return ['category_id' => $this->integer('category_id'), 'title' => $this->string('title')->toString(), 'content' => $this->string('content')->toString()];
+    }
 }

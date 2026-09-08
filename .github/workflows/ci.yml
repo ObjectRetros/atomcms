@@ -97,6 +97,15 @@ jobs:
       - name: Security advisories
         run: npm audit --audit-level=moderate
 
+      - name: Check generated API types
+        run: node scripts/api/generate.mjs --check
+
+      - name: Test API schema validation
+        run: npm run api:test
+
+      - name: Build independent Vue Dusk client
+        run: npm --prefix examples/dusk-vue ci --ignore-scripts && npm --prefix examples/dusk-vue run build
+
       - name: Build Atom theme
         run: npm run build:atom
 
@@ -166,6 +175,17 @@ jobs:
         # Created through PDO because the runner has no MariaDB client, and
         # pdo_mysql is already installed for the suite itself.
         run: php -r '$pdo = new PDO("mysql:host=127.0.0.1;port=3306", "root", "password"); $pdo->exec("CREATE DATABASE IF NOT EXISTS testing_ada");' 
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install API contract tooling
+        run: npm ci --ignore-scripts
+
+      - name: Check API routes, schemas, and generated types
+        run: npm run api:check
 
       - name: Run tests
         run: vendor/bin/pest

@@ -24,3 +24,10 @@ test('password reset mail uses the configured origin despite an untrusted reques
         return true;
     });
 });
+
+test('a queued password reset renders after switching to headless without a selected theme', function () {
+    $queued = serialize(new ResetPasswordMail('queued-before-switch'));
+    config(['atom.mode' => 'headless', 'atom.frontend_url' => 'https://frontend.example.com']);
+    $mail = unserialize($queued);
+    expect($mail->render())->toContain('https://frontend.example.com/reset-password/queued-before-switch');
+});

@@ -2,6 +2,7 @@
 
 namespace App\Emulator\Drivers\Arcturus;
 
+use App\Data\PublicUserData;
 use App\Emulator\Contracts\PlayerStatsRepository;
 use App\Emulator\Data\LeaderboardEntry;
 use App\Emulator\Data\Stat;
@@ -26,7 +27,7 @@ class ArcturusPlayerStatsRepository implements PlayerStatsRepository
             ->whereNotIn('user_id', $excludeUserIds)
             ->orderByDesc($column)
             ->limit($limit)
-            ->with('user:id,username,look')
+            ->with('user:' . implode(',', PublicUserData::COLUMNS))
             ->get(['user_id', $column])
             ->map(fn (UserSetting $row) => $row->user === null ? null : new LeaderboardEntry($row->user, (int) $row->getAttribute($column)))
             ->filter()

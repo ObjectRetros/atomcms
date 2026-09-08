@@ -2,6 +2,7 @@
 
 namespace App\Emulator\Drivers\Ada;
 
+use App\Data\PublicUserData;
 use App\Emulator\Contracts\PlayerRepository;
 use App\Emulator\Data\HomeFriend;
 use App\Models\User;
@@ -263,7 +264,7 @@ class AdaPlayerRepository implements PlayerRepository
             ->where('player_data.is_online', true)
             ->orderByDesc('player_data.last_online')
             ->limit($limit)
-            ->get(['users.id', 'users.username', 'users.look', 'users.motto', 'users.last_online']);
+            ->get([...array_map(fn (string $column): string => 'users.' . $column, PublicUserData::COLUMNS), 'users.last_online']);
     }
 
     /** @return LengthAwarePaginator<int, HomeFriend> */
@@ -276,7 +277,7 @@ class AdaPlayerRepository implements PlayerRepository
 
         $users = User::query()
             ->whereKey($paginator->getCollection()->pluck('friend_id'))
-            ->get(['id', 'username', 'look', 'online'])
+            ->get(PublicUserData::COLUMNS)
             ->keyBy('id');
 
         $friends = $paginator->getCollection()->map(function (object $friendship) use ($users): HomeFriend {

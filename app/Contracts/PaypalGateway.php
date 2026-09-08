@@ -11,7 +11,7 @@ interface PaypalGateway
      *
      * @return array<string, mixed>
      */
-    public function createOrder(array $data): array;
+    public function createOrder(array $data, ?string $idempotencyKey = null): array;
 
     /** @return array<string, mixed> */
     public function captureOrder(string $orderId, string $idempotencyKey): array;

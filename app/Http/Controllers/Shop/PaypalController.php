@@ -8,6 +8,7 @@ use App\Http\Requests\AccountTopupFormRequest;
 use App\Models\Shop\WebsitePaypalTransaction;
 use App\Services\Payments\PaypalPaymentService;
 use App\Support\AuthenticatedUser;
+use App\Support\FrontendUrls;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -48,7 +49,7 @@ class PaypalController extends Controller
         }
 
         if ($transaction->credited_at !== null || $transaction->status === WebsitePaypalTransaction::STATUS_COMPLETED) {
-            return $this->success();
+            return $this->success($transaction->transaction_id);
         }
 
         try {
@@ -59,10 +60,10 @@ class PaypalController extends Controller
                 'exception_class' => $exception::class,
             ]);
 
-            return $this->pending();
+            return $this->pending($transaction->transaction_id);
         }
 
-        return $completed ? $this->success() : $this->pending();
+        return $completed ? $this->success($transaction->transaction_id) : $this->pending($transaction->transaction_id);
     }
 
     public function cancelled(Request $request, PaypalPaymentService $payments): RedirectResponse
@@ -80,27 +81,36 @@ class PaypalController extends Controller
             $payments->cancel($transaction);
         }
 
-        return to_route('shop.index')->withErrors([
+        return redirect($this->resultUrl($transaction?->transaction_id, 'cancelled'))->withErrors([
             'message' => __('You have canceled the transaction'),
         ]);
     }
 
-    private function success(): RedirectResponse
+    private function success(string $order): RedirectResponse
     {
-        return to_route('shop.index')->with('success', __('Transaction successful'));
+        return redirect($this->resultUrl($order, 'completed'))->with('success', __('Transaction successful'));
     }
 
-    private function pending(): RedirectResponse
+    private function pending(string $order): RedirectResponse
     {
-        return to_route('shop.index')->withErrors([
+        return redirect($this->resultUrl($order, 'pending'))->withErrors([
             'message' => __('Your payment is still being verified. Your balance will update automatically.'),
         ]);
     }
 
     private function failure(): RedirectResponse
     {
-        return to_route('shop.index')->withErrors([
+        return redirect($this->resultUrl(null, 'failed'))->withErrors([
             'message' => __('Something went wrong, please try again later'),
         ]);
+    }
+
+    private function resultUrl(?string $order, string $status): string
+    {
+        $query = config('atom.mode') === 'headless'
+            ? array_filter(['order' => $order, 'payment_status' => $status], fn ($value): bool => $value !== null)
+            : [];
+
+        return app(FrontendUrls::class)->route('shop.index', query: $query);
     }
 }

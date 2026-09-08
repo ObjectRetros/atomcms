@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Actions\Fortify\Rules\PasswordValidationRules;
+use App\Emulator\Contracts\RankRepository;
 use App\Emulator\Emulator;
 use App\Jobs\SendRegisteredUserWebhook;
 use App\Models\Miscellaneous\WebsiteBetaCode;
@@ -32,7 +33,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        $ip = $this->ensureRegistrationIsOpen(request()->ip());
+        return $this->createWithIp($input, request()->ip());
+    }
+
+    /** @param array<string, mixed> $input */
+    public function createWithIp(array $input, ?string $ip): User
+    {
+        $ip = $this->ensureRegistrationIsOpen($ip);
         $validated = $this->validate($input);
         $password = Hash::make($validated['password']);
 
@@ -57,6 +64,21 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         return $user;
+    }
+
+    /** @param array<string, mixed> $input */
+    public function createAdministrator(array $input): User
+    {
+        $validated = $this->validate($input, registration: false);
+        $password = Hash::make($validated['password']);
+
+        return $this->mutex->run($this->lockIdentifiers($validated, '127.0.0.1'), function () use ($validated, $password): User {
+            $this->ensureIdentityIsAvailable($validated);
+            $user = $this->createUser($validated, $password, '127.0.0.1');
+            $user->forceFill(['rank' => app(RankRepository::class)->highestRank()])->save();
+
+            return $user;
+        });
     }
 
     private function ensureRegistrationIsOpen(?string $ip): string
@@ -173,18 +195,23 @@ class CreateNewUser implements CreatesNewUsers
      *
      * @return array{username: string, mail: string, password: string, beta_code?: string, referral_code?: string}
      */
-    private function validate(array $inputs): array
+    private function validate(array $inputs, bool $registration = true): array
     {
         $rules = [
             'username' => ['required', 'string', sprintf('regex:%s', setting('username_regex') ?: '/^[a-zA-Z0-9_.-]+$/'), 'max:' . Emulator::constraints()->usernameLength, Rule::unique('users'), new WebsiteWordfilterRule],
             'mail' => ['required', 'string', 'email', 'max:' . Emulator::constraints()->emailLength, Rule::unique('users')],
             'password' => $this->passwordRules(),
-            'beta_code' => [Rule::requiredIf(setting('requires_beta_code') === '1'), 'nullable', 'string', new BetaCodeRule],
-            'referral_code' => ['nullable', 'string', 'max:255'],
-            'terms' => ['required', 'accepted'],
-            'g-recaptcha-response' => [new GoogleRecaptchaRule],
-            'cf-turnstile-response' => [new CloudflareTurnstileRule],
         ];
+
+        if ($registration) {
+            $rules += [
+                'beta_code' => [Rule::requiredIf(setting('requires_beta_code') === '1'), 'nullable', 'string', new BetaCodeRule],
+                'referral_code' => ['nullable', 'string', 'max:255'],
+                'terms' => ['required', 'accepted'],
+                'g-recaptcha-response' => [new GoogleRecaptchaRule],
+                'cf-turnstile-response' => [new CloudflareTurnstileRule],
+            ];
+        }
 
         $messages = [
             'g-recaptcha-response.required' => __('The Google recaptcha must be completed'),

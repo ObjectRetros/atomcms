@@ -2,13 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
+use App\Services\PermissionsService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LogoGeneratorRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return hasPermission('generate_logo');
+        $actor = $this->user();
+
+        return $actor instanceof User && app(PermissionsService::class)->allows($actor, 'generate_logo');
     }
 
     /** @return array<string, mixed> */

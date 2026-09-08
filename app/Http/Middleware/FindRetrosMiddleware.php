@@ -15,6 +15,10 @@ class FindRetrosMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (config('habbo.findretros.enabled') && ! $this->findRetros->checkHasVoted($request)) {
+            if ($request->is('api/v1/*') || $request->expectsJson()) {
+                return response()->json(['code' => 'vote_required', 'message' => __('Please vote before entering the hotel.'), 'vote_url' => $this->findRetros->getRedirectUri()], 403);
+            }
+
             return redirect($this->findRetros->getRedirectUri());
         }
 

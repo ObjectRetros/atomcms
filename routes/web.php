@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Fortify\Controllers\TwoFactorAuthenticatedSessionController;
 use App\Http\Controllers\Articles\ArticleController;
 use App\Http\Controllers\Articles\WebsiteArticleCommentsController;
 use App\Http\Controllers\Badge\BadgeController;
@@ -26,7 +25,6 @@ use App\Http\Controllers\Miscellaneous\InstallationController;
 use App\Http\Controllers\Miscellaneous\LocaleController;
 use App\Http\Controllers\Miscellaneous\LogoGeneratorController;
 use App\Http\Controllers\Miscellaneous\MaintenanceController;
-use App\Http\Controllers\Shop\PaypalController;
 use App\Http\Controllers\Shop\ShopController;
 use App\Http\Controllers\Shop\ShopVoucherController;
 use App\Http\Controllers\User\AccountSettingsController;
@@ -38,7 +36,6 @@ use App\Http\Controllers\User\ReferralController;
 use App\Http\Controllers\User\TwoFactorAuthenticationController;
 use App\Http\Controllers\User\UserReferralController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 
 // Language route
@@ -74,17 +71,11 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
 
         Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 
-        Route::post('/register', [RegisteredUserController::class, 'store'])
-            ->middleware('throttle:6,1')
-            ->name('register.store');
-
         Route::get('/register/{user:referral_code}', UserReferralController::class)->name('register.referral');
 
         // Password
         Route::get('forgot-password', ForgotPasswordController::class)->name('forgot.password.get');
-        Route::post('forgot-password', [ForgotPasswordController::class, 'submitForgetPassword'])->middleware('throttle:6,1')->name('forgot.password.post');
         Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPassword'])->middleware('throttle:6,1')->name('reset.password.get');
-        Route::post('reset-password/{token}', [ForgotPasswordController::class, 'submitResetPassword'])->middleware('throttle:6,1')->name('reset.password.post');
     });
 
     // Can only be accessed if logged in
@@ -106,11 +97,7 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
                 Route::get('/session-logs', [AccountSettingsController::class, 'sessionLogs'])->name('settings.session-logs');
 
                 Route::get('/two-factor', [TwoFactorAuthenticationController::class, 'index'])->name('settings.two-factor');
-                Route::middleware('throttle:two-factor-settings')->group(function () {
-                    Route::post('/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])->name('user.two-factor.enable');
-                    Route::post('/two-factor-authentication/confirm', [TwoFactorAuthenticationController::class, 'verify'])->name('two-factor.verify');
-                    Route::delete('/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->name('user.two-factor.disable');
-                });
+
             });
         });
 
@@ -210,11 +197,6 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         });
 
         // Paypal routes
-        Route::controller(PaypalController::class)->prefix('paypal')->group(function () {
-            Route::post('/process-transaction', 'process')->name('paypal.process-transaction')->middleware('throttle:10,1');
-            Route::get('/successful-transaction', 'successful')->name('paypal.successful-transaction');
-            Route::get('/cancelled-transaction', 'cancelled')->name('paypal.cancelled-transaction');
-        });
 
         // Rare values routes - reads the emulator's furniture schema, so only
         // available on drivers that support it.
@@ -236,15 +218,3 @@ Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(functi
         Route::post('/logo-generator', [LogoGeneratorController::class, 'store'])->name('store.generated-logo');
     });
 });
-
-if (Features::enabled(Features::twoFactorAuthentication())) {
-    $twoFactorLimiter = config('fortify.limiters.two-factor');
-
-    Route::post('/two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store'])
-        ->middleware(
-            array_filter([
-                'guest:' . config('fortify.guard'),
-                $twoFactorLimiter ? 'throttle:' . $twoFactorLimiter : null,
-            ]),
-        );
-}

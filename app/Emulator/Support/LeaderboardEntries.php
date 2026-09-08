@@ -2,6 +2,7 @@
 
 namespace App\Emulator\Support;
 
+use App\Data\PublicUserData;
 use App\Emulator\Data\LeaderboardEntry;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -26,7 +27,7 @@ final class LeaderboardEntries
 
         $users = User::query()
             ->whereKey(array_keys($valuesByUserId))
-            ->get(['id', 'username', 'look'])
+            ->get(PublicUserData::COLUMNS)
             ->keyBy('id');
 
         return collect($valuesByUserId)

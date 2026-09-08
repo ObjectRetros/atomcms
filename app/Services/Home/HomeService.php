@@ -5,10 +5,13 @@ namespace App\Services\Home;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\HomeItemType;
 use App\Exceptions\HomePurchaseException;
+use App\Models\Home\HomeCategory;
 use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class HomeService
 {
@@ -78,8 +81,9 @@ class HomeService
     }
 
     /** @param  array{backgroundId?: int, items?: list<array<string, mixed>>}  $data */
-    public function saveItems(User $user, array $data): void
+    public function saveItems(User $actor, User $user, array $data): void
     {
+        abort_unless($actor->is($user), 403);
         if (isset($data['backgroundId'])) {
             $background = $user->inventoryHomeItems()->find($data['backgroundId']);
 
@@ -163,6 +167,48 @@ class HomeService
         ], $results);
     }
 
+    /** @return Collection<int, HomeCategory> */
+    public function categories(): Collection
+    {
+        return HomeCategory::orderBy('order')->get();
+    }
+
+    /** @return Collection<int, HomeItem> */
+    public function catalogItems(?HomeCategory $category = null, ?HomeItemType $type = null): Collection
+    {
+        return HomeItem::enabled()->when($category !== null, fn ($query) => $query->where('home_category_id', $category?->id))->when($type !== null, fn ($query) => $query->where('type', $type))->orderBy('order')->get();
+    }
+
+    /** @return Collection<int, UserHomeItem> */
+    public function inventory(User $actor, User $owner, bool $grouped = false): Collection
+    {
+        abort_unless($actor->is($owner), 403);
+        $query = $grouped ? $owner->groupedInventoryItems() : $owner->inventoryHomeItems()->with('homeItem');
+
+        return $query->get();
+    }
+
+    /** @return Collection<int, UserHomeItem> */
+    public function placedItems(User $user): Collection
+    {
+        return $user->placedHomeItems()->defaultRelationships(true)->get();
+    }
+
+    public function postMessage(User $actor, User $owner, string $content): void
+    {
+        abort_if($actor->is($owner), 403);
+        if ($actor->sentHomeMessages()->where('created_at', '>', now()->subMinute())->exists()) {
+            throw new TooManyRequestsHttpException(60, __('You are sending messages too fast.'));
+        }
+        $owner->receivedHomeMessages()->create(['user_id' => $actor->id, 'content' => strip_tags($content)]);
+    }
+
+    public function rate(User $actor, User $owner, int $rating): void
+    {
+        abort_if($actor->is($owner), 403);
+        $owner->homeRatings()->updateOrCreate(['user_id' => $actor->id], ['rating' => $rating]);
+    }
+
     public function getWidgetContent(User $user, UserHomeItem $item): ?string
     {
         $viewName = "home.widgets.{$item->widget_type}";
@@ -176,12 +222,12 @@ class HomeService
         return view($viewName, compact('item', 'user'))->render();
     }
 
-    private function loadWidgetData(User $user, UserHomeItem $item): User
+    public function loadWidgetData(User $user, UserHomeItem $item, string $routeName = 'home.show'): User
     {
         return match ($item->widget_type) {
             'my-rooms' => $user->loadRoomsForHome(),
-            'my-badges' => $user->loadBadgesForHome('home.show'),
-            'my-friends' => $user->loadFriendsForHome('home.show'),
+            'my-badges' => $user->loadBadgesForHome($routeName),
+            'my-friends' => $user->loadFriendsForHome($routeName),
             'my-rating' => $user->loadRatingsForHome(),
             'my-guestbook' => $user->loadGuestbookForHome(),
             default => $user,

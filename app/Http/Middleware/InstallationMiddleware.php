@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Exceptions\MigrationFailedException;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Services\InstallationService;
+use App\Support\FrontendUrls;
 use Closure;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -22,10 +23,18 @@ class InstallationMiddleware
     {
         if (app(InstallationService::class)->isComplete()) {
             if ($request->is('installation*')) {
-                return to_route('welcome');
+                return redirect(app(FrontendUrls::class)->route('welcome'));
             }
 
             return $next($request);
+        }
+
+        if ($request->is('api/v1/status', 'api/v1/bootstrap')) {
+            return $next($request);
+        }
+
+        if (config('atom.mode') === 'headless' || $request->is('api/*', 'housekeeping', 'housekeeping/*')) {
+            return response()->json(['code' => 'installation_incomplete', 'message' => __('Installation is incomplete.')], 503);
         }
 
         $this->ensureInstallationTableExists();

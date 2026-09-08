@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Emulator\Contracts\BanRepository;
+use App\Http\Responses\AccessResponse;
 use App\Models\User;
+use App\Support\FrontendUrls;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -23,7 +25,7 @@ class BannedMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('logout')) {
+        if ($request->is('logout', 'housekeeping/logout') || $request->routeIs('logout', 'filament.*.auth.logout')) {
             return $next($request);
         }
 
@@ -40,10 +42,10 @@ class BannedMiddleware
 
         if (! $user instanceof User) {
             if ($ipBan && ! $onBannedPage) {
-                return to_route('banned.show');
+                return AccessResponse::make($request, 'account_banned', 'This account or address is banned.', 403, 'banned.show');
             }
 
-            return $onBannedPage && ! $ipBan ? to_route('login') : $next($request);
+            return $onBannedPage && ! $ipBan ? redirect(app(FrontendUrls::class)->route('login')) : $next($request);
         }
 
         $accountBan = Cache::remember(
@@ -53,11 +55,11 @@ class BannedMiddleware
         );
 
         if (($ipBan || $accountBan) && ! $onBannedPage) {
-            return to_route('banned.show');
+            return AccessResponse::make($request, 'account_banned', 'This account or address is banned.', 403, 'banned.show');
         }
 
         if (! $ipBan && ! $accountBan && $onBannedPage) {
-            return to_route('me.show');
+            return redirect(app(FrontendUrls::class)->route('me.show'));
         }
 
         return $next($request);

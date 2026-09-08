@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Emulator\Data\Feature;
 use App\Emulator\Emulator;
+use App\Http\Responses\AccessResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,9 +22,7 @@ class EnsureEmulatorFeature
         abort_if($case === null, 500, "Unknown emulator feature [{$feature}]");
 
         if (! Emulator::supports($case)) {
-            return to_route('welcome')->withErrors([
-                'message' => __('This feature is not available on this hotel.'),
-            ]);
+            return AccessResponse::make($request, 'feature_unavailable', 'This feature is not available on this hotel.', 404, 'welcome', true);
         }
 
         return $next($request);

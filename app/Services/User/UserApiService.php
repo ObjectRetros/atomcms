@@ -50,6 +50,11 @@ class UserApiService
      */
     public function searchUsers(string $query, int $limit = 8): array
     {
+        $query = trim($query);
+        if (mb_strlen($query) < 2) {
+            return [];
+        }
+
         return User::where('username', 'like', Sql::escapeLike($query) . '%')
             ->limit($limit)
             ->get(['username', 'look'])
