@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('status', [BootstrapController::class, 'status'])->name('status');
 Route::get('bootstrap', BootstrapController::class)->name('bootstrap');
+Route::get('ban', [AccountController::class, 'ban'])->name('ban');
 Route::middleware(['maintenance', 'check.ban', 'force.staff.2fa'])->group(function (): void {
     Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');
     Route::get('articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');

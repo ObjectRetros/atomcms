@@ -1128,6 +1128,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ban": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current visitor’s effective address or account ban */
+        get: operations["getOwnBan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1185,6 +1202,12 @@ export interface components {
             maintenance: boolean;
             /** @enum {string} */
             mode: "full" | "headless";
+            maintenance_message: string | null;
+            tasks: {
+                items: components["schemas"]["MaintenanceTask"][];
+                current_page: number;
+                has_more: boolean;
+            };
         };
         Bootstrap: {
             viewer: {
@@ -1234,6 +1257,7 @@ export interface components {
                 author: components["schemas"]["PublicUser"] | null;
             }[];
             discord_url: string | null;
+            tinymce_api_key: string | null;
         };
         Me: {
             id: number;
@@ -1253,8 +1277,12 @@ export interface components {
             can_generate_logo: boolean;
             referral_code: string | null;
             referrals_needed: number;
+            referrals_total: number;
+            referral_threshold: number;
+            referral_reward_amount: number;
             two_factor_enabled: boolean;
             online_friends: components["schemas"]["PublicUser"][];
+            can_manage_tickets: boolean;
         };
         Article: {
             id: number;
@@ -1272,6 +1300,7 @@ export interface components {
             comment: string;
             created_at: string | null;
             author?: components["schemas"]["PublicUser"] | null;
+            can_delete: boolean;
         };
         Session: {
             agent: {
@@ -1338,6 +1367,8 @@ export interface components {
             description: string;
             apply_from: string | null;
             apply_to: string | null;
+            badge: string | null;
+            color: string | null;
         };
         ShopPackage: {
             id: number;
@@ -1422,6 +1453,8 @@ export interface components {
             user: components["schemas"]["PublicUser"];
             active_background: components["schemas"]["HomeItem"] | null;
             items: components["schemas"]["HomeItem"][];
+            /** Format: date-time */
+            member_since: string;
         };
         HomeShop: {
             categories: {
@@ -1518,12 +1551,16 @@ export interface components {
             image_url: string | null;
             button_text: string | null;
             button_url: string | null;
+            small_box: boolean;
+            button_color: string;
+            button_border_color: string;
         };
         TicketReply: {
             id: number;
             content: string;
             created_at: string | null;
             author: components["schemas"]["PublicUser"] | null;
+            can_delete: boolean;
         };
         Ticket: {
             id: number;
@@ -1533,6 +1570,8 @@ export interface components {
             open: boolean;
             created_at: string | null;
             replies?: components["schemas"]["TicketReply"][];
+            can_delete: boolean;
+            author: components["schemas"]["PublicUser"] | null;
         };
         RuleCategory: {
             id: number;
@@ -1552,6 +1591,8 @@ export interface components {
             credit_value: string | null;
             currency_value: string | null;
             currency_type: number;
+            item_id: number | null;
+            is_limited: boolean;
         };
         ClientLaunch: {
             /** @enum {string} */
@@ -1569,6 +1610,20 @@ export interface components {
             external_override_texts?: string;
             external_override_variables?: string;
         };
+        MaintenanceTask: {
+            id: number;
+            task: string;
+            completed: boolean;
+            user: {
+                username: string;
+                look: string;
+            } | null;
+        };
+        BanInfo: {
+            type: string;
+            ban_reason: string;
+            ban_expire: number | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -1580,7 +1635,9 @@ export type $defs = Record<string, never>;
 export interface operations {
     getStatus: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3096,6 +3153,7 @@ export interface operations {
                             id: number;
                             name: string;
                             values: components["schemas"]["RareValue"][];
+                            badge: string;
                         }[];
                     };
                 };
@@ -3260,6 +3318,8 @@ export interface operations {
             query?: {
                 page?: number;
                 all?: boolean;
+                /** @description Filter by open or closed status while preserving the selected ownership scope. */
+                open?: boolean;
             };
             header?: never;
             path?: never;
@@ -4167,6 +4227,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthError"];
+                };
+            };
+        };
+    };
+    getOwnBan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["BanInfo"] | null;
+                    };
+                };
+            };
+            /** @description Request rejected. Inspect code when present; validation details are keyed by field. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

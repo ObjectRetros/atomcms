@@ -46,7 +46,17 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
       }
     },
     "/api/v1/bootstrap": {
@@ -1670,7 +1680,7 @@
             }
           }
         },
-        "description": "amount is whole major currency units (1\u2013250). Response money amounts are integer minor units. Follow approval_url in a browser; server callbacks/webhooks reconcile payment.",
+        "description": "amount is whole major currency units (1–250). Response money amounts are integer minor units. Follow approval_url in a browser; server callbacks/webhooks reconcile payment.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -2522,12 +2532,16 @@
                             "items": {
                               "$ref": "#/components/schemas/RareValue"
                             }
+                          },
+                          "badge": {
+                            "type": "string"
                           }
                         },
                         "required": [
                           "id",
                           "name",
-                          "values"
+                          "values",
+                          "badge"
                         ],
                         "additionalProperties": false
                       }
@@ -2907,6 +2921,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "open",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter by open or closed status while preserving the selected ownership scope."
           }
         ]
       },
@@ -4237,6 +4259,51 @@
           }
         }
       }
+    },
+    "/api/v1/ban": {
+      "get": {
+        "operationId": "getOwnBan",
+        "summary": "Read the current visitor’s effective address or account ban",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/BanInfo"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Request rejected. Inspect code when present; validation details are keyed by field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4490,12 +4557,47 @@
               "full",
               "headless"
             ]
+          },
+          "maintenance_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tasks": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MaintenanceTask"
+                }
+              },
+              "current_page": {
+                "type": "integer"
+              },
+              "has_more": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "items",
+              "current_page",
+              "has_more"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
           "installed",
           "maintenance",
-          "mode"
+          "mode",
+          "maintenance_message",
+          "tasks"
         ],
         "additionalProperties": false
       },
@@ -4736,6 +4838,16 @@
                 "type": "null"
               }
             ]
+          },
+          "tinymce_api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -4758,7 +4870,8 @@
           "operations",
           "currency",
           "latest_photos",
-          "discord_url"
+          "discord_url",
+          "tinymce_api_key"
         ],
         "additionalProperties": false
       },
@@ -4829,6 +4942,15 @@
           "referrals_needed": {
             "type": "integer"
           },
+          "referrals_total": {
+            "type": "integer"
+          },
+          "referral_threshold": {
+            "type": "integer"
+          },
+          "referral_reward_amount": {
+            "type": "integer"
+          },
           "two_factor_enabled": {
             "type": "boolean"
           },
@@ -4837,6 +4959,9 @@
             "items": {
               "$ref": "#/components/schemas/PublicUser"
             }
+          },
+          "can_manage_tickets": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -4852,8 +4977,12 @@
           "can_generate_logo",
           "referral_code",
           "referrals_needed",
+          "referrals_total",
+          "referral_threshold",
+          "referral_reward_amount",
           "two_factor_enabled",
-          "online_friends"
+          "online_friends",
+          "can_manage_tickets"
         ],
         "additionalProperties": false
       },
@@ -4951,12 +5080,16 @@
                 "type": "null"
               }
             ]
+          },
+          "can_delete": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "comment",
-          "created_at"
+          "created_at",
+          "can_delete"
         ],
         "additionalProperties": false
       },
@@ -5378,6 +5511,26 @@
                 "type": "null"
               }
             ]
+          },
+          "badge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -5386,7 +5539,9 @@
           "name",
           "description",
           "apply_from",
-          "apply_to"
+          "apply_to",
+          "badge",
+          "color"
         ],
         "additionalProperties": false
       },
@@ -5898,12 +6053,17 @@
             "items": {
               "$ref": "#/components/schemas/HomeItem"
             }
+          },
+          "member_since": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "required": [
           "user",
           "active_background",
-          "items"
+          "items",
+          "member_since"
         ],
         "additionalProperties": false
       },
@@ -6336,6 +6496,15 @@
                 "type": "null"
               }
             ]
+          },
+          "small_box": {
+            "type": "boolean"
+          },
+          "button_color": {
+            "type": "string"
+          },
+          "button_border_color": {
+            "type": "string"
           }
         },
         "required": [
@@ -6344,7 +6513,10 @@
           "content",
           "image_url",
           "button_text",
-          "button_url"
+          "button_url",
+          "small_box",
+          "button_color",
+          "button_border_color"
         ],
         "additionalProperties": false
       },
@@ -6377,13 +6549,17 @@
                 "type": "null"
               }
             ]
+          },
+          "can_delete": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "content",
           "created_at",
-          "author"
+          "author",
+          "can_delete"
         ],
         "additionalProperties": false
       },
@@ -6421,6 +6597,19 @@
             "items": {
               "$ref": "#/components/schemas/TicketReply"
             }
+          },
+          "can_delete": {
+            "type": "boolean"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublicUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6429,7 +6618,9 @@
           "title",
           "content",
           "open",
-          "created_at"
+          "created_at",
+          "can_delete",
+          "author"
         ],
         "additionalProperties": false
       },
@@ -6529,6 +6720,19 @@
           },
           "currency_type": {
             "type": "integer"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_limited": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -6537,7 +6741,9 @@
           "icon",
           "credit_value",
           "currency_value",
-          "currency_type"
+          "currency_type",
+          "item_id",
+          "is_limited"
         ],
         "additionalProperties": false
       },
@@ -6599,6 +6805,77 @@
           "client",
           "sso",
           "url"
+        ],
+        "additionalProperties": false
+      },
+      "MaintenanceTask": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "task": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "user": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "look": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "look"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "completed",
+          "user"
+        ],
+        "additionalProperties": false
+      },
+      "BanInfo": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "ban_reason": {
+            "type": "string"
+          },
+          "ban_expire": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "ban_reason",
+          "ban_expire"
         ],
         "additionalProperties": false
       }

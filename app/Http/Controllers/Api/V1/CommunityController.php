@@ -88,6 +88,8 @@ class CommunityController extends Controller
     /** @return array<string, mixed> */
     private function positionData(WebsiteOpenPosition $position): array
     {
-        return ['id' => $position->id, 'kind' => $position->position_kind, 'name' => $position->position_kind === 'team' ? $position->team?->rank_name : $position->permission?->rank_name, 'description' => $position->description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
+        $role = $position->position_kind === 'team' ? $position->team : $position->permission;
+
+        return ['id' => $position->id, 'kind' => $position->position_kind, 'name' => $role?->rank_name, 'badge' => $role?->badge, 'color' => $role?->staff_color, 'description' => $position->description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
     }
 }

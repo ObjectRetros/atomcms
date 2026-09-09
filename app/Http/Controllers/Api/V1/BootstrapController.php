@@ -8,6 +8,7 @@ use App\Emulator\Emulator;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PublicUserResource;
 use App\Models\Miscellaneous\WebsiteLanguage;
+use App\Models\Miscellaneous\WebsiteMaintenanceTask;
 use App\Models\User;
 use App\Services\Community\CameraService;
 use App\Services\HousekeepingPermissionsService;
@@ -16,12 +17,27 @@ use App\Services\User\UserApiService;
 use App\Support\StorefrontMoney;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Stevebauman\Purify\Facades\Purify;
 
 class BootstrapController extends Controller
 {
     public function status(InstallationService $installation): JsonResponse
     {
-        return response()->json(['data' => ['installed' => $installation->isComplete(), 'maintenance' => setting('maintenance_enabled') === '1', 'mode' => config('atom.mode', 'full')]]);
+        $installed = $installation->isComplete();
+        $maintenance = setting('maintenance_enabled') === '1';
+        $tasks = $installed && $maintenance ? WebsiteMaintenanceTask::with('user:id,username,look')->simplePaginate(5) : null;
+
+        return response()->json(['data' => [
+            'installed' => $installed,
+            'maintenance' => $maintenance,
+            'mode' => config('atom.mode', 'full'),
+            'maintenance_message' => $maintenance ? Purify::clean((string) setting('maintenance_message', '')) : null,
+            'tasks' => [
+                'items' => $tasks?->getCollection()->map(fn (WebsiteMaintenanceTask $task): array => ['id' => $task->id, 'task' => $task->task, 'completed' => (bool) $task->completed, 'user' => $task->user ? ['username' => $task->user->username, 'look' => $task->user->look] : null]) ?? [],
+                'current_page' => $tasks?->currentPage() ?? 1,
+                'has_more' => $tasks?->hasMorePages() ?? false,
+            ],
+        ]]);
     }
 
     public function __invoke(InstallationService $installation, UserApiService $users, Request $request): JsonResponse
@@ -37,6 +53,7 @@ class BootstrapController extends Controller
 
         return response()->json(['data' => [
             'discord_url' => setting('discord_invitation_link'),
+            'tinymce_api_key' => setting('tinymce_api_key'),
             'viewer' => $viewer, 'housekeeping_url' => url('housekeeping'),
             'captcha' => ['recaptcha_enabled' => (bool) setting('google_recaptcha_enabled'), 'recaptcha_site_key' => config('habbo.site.recaptcha_site_key'), 'turnstile_enabled' => (bool) setting('cloudflare_turnstile_enabled'), 'turnstile_site_key' => config('turnstile.turnstile_site_key')],
             'hotel_name' => setting('hotel_name', config('app.name')), 'hotel_description' => setting('hotel_description', ''),

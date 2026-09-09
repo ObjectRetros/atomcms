@@ -15,6 +15,7 @@ use App\Models\Home\UserHomeItem;
 use App\Models\User;
 use App\Services\Home\HomeService;
 use App\Support\AuthenticatedUser;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,7 +30,7 @@ class HomeController extends Controller
         $items = $this->homes->placedItems($user);
         $background = $items->first(fn ($item): bool => $item->homeItem?->type === HomeItemType::Background);
 
-        return response()->json(['data' => ['user' => new PublicUserResource(PublicUserData::from($user)), 'active_background' => $background ? $this->itemData($background) : null, 'items' => $items->filter(fn ($item): bool => $item->homeItem?->type !== HomeItemType::Background)->map(fn ($item): array => $this->itemData($item))->values()]]);
+        return response()->json(['data' => ['user' => new PublicUserResource(PublicUserData::from($user)), 'member_since' => CarbonImmutable::createFromTimestampUTC($user->account_created)->toIso8601String(), 'active_background' => $background ? $this->itemData($background) : null, 'items' => $items->filter(fn ($item): bool => $item->homeItem?->type !== HomeItemType::Background)->map(fn ($item): array => $this->itemData($item))->values()]]);
     }
 
     public function widget(User $user, UserHomeItem $homeItem, Request $request): JsonResponse

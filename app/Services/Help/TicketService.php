@@ -26,13 +26,13 @@ class TicketService
     }
 
     /** @return LengthAwarePaginator<int, WebsiteHelpCenterTicket> */
-    public function tickets(User $actor, bool $all = false): LengthAwarePaginator
+    public function tickets(User $actor, bool $all = false, ?bool $open = null): LengthAwarePaginator
     {
         if ($all) {
             Gate::forUser($actor)->authorize('viewAny', WebsiteHelpCenterTicket::class);
         }
 
-        return WebsiteHelpCenterTicket::query()->when(! $all, fn ($query) => $query->where('user_id', $actor->id))->orderBy('open')->latest('id')->with('user:id,username,motto,look,online')->paginate(15);
+        return WebsiteHelpCenterTicket::query()->when(! $all, fn ($query) => $query->where('user_id', $actor->id))->when($open !== null, fn ($query) => $query->where('open', $open))->orderBy('open')->latest('id')->with('user:id,username,motto,look,online')->paginate(15);
     }
 
     public function show(User $actor, WebsiteHelpCenterTicket $ticket): WebsiteHelpCenterTicket

@@ -5,10 +5,15 @@ use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
 use App\Models\Articles\WebsiteArticle;
+use App\Models\Community\RareValue\WebsiteRareValue;
+use App\Models\Community\RareValue\WebsiteRareValueCategory;
 use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Home\HomeItem;
+use App\Models\Miscellaneous\WebsiteMaintenanceTask;
+use App\Models\Miscellaneous\WebsitePermission;
 use App\Models\Shop\WebsiteShopVoucher;
 use App\Models\User;
+use App\Models\User\Ban;
 use App\Models\WebsiteApiIdempotencyKey;
 use App\Services\Shop\IdempotentOperation;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +28,41 @@ test('bootstrap exposes configured public data and safe session identity', funct
     setSetting('force_staff_2fa', '1');
     setSetting('min_staff_rank', '4');
     setSetting('rcon_ip', 'private-secret');
-    $this->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer', null)->assertJsonPath('data.installed', true)->assertDontSee('private-secret');
+    setSetting('tinymce_api_key', 'public-editor-key');
+    $this->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer', null)->assertJsonPath('data.installed', true)->assertJsonPath('data.tinymce_api_key', 'public-editor-key')->assertDontSee('private-secret');
     $this->actingAs($this->member)->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer.username', $this->member->username)->assertJsonMissingPath('data.viewer.mail');
+});
+
+test('maintenance status exposes sanitized public content with five tasks per page', function () {
+    setSetting('maintenance_enabled', '1');
+    setSetting('maintenance_message', '<p>Updating the hotel</p><script>alert(1)</script>');
+    for ($i = 0; $i < 6; $i++) {
+        WebsiteMaintenanceTask::create(['user_id' => $this->member->id, 'task' => 'Task ' . $i, 'completed' => $i === 0]);
+    }
+
+    $this->getJson('/api/v1/status')->assertOk()->assertJsonPath('data.maintenance', true)
+        ->assertJsonPath('data.maintenance_message', '<p>Updating the hotel</p>')->assertJsonCount(5, 'data.tasks.items')
+        ->assertJsonPath('data.tasks.has_more', true)->assertJsonPath('data.tasks.items.0.completed', true)
+        ->assertJsonPath('data.tasks.items.0.user', ['username' => $this->member->username, 'look' => $this->member->look]);
+    $this->getJson('/api/v1/status?page=2')->assertOk()->assertJsonCount(1, 'data.tasks.items')->assertJsonPath('data.tasks.current_page', 2)->assertJsonPath('data.tasks.has_more', false);
+    setSetting('maintenance_enabled', '0');
+    $this->getJson('/api/v1/status')->assertOk()->assertJsonPath('data.maintenance_message', null)->assertJsonCount(0, 'data.tasks.items');
+});
+
+test('ban details remain private and readable during access restrictions', function () {
+    $expiry = time() + 3600;
+    Ban::create(['user_id' => $this->member->id, 'ip' => '', 'machine_id' => '', 'user_staff_id' => $this->member->id, 'timestamp' => time(), 'ban_expire' => $expiry, 'ban_reason' => 'Account restriction', 'type' => 'account']);
+    $this->getJson('/api/v1/ban?user_id=' . $this->member->id)->assertOk()->assertExactJson(['data' => null]);
+    setSetting('maintenance_enabled', '1');
+    $this->actingAs($this->member)->getJson('/api/v1/ban')->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+        ->assertExactJson(['data' => ['type' => 'account', 'ban_reason' => 'Account restriction', 'ban_expire' => $expiry]]);
+    $this->actingAs(User::factory()->create())->getJson('/api/v1/ban')->assertOk()->assertExactJson(['data' => null]);
+    Ban::create(['user_id' => $this->member->id, 'ip' => '127.0.0.1', 'machine_id' => '', 'user_staff_id' => $this->member->id, 'timestamp' => time(), 'ban_expire' => $expiry, 'ban_reason' => 'Address restriction', 'type' => 'ip']);
+    $this->actingAs($this->member)->getJson('/api/v1/ban')->assertOk()->assertJsonPath('data.type', 'ip')->assertJsonPath('data.ban_reason', 'Address restriction');
+    auth()->logout();
+    $this->getJson('/api/v1/ban')->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+        ->assertExactJson(['data' => ['type' => 'ip', 'ban_reason' => 'Address restriction', 'ban_expire' => $expiry]]);
+    $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.2'])->getJson('/api/v1/ban?ip=127.0.0.1&user_id=' . $this->member->id)->assertOk()->assertExactJson(['data' => null]);
 });
 
 test('public projections do not leak account secrets or balances', function () {
@@ -45,6 +83,20 @@ test('all public and authenticated catalog read operations produce JSON', functi
     }
 });
 
+test('account referrals expose configured reward and progress for the theme', function (?int $total) {
+    setSetting('referrals_needed', '3');
+    setSetting('referral_reward_amount', '10');
+    if ($total !== null) {
+        $this->member->referrals()->create(['referrals_total' => $total]);
+    }
+
+    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()
+        ->assertJsonPath('data.referrals_total', $total ?? 0)
+        ->assertJsonPath('data.referral_threshold', 3)
+        ->assertJsonPath('data.referral_reward_amount', 10)
+        ->assertJsonPath('data.referrals_needed', 3 - ($total ?? 0));
+})->with([null, 4]);
+
 test('article comments and reactions share persistence and reject forbidden edits', function () {
     $article = WebsiteArticle::create(['user_id' => $this->member->id, 'title' => 'API article', 'short_story' => 'A story', 'full_story' => '<p>Story</p>', 'can_comment' => true]);
     $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()->assertJsonPath('data.author.username', $this->member->username);
@@ -64,6 +116,19 @@ test('account changes retain current password checks', function () {
     $this->putJson('/api/v1/me/account', ['mail' => $this->member->mail, 'motto' => 'Updated by API'])->assertNoContent();
     expect($this->member->fresh()->motto)->toBe('Updated by API');
     $this->putJson('/api/v1/me/password', ['password' => 'secure-password', 'password_confirmation' => 'secure-password'])->assertUnprocessable()->assertJsonValidationErrors('current_password');
+});
+
+test('comment delete controls follow the current viewer policy', function () {
+    setSetting('force_staff_2fa', '0');
+    WebsitePermission::updateOrCreate(['permission' => 'delete_article_comments'], ['min_rank' => 3]);
+    $article = WebsiteArticle::create(['user_id' => $this->member->id, 'title' => 'Moderated article', 'short_story' => 'Story', 'full_story' => 'Content']);
+    $article->comments()->create(['user_id' => $this->member->id, 'comment' => 'A comment']);
+    $url = '/api/v1/articles/' . $article->slug . '/comments';
+
+    $this->getJson($url)->assertOk()->assertJsonPath('data.0.can_delete', false);
+    $this->actingAs($this->member)->getJson($url)->assertOk()->assertJsonPath('data.0.can_delete', true);
+    $this->actingAs(User::factory()->create(['rank' => 1]))->getJson($url)->assertOk()->assertJsonPath('data.0.can_delete', false);
+    $this->actingAs(User::factory()->create(['rank' => 3]))->getJson($url)->assertOk()->assertJsonPath('data.0.can_delete', true);
 });
 
 test('a package retry returns the same receipt and charges once', function () {
@@ -105,6 +170,70 @@ test('support enforces ticket ownership and closed replies', function () {
     $this->actingAs(User::factory()->create(['rank' => 1]))->getJson('/api/v1/support/tickets/' . $id)->assertForbidden();
     $this->getJson('/api/v1/support/tickets')->assertOk()->assertJsonCount(0, 'data');
     $this->getJson('/api/v1/support/tickets?all=true')->assertForbidden();
+});
+
+test('support categories preserve configured theme layout and button colors', function (bool $smallBox) {
+    $category = WebsiteHelpCenterCategory::create(['name' => 'Theme category', 'content' => 'Support', 'position' => 0, 'small_box' => $smallBox, 'button_color' => '#123456', 'button_border_color' => '#abcdef']);
+
+    $this->actingAs($this->member)->getJson('/api/v1/support')->assertOk()
+        ->assertJsonFragment(['id' => $category->id, 'small_box' => $smallBox, 'button_color' => '#123456', 'button_border_color' => '#abcdef']);
+})->with([false, true]);
+
+test('ticket status filters retain ownership and expose only the public author', function () {
+    $category = WebsiteHelpCenterCategory::create(['name' => 'Help', 'content' => 'Support']);
+    $open = $this->member->tickets()->create(['category_id' => $category->id, 'title' => 'Open ticket', 'content' => 'A question', 'open' => true]);
+    $closed = $this->member->tickets()->create(['category_id' => $category->id, 'title' => 'Closed ticket', 'content' => 'A question', 'open' => false]);
+    User::factory()->create()->tickets()->create(['category_id' => $category->id, 'title' => 'Private ticket', 'content' => 'A question', 'open' => true]);
+
+    $this->actingAs($this->member)->getJson('/api/v1/support/tickets?open=1')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $open->id)
+        ->assertJsonPath('data.0.author.username', $this->member->username)->assertJsonMissingPath('data.0.author.mail');
+    $this->getJson('/api/v1/support/tickets?open=0')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $closed->id);
+    $this->getJson('/api/v1/support/tickets')->assertOk()->assertJsonCount(2, 'data');
+    $this->getJson('/api/v1/support/tickets?all=1&open=1')->assertForbidden();
+});
+
+test('ticket and reply delete controls distinguish ownership management and deletion permissions', function () {
+    setSetting('force_staff_2fa', '0');
+    foreach (['manage_website_tickets' => 2, 'delete_website_tickets' => 3, 'delete_website_ticket_replies' => 3] as $permission => $rank) {
+        WebsitePermission::updateOrCreate(['permission' => $permission], ['min_rank' => $rank]);
+    }
+    $category = WebsiteHelpCenterCategory::create(['name' => 'Help', 'content' => 'Support']);
+    $ticket = $this->member->tickets()->create(['category_id' => $category->id, 'title' => 'My ticket', 'content' => 'A question']);
+    $replyAuthor = User::factory()->create(['rank' => 2]);
+    $ticket->replies()->create(['user_id' => $replyAuthor->id, 'content' => 'A response']);
+    $url = '/api/v1/support/tickets/' . $ticket->id;
+
+    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.can_manage_tickets', false);
+    $this->actingAs($replyAuthor)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.can_manage_tickets', true);
+    $this->actingAs($this->member)->getJson($url)->assertOk()->assertJsonPath('data.can_delete', true)->assertJsonPath('data.replies.0.can_delete', false);
+    $this->actingAs($replyAuthor)->getJson($url)->assertOk()->assertJsonPath('data.can_delete', false)->assertJsonPath('data.replies.0.can_delete', true);
+    $this->actingAs(User::factory()->create(['rank' => 2]))->getJson($url)->assertOk()->assertJsonPath('data.can_delete', false)->assertJsonPath('data.replies.0.can_delete', false);
+    $this->actingAs(User::factory()->create(['rank' => 3]))->getJson($url)->assertOk()->assertJsonPath('data.can_delete', true)->assertJsonPath('data.replies.0.can_delete', true);
+});
+
+test('public home exposes the member registration date', function () {
+    $this->member->update(['account_created' => 1704164645]);
+
+    $this->getJson('/api/v1/homes/' . $this->member->username)->assertOk()
+        ->assertJsonPath('data.member_since', '2024-01-02T03:04:05+00:00')
+        ->assertJsonMissingPath('data.user.mail');
+});
+
+test('rare values expose category artwork and emulator limited editions using configured icons', function () {
+    setSetting('furniture_icons_path', 'https://images.example.com/furniture/');
+    $itemId = (int) DB::table('catalog_items')->where('item_ids', 'not like', '%;%')->value('item_ids');
+    DB::table('catalog_items')->where('item_ids', (string) $itemId)->update(['limited_stack' => 10]);
+    $category = WebsiteRareValueCategory::create(['name' => 'Limited rares', 'badge' => 'LTD', 'priority' => 1]);
+    $value = WebsiteRareValue::create(['category_id' => $category->id, 'item_id' => $itemId, 'name' => 'Limited chair', 'furniture_icon' => 'chair.png']);
+    $unlinkedValue = WebsiteRareValue::create(['category_id' => $category->id, 'name' => 'Unlinked chair', 'furniture_icon' => 'chair.png']);
+
+    $this->actingAs($this->member)->getJson('/api/v1/rare-values?category=' . $category->id)->assertOk()
+        ->assertJsonPath('data.0.badge', 'LTD')
+        ->assertJsonFragment(['id' => $value->id, 'icon' => 'https://images.example.com/furniture/chair.png', 'item_id' => $itemId, 'is_limited' => true])
+        ->assertJsonFragment(['id' => $unlinkedValue->id, 'item_id' => null, 'is_limited' => false]);
+    $this->getJson('/api/v1/rare-values/' . $value->id)->assertOk()
+        ->assertJsonPath('data.icon', 'https://images.example.com/furniture/chair.png')
+        ->assertJsonPath('data.is_limited', true);
 });
 
 test('home widgets return structured public data and enforce placement and ownership', function () {

@@ -13,6 +13,6 @@ class CommentResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        return ['id' => $this->id, 'comment' => $this->comment, 'created_at' => $this->created_at?->toIso8601String(), 'author' => $this->whenLoaded('user', fn () => $this->user ? new PublicUserResource(PublicUserData::from($this->user)) : null)];
+        return ['id' => $this->id, 'comment' => $this->comment, 'can_delete' => $request->user()?->can('delete', $this->resource) ?? false, 'created_at' => $this->created_at?->toIso8601String(), 'author' => $this->whenLoaded('user', fn () => $this->user ? new PublicUserResource(PublicUserData::from($this->user)) : null)];
     }
 }

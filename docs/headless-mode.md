@@ -1,8 +1,8 @@
 # Headless mode
 
-Atom runs one application in either `full` (the default, with the Atom or Dusk PHP theme) or `headless` mode. `/api/v1` is available in both. Headless mode removes public HTML routes while retaining session authentication, housekeeping, Livewire, uploads, payment callbacks, queues, and scheduled work. The independent [Atom Vue frontend](https://github.com/DennisObject/atom-vue) uses HTTP and public assets; its source and build do not require PHP or database access.
+Atom runs one application in either `full` (the default, with the Atom or Dusk PHP theme) or `headless` mode. `/api/v1` is available in both. Headless mode removes public HTML routes while retaining session authentication, housekeeping, Livewire, uploads, payment callbacks, queues, and scheduled work. The independent [Atom Nuxt frontend](https://github.com/DennisObject/atom-nuxt) uses HTTP and public assets; its source and build do not require PHP or database access.
 
-The [OpenAPI contract](api/openapi.json) describes the implemented requests and responses. [Generated TypeScript definitions](api/schema.d.ts) are published by the backend. When updating the frontend to a new API version, copy these definitions into `atom-vue/src/api-schema.d.ts` and run its build. The [design specification](headless-mode-spec.md) retains the acceptance criteria; deployment readiness still requires checking your configured emulator, mail, game client, and payments.
+The [OpenAPI contract](api/openapi.json) describes the implemented requests and responses. [Generated TypeScript definitions](api/schema.d.ts) are published by the backend. When updating the frontend to a new API version, copy these definitions into `atom-nuxt/app/types/api-schema.d.ts` and run its build. The [design specification](headless-mode-spec.md) retains the acceptance criteria; deployment readiness still requires checking your configured emulator, mail, game client, and payments.
 
 ## Prerequisites
 
@@ -118,44 +118,31 @@ The proxy must route these paths to Atom, preserve the external Host/scheme, and
 - `/user/confirm-password`, `/user/confirmed-password-status`, `/user/two-factor-*`, `/user/confirmed-two-factor-authentication`, and `/user/settings/two-factor-authentication` (including its `/confirm` child).
 - `/paypal/` callbacks and the configured PayPal webhook path from the backend route table.
 
-Serve GET public page URLs through the Vue history fallback to `index.html`, including `/login`, `/register`, and `/reset-password/{token}`. This method distinction matters: forwarding every `/login` request to a headless backend would swallow the frontend page. Keep game clients/media on their configured public origins or proxy those separately. Configure trusted proxies using the project's existing deployment mechanism so generated URLs retain HTTPS.
+Serve GET public page URLs through Nuxt, including `/login`, `/register`, and `/reset-password/{token}`. This method distinction matters: forwarding every `/login` request to a headless backend would swallow the frontend page. Keep game clients/media on their configured public origins or proxy those separately. Configure trusted proxies using the project's existing deployment mechanism so generated URLs retain HTTPS.
 
-For Nginx terminating TLS directly, the core routing can look like this inside the HTTPS server block (adapt paths and upstream to your deployment):
+The independent [atom-nuxt README](https://github.com/DennisObject/atom-nuxt#readme) documents frontend deployment. Nuxt runs a Node server and forwards backend API, authentication, and media requests to the private Laravel origin configured by `NUXT_BACKEND_URL`. Point the public reverse proxy at Nuxt; preserve the external Host/scheme and disable caching for authenticated responses. For example, inside an Nginx HTTPS server block:
 
 ```nginx
-root /srv/atom-vue/dist;
-index index.html;
-proxy_set_header Host $http_host;
-proxy_set_header X-Forwarded-Host $http_host;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_cache off;
-
-location /assets/ { try_files $uri @atom_assets; }
-location @atom_assets { proxy_pass http://127.0.0.1:8000; }
-location ~ ^/(api|sanctum|housekeeping|livewire(?:-[a-z0-9]+)?|storage|build-housekeeping|css|js|fonts|images|vendor|paypal)(/|$) {
-    proxy_pass http://127.0.0.1:8000;
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_cache off;
 }
-location ~ ^/user/(confirm-password|confirmed-password-status|two-factor-[^/]+|confirmed-two-factor-authentication|settings/two-factor-authentication)(/|$) {
-    proxy_pass http://127.0.0.1:8000;
-}
-location ~ ^/(login|logout|register|two-factor-challenge|forgot-password|reset-password)(/|$) {
-    if ($request_method = GET) { rewrite ^ /index.html last; }
-    proxy_pass http://127.0.0.1:8000;
-}
-location / { try_files $uri $uri/ /index.html; }
 ```
 
-Here `8000` represents an HTTP backend server, not a PHP-FPM socket. Configure TLS certificates and any separately served game-client paths outside this excerpt. If TLS terminates at a trusted outer proxy (as in the Averin tailnet demo), preserve its validated external HTTPS scheme rather than replacing it with the inner HTTP scheme; only trust forwarded headers from that proxy. Check that response redirects and absolute asset URLs keep the public origin and port.
+Here `3000` represents the Nuxt Node server. `NUXT_BACKEND_URL` must target an HTTP backend server, not a PHP-FPM socket. Configure TLS certificates and any separately served game-client paths outside this excerpt. If TLS terminates at a trusted outer proxy (as in the Averin tailnet demo), preserve its validated external HTTPS scheme rather than replacing it with the inner HTTP scheme; only trust forwarded headers from that proxy. Check that response redirects and absolute asset URLs keep the public origin and port.
 
-The example Vite server already supplies a development proxy. Start Atom on its private/local port, then from the independent client directory:
+For development, start Atom on its private/local port, then from the independent frontend directory:
 
 ```bash
-npm ci --ignore-scripts
-npm run dev
+npm ci
+NUXT_BACKEND_URL=http://127.0.0.1:8000 npm run dev
 ```
 
-See the example's README for its exact backend target configuration. Use local HTTP only for development, use the browser-facing origin in `SANCTUM_STATEFUL_DOMAINS` including the Vite port, and clear/rebuild cached configuration after changing origins. The Averin verification deployment is `https://ovh-averin-remote-ssh.tail81b71b.ts.net:9443`, using this same-origin topology over tailnet HTTPS. It uses a separate Arcturus database and persistent backend/proxy services. Its private credentials are supplied separately, never committed here; no live PayPal credentials or isolated running game emulator are configured.
+Use local HTTP only for development, use the browser-facing origin in `SANCTUM_STATEFUL_DOMAINS` including the Nuxt port, and clear/rebuild cached configuration after changing origins. The existing Averin verification demo is `https://ovh-averin-remote-ssh.tail81b71b.ts.net:9443` over tailnet HTTPS. It still serves the earlier Vue build until the Nuxt server is deployed. It uses a separate Arcturus database and persistent backend/proxy services. Its private credentials are supplied separately, never committed here; no live PayPal credentials or isolated running game emulator are configured.
 
 ## Browser authentication and response handling
 
@@ -182,13 +169,15 @@ Success responses normally use `{ "data": ... }`; paginated resources additional
 
 Read `/api/v1/bootstrap` for safe hotel branding, locale choices, viewer flags, CAPTCHA site keys, advertised operations, and emulator capability flags. Ada supports rare values but does not advertise camera photos; unsupported camera requests are rejected. Always use the advertised capability flags for the configured driver. Home widgets return typed content; `my-groups` explicitly returns `supported: false` and null content because there is no existing group widget implementation.
 
+During maintenance, `/api/v1/status?page=1` includes the sanitized message and five public tasks per page, with `tasks.has_more` for navigation. `/api/v1/ban` remains available during access restrictions and returns only the current address ban or signed-in account ban, or null; a null `ban_expire` means permanent. Guests can read their current address ban, and the endpoint accepts no account or address selectors.
+
 Website money responses use integer minor units and an ISO currency code. POST PayPal order `amount` uses whole major units, 1–250. Home/badge costs use emulator currency units/codes. Package purchases and PayPal order creation require `Idempotency-Key` (1–100 letters, digits, `.`, `_`, `:`, or `-`). Reuse the same key and normalized payload after a network failure; different input returns 409. Successful results are retained for 30 days. Unresolved PayPal creation is retryable within the provider's six-hour idempotency window; older unresolved operations return 409 for reconciliation. Vouchers, referrals, and other writes keep their existing transactional protections.
 
 Follow the returned PayPal `approval_url`; callbacks return to Atom for processing, then to the frontend. A frontend success query parameter never credits a balance. Poll authenticated order status to display completion. POST `/api/v1/client/launch` issues the configured client URL and SSO after access checks; never prefetch, cache, persist, or log that response.
 
 ## Build, workers, and verification
 
-In the separate `atom-vue` checkout, build the client with its own `npm ci` and `npm run build`, then serve its `dist/` with history fallback. Preserve `storage/app/public` and the `public/storage` link across deployments. Media URLs and game-client configuration must be reachable by the browser. Keep queue workers and the existing scheduler running: queued password-reset mail and payment reconciliation do not depend on public theme rendering. Use the normal process supervisor for `php artisan queue:work`, schedule `php artisan schedule:run` every minute, and restart workers when configuration/code changes. Configure real mail/PayPal/RCON secrets through deployment secrets.
+In the separate `atom-nuxt` checkout, run `npm ci` and `npm run build`, then start `node .output/server/index.mjs` under a process supervisor. Set `NUXT_BACKEND_URL` to the private Laravel HTTP origin and configure the Nuxt listener with `HOST` and `PORT`. Preserve `storage/app/public` and the `public/storage` link across deployments. Media URLs and game-client configuration must be reachable by the browser. Keep queue workers and the existing scheduler running: queued password-reset mail and payment reconciliation do not depend on public theme rendering. Use the normal process supervisor for `php artisan queue:work`, schedule `php artisan schedule:run` every minute, and restart workers when configuration/code changes. Configure real mail/PayPal/RCON secrets through deployment secrets.
 
 Maintainers update `docs/api/openapi.json` with behavior changes, then run:
 
@@ -198,6 +187,6 @@ npm run api:check
 npm run api:test
 ```
 
-The check compares `docs/api/schema.d.ts` with the generated definitions byte-for-byte, compiles schemas with AJV, and checks every registered v1 operation plus each documented auth operation against Laravel's route table. Pest contract checks feed actual application responses to that validator. The Vue client keeps its own snapshot of the generated definitions and builds in its own repository; backend tooling does not write to the frontend checkout. Vue, React, Angular, and Svelte consumers can all use the same generated `paths`/`components` types and credential/CSRF sequence.
+The check compares `docs/api/schema.d.ts` with the generated definitions byte-for-byte, compiles schemas with AJV, and checks every registered v1 operation plus each documented auth operation against Laravel's route table. Pest contract checks feed actual application responses to that validator. The Nuxt client keeps its own snapshot of the generated definitions and builds in its own repository; backend tooling does not write to the frontend checkout. Vue, React, Angular, and Svelte consumers can all use the same generated `paths`/`components` types and credential/CSRF sequence.
 
 Before serving users, verify a real browser journey: initialize CSRF, register/login, complete pending 2FA, change account data, browse articles, logout and see private state clear. Verify required staff enrollment and housekeeping login challenge, reset mail, bans/maintenance/support exceptions, uploads, payment return/reconciliation, and the configured game launch. Check conversion/reversal and retained theme rendering on disposable Arcturus/Ada installs. Builds, route coverage, schema tests, and a demo without real integration credentials do not establish live payment delivery or emulator game entry.

@@ -65,7 +65,7 @@ class ToolController extends Controller
             $categories = $categories->where('id', $request->integer('category'));
         }
 
-        return response()->json(['data' => $categories->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name, 'values' => $category->furniture->map(fn ($value): array => $this->valueData($value))])->values()]);
+        return response()->json(['data' => $categories->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name, 'badge' => $category->badge, 'values' => $category->furniture->map(fn ($value): array => $this->valueData($value))])->values()]);
     }
 
     public function rareValue(WebsiteRareValue $value, RareValueCategoriesService $values): JsonResponse
@@ -76,6 +76,6 @@ class ToolController extends Controller
     /** @return array<string, mixed> */
     private function valueData(WebsiteRareValue $value): array
     {
-        return ['id' => $value->id, 'name' => $value->name, 'icon' => url($value->furniture_icon), 'credit_value' => $value->credit_value, 'currency_value' => $value->currency_value, 'currency_type' => $value->currency_type];
+        return ['id' => $value->id, 'name' => $value->name, 'icon' => url(rtrim((string) setting('furniture_icons_path'), '/') . '/' . ltrim($value->furniture_icon, '/')), 'item_id' => $value->item_id, 'is_limited' => $value->isLimitedEdition(), 'credit_value' => $value->credit_value, 'currency_value' => $value->currency_value, 'currency_type' => $value->currency_type];
     }
 }

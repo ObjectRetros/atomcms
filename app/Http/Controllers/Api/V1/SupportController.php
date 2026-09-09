@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class SupportController extends Controller
 {
@@ -26,7 +27,7 @@ class SupportController extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json(['data' => $this->tickets->categories()->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name, 'content' => $category->content, 'image_url' => $category->image_url, 'button_text' => $category->button_text, 'button_url' => $category->button_url])]);
+        return response()->json(['data' => $this->tickets->categories()->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name, 'content' => $category->content, 'image_url' => $category->image_url, 'button_text' => $category->button_text, 'button_url' => $category->button_url, 'small_box' => (bool) $category->small_box, 'button_color' => $category->button_color, 'button_border_color' => $category->button_border_color])]);
     }
 
     public function rules(): JsonResponse
@@ -36,7 +37,7 @@ class SupportController extends Controller
 
     public function tickets(Request $request): AnonymousResourceCollection
     {
-        return JsonResource::collection($this->tickets->tickets(AuthenticatedUser::from($request), $request->boolean('all'))->through(fn ($ticket): array => $this->ticketData($ticket)));
+        return JsonResource::collection($this->tickets->tickets(AuthenticatedUser::from($request), $request->boolean('all'), $request->has('open') ? $request->boolean('open') : null)->through(fn ($ticket): array => $this->ticketData($ticket)));
     }
 
     public function show(WebsiteHelpCenterTicket $ticket, Request $request): JsonResponse
@@ -89,9 +90,9 @@ class SupportController extends Controller
     /** @return array<string, mixed> */
     private function ticketData(WebsiteHelpCenterTicket $ticket): array
     {
-        $data = ['id' => $ticket->id, 'category_id' => $ticket->category_id, 'title' => $ticket->title, 'content' => $ticket->content, 'open' => (bool) $ticket->open, 'created_at' => $ticket->created_at === null ? null : CarbonImmutable::parse($ticket->created_at, 'UTC')->toIso8601String()];
+        $data = ['id' => $ticket->id, 'category_id' => $ticket->category_id, 'title' => $ticket->title, 'content' => $ticket->content, 'open' => (bool) $ticket->open, 'can_delete' => Gate::allows('delete', $ticket), 'author' => $ticket->user ? new PublicUserResource(PublicUserData::from($ticket->user)) : null, 'created_at' => $ticket->created_at === null ? null : CarbonImmutable::parse($ticket->created_at, 'UTC')->toIso8601String()];
         if ($ticket->relationLoaded('replies')) {
-            $data['replies'] = $ticket->replies->map(fn ($reply): array => ['id' => $reply->id, 'content' => $reply->content, 'created_at' => $reply->created_at?->toIso8601String(), 'author' => $reply->user ? new PublicUserResource(PublicUserData::from($reply->user)) : null]);
+            $data['replies'] = $ticket->replies->map(fn ($reply): array => ['id' => $reply->id, 'content' => $reply->content, 'can_delete' => Gate::allows('delete', $reply), 'created_at' => $reply->created_at?->toIso8601String(), 'author' => $reply->user ? new PublicUserResource(PublicUserData::from($reply->user)) : null]);
         }
 
         return $data;

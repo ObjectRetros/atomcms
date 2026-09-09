@@ -41,6 +41,17 @@ function openTeamPosition(): WebsiteOpenPosition
     ]);
 }
 
+test('application API preserves rank and team header artwork', function (string $kind) {
+    $position = $kind === 'team' ? openTeamPosition() : openRankPosition();
+    $role = $kind === 'team' ? $position->team : $position->permission;
+    $role->update(['badge' => 'ADM', 'staff_color' => '#123456']);
+
+    $this->actingAs($this->user)->getJson('/api/v1/applications/' . $position->id)->assertOk()
+        ->assertJsonPath('data.badge', 'ADM')->assertJsonPath('data.color', '#123456');
+    $this->getJson('/api/v1/applications?kind=' . $kind)->assertOk()
+        ->assertJsonFragment(['id' => $position->id, 'badge' => 'ADM', 'color' => '#123456']);
+})->with(['rank', 'team']);
+
 test('a user can apply for an open staff position once', function () {
     $position = openRankPosition();
 

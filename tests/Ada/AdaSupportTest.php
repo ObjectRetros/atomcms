@@ -338,7 +338,7 @@ test('ada role display fields render on an article page', function () {
 });
 
 test('ada roles back staff positions and applications', function () {
-
+    setSetting('force_staff_2fa', '0');
     $user = User::factory()->create(['rank' => 6]);
     $position = WebsiteOpenPosition::create([
         'position_kind' => 'rank',
@@ -354,6 +354,9 @@ test('ada roles back staff positions and applications', function () {
 
     expect($position->permission?->rank_name)->toBe('Admin')
         ->and($application->rank?->rank_name)->toBe('Admin');
+
+    $this->actingAs($user)->getJson('/api/v1/applications/' . $position->id)->assertOk()
+        ->assertJsonPath('data.badge', '')->assertJsonPath('data.color', '#327fa8');
 });
 
 test('ada renders the shared cms page surface', function () {

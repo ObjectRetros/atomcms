@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use App\Actions\User\ClaimReferralReward;
 use App\Actions\User\UpdateAccountSettings;
 use App\Data\PublicUserData;
+use App\Emulator\Contracts\BanRepository;
 use App\Emulator\Contracts\PlayerSettingsRepository;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountSettingsFormRequest;
 use App\Http\Requests\PasswordSettingsFormRequest;
 use App\Http\Resources\Api\V1\PublicUserResource;
+use App\Models\Help\WebsiteHelpCenterTicket;
+use App\Models\User;
 use App\Services\PermissionsService;
 use App\Services\User\SessionService;
 use App\Support\AuthenticatedUser;
@@ -21,6 +24,14 @@ use Illuminate\Validation\ValidationException;
 
 class AccountController extends Controller
 {
+    public function ban(Request $request, BanRepository $bans): JsonResponse
+    {
+        $user = $request->user();
+        $ban = $bans->activeIpBan((string) $request->ip()) ?? ($user instanceof User ? $bans->activeAccountBan($user) : null);
+
+        return response()->json(['data' => $ban === null ? null : ['type' => $ban->type, 'ban_reason' => $ban->ban_reason, 'ban_expire' => $ban->ban_expire]])->header('Cache-Control', 'no-store, private');
+    }
+
     public function show(Request $request, PlayerSettingsRepository $settings, PermissionsService $permissions): JsonResponse
     {
         $user = AuthenticatedUser::from($request);
@@ -32,7 +43,11 @@ class AccountController extends Controller
             'website_balance' => ['amount_minor' => $user->website_balance, 'currency' => StorefrontMoney::currencyCode()],
             'can_change_name' => $settings->canChangeName($user),
             'can_generate_logo' => $permissions->allows($user, 'generate_logo'),
+            'can_manage_tickets' => $user->can('viewAny', WebsiteHelpCenterTicket::class),
             'referral_code' => $user->referral_code, 'referrals_needed' => $user->referralsNeeded(),
+            'referrals_total' => $user->referrals->referrals_total ?? 0,
+            'referral_threshold' => (int) setting('referrals_needed', 5),
+            'referral_reward_amount' => (int) setting('referral_reward_amount'),
             'two_factor_enabled' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at !== null,
             'online_friends' => PublicUserResource::collection($user->getOnlineFriends()->map(fn ($friend) => PublicUserData::from($friend))),
         ]]);
