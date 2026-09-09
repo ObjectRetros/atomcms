@@ -100,7 +100,7 @@ test('forced staff two-factor authentication also protects housekeeping', functi
 
     $this->actingAs($staff)
         ->get('/housekeeping')
-        ->assertRedirect(route('settings.two-factor'));
+        ->assertRedirect(route('filament.housekeeping.pages.two-factor-authentication'));
 });
 
 test('banned staff cannot access housekeeping', function () {
