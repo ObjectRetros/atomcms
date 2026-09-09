@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Home;
 use App\Enums\HomeItemType;
 use App\Http\Controllers\Controller;
 use App\Models\Home\HomeCategory;
-use App\Models\Home\HomeItem;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
+use App\Services\Home\HomeService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -17,21 +17,14 @@ class ShopController extends Controller
     public function categories(): JsonResponse
     {
         return $this->jsonResponse([
-            'categories' => HomeCategory::orderBy('order')->get()->values(),
+            'categories' => app(HomeService::class)->categories()->values(),
         ]);
     }
 
     public function itemsByCategory(HomeCategory $category): JsonResponse
     {
-        $category->load([
-            'homeItems' => fn ($query) => $query
-                ->enabled()
-                ->orderBy('order')
-                ->where('type', HomeItemType::Sticker),
-        ]);
-
         return $this->jsonResponse([
-            'items' => $category->homeItems->values(),
+            'items' => app(HomeService::class)->catalogItems($category, HomeItemType::Sticker)->values(),
         ]);
     }
 
@@ -52,7 +45,7 @@ class ShopController extends Controller
         }
 
         return $this->jsonResponse([
-            'items' => HomeItem::enabled()->where('type', $itemType)->orderBy('order')->get()->values(),
+            'items' => app(HomeService::class)->catalogItems(type: $itemType)->values(),
         ]);
     }
 
@@ -74,7 +67,7 @@ class ShopController extends Controller
     {
         abort_unless($user->id === Auth::id(), 403);
 
-        $allInventoryItems = $user->groupedInventoryItems()->get();
+        $allInventoryItems = app(HomeService::class)->inventory(AuthenticatedUser::current(), $user, true);
 
         $filterByType = fn (HomeItemType $type) => $allInventoryItems
             ->filter(fn (UserHomeItem $item): bool => $item->homeItem?->type === $type)

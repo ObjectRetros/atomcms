@@ -6,7 +6,7 @@ use App\Actions\Community\SubmitStaffApplication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
-use App\Models\Community\Staff\WebsiteStaffApplications;
+use App\Services\Community\CommunityReadService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,14 +16,7 @@ class WebsiteTeamApplicationsController extends Controller
 {
     public function index(Request $request): View
     {
-        $positions = WebsiteOpenPosition::query()
-            ->where('position_kind', 'team')
-            ->whereNotNull('team_id')
-            ->canApply()
-            ->with('team')
-            ->whereHas('team')
-            ->latest()
-            ->get();
+        $positions = app(CommunityReadService::class)->positions('team');
 
         $userAppStatuses = [];
         $user = $request->user();
@@ -31,11 +24,7 @@ class WebsiteTeamApplicationsController extends Controller
         if ($user !== null) {
             $teamIds = $positions->pluck('team_id')->filter()->unique()->all();
 
-            $userAppStatuses = WebsiteStaffApplications::query()
-                ->where('user_id', $user->id)
-                ->whereIn('team_id', $teamIds)
-                ->pluck('status', 'team_id')
-                ->toArray();
+            $userAppStatuses = app(CommunityReadService::class)->teamApplicationStatuses($user, $teamIds);
         }
 
         return view('community.team-applications', [
@@ -48,8 +37,7 @@ class WebsiteTeamApplicationsController extends Controller
     {
         abort_unless($position->position_kind === 'team', 404);
 
-        $position->loadMissing('team');
-        abort_unless($position->team !== null && $position->isAcceptingApplications(), 404);
+        app(CommunityReadService::class)->position($position);
 
         return view('community.team-apply', [
             'position' => $position,
@@ -61,20 +49,8 @@ class WebsiteTeamApplicationsController extends Controller
         WebsiteOpenPosition $position,
         SubmitStaffApplication $applications,
     ): RedirectResponse {
-        $position->loadMissing('team');
-        abort_unless(
-            $position->position_kind === 'team'
-            && $position->team !== null
-            && $position->team_id !== null
-            && $position->isAcceptingApplications(),
-            404,
-        );
-
-        $applications->forTeam(
-            AuthenticatedUser::from($request),
-            $position->team_id,
-            $request->string('content')->toString(),
-        );
+        abort_unless($position->position_kind === 'team', 404);
+        $applications->forPosition(AuthenticatedUser::from($request), $position, $request->string('content')->toString());
 
         return redirect()
             ->route('team-applications.index')

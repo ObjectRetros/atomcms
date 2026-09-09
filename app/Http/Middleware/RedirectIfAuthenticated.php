@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
+use App\Support\FrontendUrls;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +26,7 @@ class RedirectIfAuthenticated
                     return response()->json();
                 }
 
-                return redirect(RouteServiceProvider::HOME);
+                return redirect(app(FrontendUrls::class)->route('me.show'));
             }
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\Home;
 
+use App\Data\PublicUserData;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,7 +47,7 @@ class UserHomeMessage extends Model
     #[Scope]
     protected function defaultUserData(Builder $query): void
     {
-        $query->with('user:id,username,look,online');
+        $query->with('user:' . implode(',', PublicUserData::COLUMNS));
     }
 
     /** @return Attribute<string, never> */

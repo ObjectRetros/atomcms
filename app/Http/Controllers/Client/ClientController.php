@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Services\Client\ClientLaunchService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,17 +18,13 @@ class ClientController extends Controller
     {
         $user = AuthenticatedUser::from($request);
 
-        $user->update([
-            'ip_current' => $request->ip(),
-        ]);
-
         $view = match ($client) {
             'flash' => 'client.flash',
             default => 'client.nitro',
         };
 
         return view($view, [
-            'sso' => $user->ssoTicket(),
+            'sso' => app(ClientLaunchService::class)->ticket($user, $request->ip() ?: 'unknown'),
         ]);
     }
 }

@@ -32,7 +32,7 @@ class ArticlesAggregateChart extends ChartWidget
     protected function getData(): array
     {
         $data = Cache::remember(
-            'housekeeping.dashboard.articles-trend',
+            'housekeeping.dashboard.articles-trend.v2',
             300,
             fn () => Trend::model(WebsiteArticle::class)
                 ->between(
@@ -40,7 +40,9 @@ class ArticlesAggregateChart extends ChartWidget
                     end: now()->endOfMonth(),
                 )
                 ->perDay()
-                ->count(),
+                ->count()
+                ->map(fn (TrendValue $value): array => ['aggregate' => $value->aggregate, 'date' => $value->date])
+                ->all(),
         );
 
         $label = __('filament::resources.stats.articles_chart.label');
@@ -49,10 +51,10 @@ class ArticlesAggregateChart extends ChartWidget
             'datasets' => [
                 [
                     'label' => $label,
-                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'data' => array_column($data, 'aggregate'),
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => array_column($data, 'date'),
         ];
     }
 

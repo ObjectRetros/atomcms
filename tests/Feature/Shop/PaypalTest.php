@@ -37,6 +37,33 @@ function completedPaypalOrder(
     ];
 }
 
+test('headless payment returns carry the owned order for authenticated status reads', function () {
+    installHotel();
+    config(['atom.mode' => 'headless', 'atom.frontend_url' => 'https://frontend.example.com']);
+    $user = User::factory()->create(['website_balance' => 0]);
+    paypalTransaction($user, 'HEADLESS-ORDER');
+    $gateway = Mockery::mock(PaypalGateway::class);
+    $gateway->shouldReceive('captureOrder')->once()->andReturn(completedPaypalOrder('HEADLESS-ORDER'));
+    $this->app->instance(PaypalGateway::class, $gateway);
+
+    $this->actingAs($user)->get('/paypal/successful-transaction?token=HEADLESS-ORDER')
+        ->assertRedirect('https://frontend.example.com/shop?order=HEADLESS-ORDER&payment_status=completed');
+    $this->getJson('/api/v1/shop/paypal/orders/HEADLESS-ORDER')->assertOk()
+        ->assertJsonPath('data.status', WebsitePaypalTransaction::STATUS_COMPLETED);
+    expect((int) $user->fresh()->website_balance)->toBe(1000);
+});
+
+test('headless cancellation never forwards another accounts payment identifier', function () {
+    installHotel();
+    config(['atom.mode' => 'headless', 'atom.frontend_url' => 'https://frontend.example.com']);
+    $owner = User::factory()->create();
+    paypalTransaction($owner, 'OTHER-ORDER');
+    $this->app->instance(PaypalGateway::class, Mockery::mock(PaypalGateway::class));
+    $this->actingAs(User::factory()->create())->get('/paypal/cancelled-transaction?token=OTHER-ORDER')
+        ->assertRedirect('https://frontend.example.com/shop?payment_status=cancelled');
+    expect($owner->transactions()->sole()->status)->toBe(WebsitePaypalTransaction::STATUS_CREATED);
+});
+
 test('processing a top-up stores expected minor units and redirects to PayPal', function () {
     installHotel();
     config(['habbo.paypal.currency' => 'USD']);

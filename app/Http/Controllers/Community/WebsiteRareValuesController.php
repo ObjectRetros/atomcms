@@ -2,22 +2,18 @@
 
 namespace App\Http\Controllers\Community;
 
-use App\Emulator\Contracts\FurnitureRepository;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RareSearchFormRequest;
 use App\Models\Community\RareValue\WebsiteRareValue;
 use App\Models\Community\RareValue\WebsiteRareValueCategory;
-use App\Models\User;
 use App\Services\Community\RareValues\RareValueCategoriesService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class WebsiteRareValuesController extends Controller
 {
     public function __construct(
         private readonly RareValueCategoriesService $valueCategoriesService,
-        private readonly FurnitureRepository $furniture,
     ) {}
 
     public function index(): View
@@ -60,41 +56,7 @@ class WebsiteRareValuesController extends Controller
     {
         return view('value', [
             'value' => $value,
-            'items' => $this->itemsPerUser($value),
+            'items' => $this->valueCategoriesService->itemsPerUser($value),
         ]);
-    }
-
-    /**
-     * Count holdings per user with an aggregate query, then load only those
-     * users (the page previously hydrated every furniture instance and grouped
-     * them in PHP).
-     *
-     * @return array<int, array{user: ?User, item_count: int}>
-     */
-    private function itemsPerUser(WebsiteRareValue $value): array
-    {
-        $resolve = function () use ($value): array {
-            $counts = $this->furniture
-                ->holdings((int) $value->item_id)
-                ->pluck('item_count', 'user_id');
-
-            $users = User::whereKey($counts->keys())->get(['id', 'username', 'look'])->keyBy('id');
-
-            $rows = [];
-            foreach ($counts as $userId => $count) {
-                $rows[] = [
-                    'user' => $users->get($userId),
-                    'item_count' => (int) $count,
-                ];
-            }
-
-            return $rows;
-        };
-
-        if (! (bool) setting('enable_caching')) {
-            return $resolve();
-        }
-
-        return Cache::remember('rareItems_' . $value->id, (int) setting('cache_timer'), $resolve);
     }
 }

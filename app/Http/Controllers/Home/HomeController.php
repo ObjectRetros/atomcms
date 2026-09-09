@@ -8,6 +8,7 @@ use App\Http\Requests\Home\SaveHomeRequest;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
 use App\Services\Home\HomeService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -29,9 +30,7 @@ class HomeController extends Controller
 
     public function getPlacedItems(User $user): JsonResponse
     {
-        $allPlacedItems = $user->placedHomeItems()
-            ->defaultRelationships(true)
-            ->get();
+        $allPlacedItems = $this->homeService->placedItems($user);
 
         $filterByType = fn (HomeItemType $type) => $allPlacedItems
             ->filter(fn (UserHomeItem $item): bool => $item->homeItem?->type === $type)
@@ -52,7 +51,7 @@ class HomeController extends Controller
     public function save(User $user, SaveHomeRequest $request): JsonResponse
     {
         try {
-            $this->homeService->saveItems($user, $request->validated());
+            $this->homeService->saveItems(AuthenticatedUser::from($request), $user, $request->validated());
         } catch (Throwable $exception) {
             report($exception);
 

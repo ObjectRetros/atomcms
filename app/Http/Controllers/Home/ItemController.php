@@ -8,6 +8,7 @@ use App\Http\Requests\Home\BuyHomeItemRequest;
 use App\Models\Home\UserHomeItem;
 use App\Models\User;
 use App\Services\Home\HomeService;
+use App\Support\AuthenticatedUser;
 use Illuminate\Http\JsonResponse;
 use Throwable;
 
@@ -22,7 +23,7 @@ class ItemController extends Controller
         $data = $request->validated();
 
         try {
-            $item = $this->homeService->buyItem($user, $data['item_id'], $data['quantity']);
+            $item = $this->homeService->buyItem(AuthenticatedUser::from($request), $data['item_id'], $data['quantity']);
         } catch (HomePurchaseException $exception) {
             return $this->jsonResponse([
                 'message' => $exception->getMessage(),

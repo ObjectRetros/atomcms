@@ -2,6 +2,7 @@
 
 namespace App\Emulator\Drivers\Arcturus;
 
+use App\Data\PublicUserData;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Emulator\Data\LeaderboardEntry;
 use App\Enums\CurrencyTypes;
@@ -75,7 +76,7 @@ class ArcturusCurrencyRepository implements CurrencyRepository
                 ->whereNotIn('id', $excludeUserIds)
                 ->orderByDesc('credits')
                 ->limit($limit)
-                ->get(['id', 'username', 'look', 'credits'])
+                ->get([...PublicUserData::COLUMNS, 'credits'])
                 ->map(fn (User $user) => new LeaderboardEntry($user, (int) $user->credits));
         }
 
@@ -84,7 +85,7 @@ class ArcturusCurrencyRepository implements CurrencyRepository
             ->whereNotIn('user_id', $excludeUserIds)
             ->orderByDesc('amount')
             ->limit($limit)
-            ->with('user:id,username,look')
+            ->with('user:' . implode(',', PublicUserData::COLUMNS))
             ->get()
             ->map(fn (UserCurrency $row) => $row->user === null ? null : new LeaderboardEntry($row->user, (int) $row->amount))
             ->filter()

@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Articles\WebsiteArticleComment;
 use App\Models\User;
-use App\Rules\WebsiteWordfilterRule;
 use App\Services\Articles\CommentService;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
@@ -28,9 +27,7 @@ class ArticleComments extends Component
         $user = auth()->user();
         abort_unless($user instanceof User, 403);
 
-        $this->validate([
-            'comment' => ['required', 'string', 'min:2', 'max:255', new WebsiteWordfilterRule],
-        ]);
+        $this->validate(CommentService::rules());
 
         $comments->store($user, $this->comment, $this->article);
 
@@ -58,7 +55,7 @@ class ArticleComments extends Component
     public function render(): View
     {
         return view('livewire.article-comments', [
-            'article' => $this->article->load(['comments.user']),
+            'article' => $this->article->setRelation('comments', app(CommentService::class)->forArticle($this->article, false)),
         ]);
     }
 }

@@ -34,7 +34,7 @@ class AdminFilamentPanelProvider extends PanelProvider
             ->strictAuthorization()
             ->login(Login::class)
             ->multiFactorAuthentication(app(FortifyTwoFactorAuthentication::class))
-            ->viteTheme('resources/css/filament/housekeeping/theme.css')
+            ->viteTheme('resources/css/filament/housekeeping/theme.css', 'build-housekeeping')
             ->colors([
                 'primary' => Color::Amber,
             ])
