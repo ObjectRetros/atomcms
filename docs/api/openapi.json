@@ -4623,6 +4623,12 @@
                   },
                   "can_access_housekeeping": {
                     "type": "boolean"
+                  },
+                  "can_show_housekeeping_link": {
+                    "type": "boolean"
+                  },
+                  "can_generate_logo": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
@@ -4630,7 +4636,9 @@
                   "username",
                   "two_factor_enabled",
                   "requires_two_factor",
-                  "can_access_housekeeping"
+                  "can_access_housekeeping",
+                  "can_show_housekeeping_link",
+                  "can_generate_logo"
                 ],
                 "additionalProperties": false
               },
@@ -4848,6 +4856,12 @@
                 "type": "null"
               }
             ]
+          },
+          "discord_widget_id": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -4871,7 +4885,8 @@
           "currency",
           "latest_photos",
           "discord_url",
-          "tinymce_api_key"
+          "tinymce_api_key",
+          "discord_widget_id"
         ],
         "additionalProperties": false
       },
@@ -5531,6 +5546,13 @@
                 "type": "null"
               }
             ]
+          },
+          "application_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The authenticated user’s team application status, or null when no application exists."
           }
         },
         "required": [
@@ -5541,7 +5563,8 @@
           "apply_from",
           "apply_to",
           "badge",
-          "color"
+          "color",
+          "application_status"
         ],
         "additionalProperties": false
       },

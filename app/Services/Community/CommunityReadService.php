@@ -7,6 +7,8 @@ use App\Emulator\Contracts\PlayerStatsRepository;
 use App\Emulator\Data\Stat;
 use App\Enums\CurrencyTypes;
 use App\Models\Community\Staff\WebsiteOpenPosition;
+use App\Models\Community\Staff\WebsiteStaffApplications;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 class CommunityReadService
@@ -35,6 +37,20 @@ class CommunityReadService
         $column = $kind === 'team' ? 'team_id' : 'permission_id';
 
         return WebsiteOpenPosition::query()->where('position_kind', $kind)->whereNotNull($column)->canApply()->with($relation)->whereHas($relation)->latest()->get();
+    }
+
+    /**
+     * @param  array<int, int>  $teamIds
+     *
+     * @return array<int, string>
+     */
+    public function teamApplicationStatuses(User $actor, array $teamIds): array
+    {
+        return WebsiteStaffApplications::query()
+            ->where('user_id', $actor->id)
+            ->whereIn('team_id', $teamIds)
+            ->pluck('status', 'team_id')
+            ->all();
     }
 
     public function position(WebsiteOpenPosition $position): WebsiteOpenPosition

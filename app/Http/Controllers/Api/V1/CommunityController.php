@@ -62,7 +62,7 @@ class CommunityController extends Controller
 
     public function photos(CameraService $camera): AnonymousResourceCollection
     {
-        return JsonResource::collection($camera->fetchPhotos(true)->through(fn ($photo): array => ['id' => $photo->id, 'url' => $photo->url, 'created_at' => $photo->timestamp->toIso8601String(), 'author' => $photo->user ? new PublicUserResource(PublicUserData::from($photo->user)) : null]));
+        return JsonResource::collection($camera->fetchPhotos(true)->through(fn ($photo): array => ['id' => $photo->id, 'url' => url($photo->url), 'created_at' => $photo->timestamp->toIso8601String(), 'author' => $photo->user ? new PublicUserResource(PublicUserData::from($photo->user)) : null]));
     }
 
     public function applications(Request $request, CommunityReadService $community): JsonResponse
@@ -70,12 +70,17 @@ class CommunityController extends Controller
         $data = $request->validate(['kind' => ['sometimes', 'in:rank,team']]);
         $positions = isset($data['kind']) ? $community->positions($data['kind']) : $community->positions('rank')->concat($community->positions('team'));
 
-        return response()->json(['data' => $positions->map(fn ($position): array => $this->positionData($position))->values()]);
+        $statuses = $community->teamApplicationStatuses(AuthenticatedUser::from($request), $positions->pluck('team_id')->filter()->unique()->all());
+
+        return response()->json(['data' => $positions->map(fn ($position): array => $this->positionData($position, $statuses))->values()]);
     }
 
-    public function position(WebsiteOpenPosition $position, CommunityReadService $community): JsonResponse
+    public function position(WebsiteOpenPosition $position, Request $request, CommunityReadService $community): JsonResponse
     {
-        return response()->json(['data' => $this->positionData($community->position($position))]);
+        $position = $community->position($position);
+        $statuses = $community->teamApplicationStatuses(AuthenticatedUser::from($request), $position->team_id !== null ? [$position->team_id] : []);
+
+        return response()->json(['data' => $this->positionData($position, $statuses)]);
     }
 
     public function apply(WebsiteOpenPosition $position, StaffApplicationFormRequest $request, CommunityReadService $community, SubmitStaffApplication $applications): Response
@@ -85,11 +90,16 @@ class CommunityController extends Controller
         return response()->noContent(201);
     }
 
-    /** @return array<string, mixed> */
-    private function positionData(WebsiteOpenPosition $position): array
+    /**
+     * @param  array<int, string>  $statuses
+     *
+     * @return array<string, mixed>
+     */
+    private function positionData(WebsiteOpenPosition $position, array $statuses = []): array
     {
         $role = $position->position_kind === 'team' ? $position->team : $position->permission;
+        $applicationStatus = $position->position_kind === 'team' && $position->team_id !== null ? ($statuses[$position->team_id] ?? null) : null;
 
-        return ['id' => $position->id, 'kind' => $position->position_kind, 'name' => $role?->rank_name, 'badge' => $role?->badge, 'color' => $role?->staff_color, 'description' => $position->description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
+        return ['id' => $position->id, 'application_status' => $applicationStatus, 'kind' => $position->position_kind, 'name' => $role?->rank_name, 'badge' => $role?->badge, 'color' => $role?->staff_color, 'description' => $position->description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
     }
 }

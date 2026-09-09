@@ -6,7 +6,6 @@ use App\Actions\Community\SubmitStaffApplication;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StaffApplicationFormRequest;
 use App\Models\Community\Staff\WebsiteOpenPosition;
-use App\Models\Community\Staff\WebsiteStaffApplications;
 use App\Services\Community\CommunityReadService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Http\RedirectResponse;
@@ -25,11 +24,7 @@ class WebsiteTeamApplicationsController extends Controller
         if ($user !== null) {
             $teamIds = $positions->pluck('team_id')->filter()->unique()->all();
 
-            $userAppStatuses = WebsiteStaffApplications::query()
-                ->where('user_id', $user->id)
-                ->whereIn('team_id', $teamIds)
-                ->pluck('status', 'team_id')
-                ->toArray();
+            $userAppStatuses = app(CommunityReadService::class)->teamApplicationStatuses($user, $teamIds);
         }
 
         return view('community.team-applications', [

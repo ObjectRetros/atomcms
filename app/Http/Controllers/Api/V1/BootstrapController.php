@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\Community\CameraService;
 use App\Services\HousekeepingPermissionsService;
 use App\Services\InstallationService;
+use App\Services\PermissionsService;
 use App\Services\User\UserApiService;
 use App\Support\StorefrontMoney;
 use Illuminate\Http\JsonResponse;
@@ -49,10 +50,13 @@ class BootstrapController extends Controller
             'two_factor_enabled' => $actor->hasEnabledTwoFactorAuthentication(),
             'requires_two_factor' => (bool) setting('force_staff_2fa') && $actor->rank >= (int) setting('min_staff_rank') && ! $actor->hasEnabledTwoFactorAuthentication(),
             'can_access_housekeeping' => app(HousekeepingPermissionsService::class)->allows($actor, 'can_access_housekeeping'),
+            'can_show_housekeeping_link' => app(PermissionsService::class)->allows($actor, 'housekeeping_access'),
+            'can_generate_logo' => app(PermissionsService::class)->allows($actor, 'generate_logo'),
         ] : null;
 
         return response()->json(['data' => [
             'discord_url' => setting('discord_invitation_link'),
+            'discord_widget_id' => setting('discord_widget_id'),
             'tinymce_api_key' => setting('tinymce_api_key'),
             'viewer' => $viewer, 'housekeeping_url' => url('housekeeping'),
             'captcha' => ['recaptcha_enabled' => (bool) setting('google_recaptcha_enabled'), 'recaptcha_site_key' => config('habbo.site.recaptcha_site_key'), 'turnstile_enabled' => (bool) setting('cloudflare_turnstile_enabled'), 'turnstile_site_key' => config('turnstile.turnstile_site_key')],

@@ -29,9 +29,25 @@ test('bootstrap exposes configured public data and safe session identity', funct
     setSetting('min_staff_rank', '4');
     setSetting('rcon_ip', 'private-secret');
     setSetting('tinymce_api_key', 'public-editor-key');
-    $this->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer', null)->assertJsonPath('data.installed', true)->assertJsonPath('data.tinymce_api_key', 'public-editor-key')->assertDontSee('private-secret');
+    setSetting('discord_widget_id', '123456789012345678');
+    $this->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer', null)->assertJsonPath('data.installed', true)->assertJsonPath('data.tinymce_api_key', 'public-editor-key')->assertJsonPath('data.discord_widget_id', '123456789012345678')->assertDontSee('private-secret');
     $this->actingAs($this->member)->getJson('/api/v1/bootstrap')->assertOk()->assertJsonPath('data.viewer.username', $this->member->username)->assertJsonMissingPath('data.viewer.mail');
 });
+
+test('bootstrap navigation flags use the original website permissions even during staff enrollment', function (int $rank, bool $expected) {
+    WebsitePermission::query()->updateOrCreate(['permission' => 'housekeeping_access'], ['min_rank' => 4]);
+    WebsitePermission::query()->updateOrCreate(['permission' => 'generate_logo'], ['min_rank' => 4]);
+    grantHousekeepingPermission('can_access_housekeeping', 1);
+    setSetting('force_staff_2fa', '1');
+    setSetting('min_staff_rank', '4');
+    $this->member = User::factory()->create(['rank' => $rank]);
+
+    $this->actingAs($this->member)->getJson('/api/v1/bootstrap')->assertOk()
+        ->assertJsonPath('data.viewer.can_show_housekeeping_link', $expected)
+        ->assertJsonPath('data.viewer.can_generate_logo', $expected)
+        ->assertJsonPath('data.viewer.can_access_housekeeping', true)
+        ->assertJsonPath('data.viewer.requires_two_factor', $expected);
+})->with([[3, false], [4, true]]);
 
 test('maintenance status exposes sanitized public content with five tasks per page', function () {
     setSetting('maintenance_enabled', '1');
@@ -335,3 +351,17 @@ test('guestbook repeat requests return the typed API rate limit without another 
         ->assertJsonPath('message', __('You are sending messages too fast.'));
     expect($owner->receivedHomeMessages()->count())->toBe(1);
 });
+
+test('gallery photos normalize relative media URLs and retain absolute URLs', function (string $storedUrl) {
+    $id = DB::table('camera_web')->insertGetId([
+        'user_id' => $this->member->id,
+        'room_id' => 0,
+        'timestamp' => now()->timestamp,
+        'url' => $storedUrl,
+        'visible' => true,
+    ]);
+
+    $this->actingAs($this->member)->getJson('/api/v1/photos')->assertOk()
+        ->assertJsonPath('data.0.id', $id)
+        ->assertJsonPath('data.0.url', url($storedUrl));
+})->with(['/camera/photo.png', 'https://camera.example.test/photo.png']);

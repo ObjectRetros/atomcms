@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Community\SubmitStaffApplication;
 use App\Models\Community\Staff\WebsiteOpenPosition;
 use App\Models\Community\Staff\WebsiteStaffApplications;
 use App\Models\Community\Teams\WebsiteTeam;
@@ -177,3 +178,21 @@ test('deleting a rank position cascades its applications', function () {
     expect(WebsiteStaffApplications::where('rank_id', $position->permission_id)->exists())->toBeFalse()
         ->and(WebsiteOpenPosition::query()->count())->toBe(0);
 });
+
+test('team application API shows only the requesting users status', function (string $status) {
+    $position = openTeamPosition();
+    $application = app(SubmitStaffApplication::class)->forPosition($this->user, $position, 'I would like to help run events.');
+    $application->update(['status' => $status]);
+
+    $this->actingAs($this->user)->getJson('/api/v1/applications/' . $position->id)->assertOk()
+        ->assertJsonPath('data.application_status', $status);
+    $this->getJson('/api/v1/applications?kind=team')->assertOk()
+        ->assertJsonPath('data.0.application_status', $status);
+
+    $this->app['auth']->forgetGuards();
+    $other = User::factory()->create();
+    $this->actingAs($other)->getJson('/api/v1/applications/' . $position->id)->assertOk()
+        ->assertJsonPath('data.application_status', null);
+    $this->getJson('/api/v1/applications?kind=team')->assertOk()
+        ->assertJsonPath('data.0.application_status', null);
+})->with(['pending', 'approved', 'rejected']);

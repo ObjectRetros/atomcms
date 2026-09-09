@@ -1216,6 +1216,8 @@ export interface components {
                 two_factor_enabled: boolean;
                 requires_two_factor: boolean;
                 can_access_housekeeping: boolean;
+                can_show_housekeeping_link: boolean;
+                can_generate_logo: boolean;
             } | null;
             housekeeping_url: string;
             captcha: {
@@ -1258,6 +1260,7 @@ export interface components {
             }[];
             discord_url: string | null;
             tinymce_api_key: string | null;
+            discord_widget_id: string | null;
         };
         Me: {
             id: number;
@@ -1369,6 +1372,8 @@ export interface components {
             apply_to: string | null;
             badge: string | null;
             color: string | null;
+            /** @description The authenticated user’s team application status, or null when no application exists. */
+            application_status: string | null;
         };
         ShopPackage: {
             id: number;

@@ -2,6 +2,10 @@
 
 Atom runs one application in either `full` (the default, with the Atom or Dusk PHP theme) or `headless` mode. `/api/v1` is available in both. Headless mode removes public HTML routes while retaining session authentication, housekeeping, Livewire, uploads, payment callbacks, queues, and scheduled work. The independent [Atom Nuxt frontend](https://github.com/DennisObject/atom-nuxt) uses HTTP and public assets; its source and build do not require PHP or database access.
 
+The bootstrap response exposes the public `discord_widget_id` setting so Atom clients can render the original Discord member widget using Discord’s public guild widget endpoint. Enable the server widget in Discord; when it is unavailable, the client can retain the configured invitation link.
+
+Gallery photos expose absolute media URLs. Team application positions include the authenticated user’s `application_status` so independent frontends can display pending, approved, and rejected states without exposing another applicant’s status.
+
 The [OpenAPI contract](api/openapi.json) describes the implemented requests and responses. [Generated TypeScript definitions](api/schema.d.ts) are published by the backend. When updating the frontend to a new API version, copy these definitions into `atom-nuxt/app/types/api-schema.d.ts` and run its build. The [design specification](headless-mode-spec.md) retains the acceptance criteria; deployment readiness still requires checking your configured emulator, mail, game client, and payments.
 
 ## Prerequisites
@@ -168,6 +172,9 @@ Success responses normally use `{ "data": ... }`; paginated resources additional
 | 503 integration failure | Report unavailability; retain the idempotency key for an authorized retry. |
 
 Read `/api/v1/bootstrap` for safe hotel branding, locale choices, viewer flags, CAPTCHA site keys, advertised operations, and emulator capability flags. Ada supports rare values but does not advertise camera photos; unsupported camera requests are rejected. Always use the advertised capability flags for the configured driver. Home widgets return typed content; `my-groups` explicitly returns `supported: false` and null content because there is no existing group widget implementation.
+
+Navigation uses the viewer’s authentication state and advertised emulator features. Bootstrap’s `viewer.can_generate_logo` and `viewer.can_show_housekeeping_link` apply the original website permissions (`generate_logo` and `housekeeping_access`), including while staff enroll in two-factor authentication. `can_access_housekeeping` separately describes permission to enter the admin panel; it is not the legacy theme’s link-visibility check.
+
 
 During maintenance, `/api/v1/status?page=1` includes the sanitized message and five public tasks per page, with `tasks.has_more` for navigation. `/api/v1/ban` remains available during access restrictions and returns only the current address ban or signed-in account ban, or null; a null `ban_expire` means permanent. Guests can read their current address ban, and the endpoint accepts no account or address selectors.
 
