@@ -1,8 +1,8 @@
 # Headless mode
 
-Atom runs one application in either `full` (the default, with the Atom or Dusk PHP theme) or `headless` mode. `/api/v1` is available in both. Headless mode removes public HTML routes while retaining session authentication, housekeeping, Livewire, uploads, payment callbacks, queues, and scheduled work. The independent [Vue Dusk example](../examples/dusk-vue) uses HTTP and public assets; its source and build do not require PHP or database access.
+Atom runs one application in either `full` (the default, with the Atom or Dusk PHP theme) or `headless` mode. `/api/v1` is available in both. Headless mode removes public HTML routes while retaining session authentication, housekeeping, Livewire, uploads, payment callbacks, queues, and scheduled work. The independent [Atom Vue frontend](https://github.com/DennisObject/atom-vue) uses HTTP and public assets; its source and build do not require PHP or database access.
 
-The [OpenAPI contract](api/openapi.json) describes the implemented requests and responses. [Generated TypeScript definitions](api/schema.d.ts) are also copied into the Vue example so it can be built separately. The [design specification](headless-mode-spec.md) retains the acceptance criteria; deployment readiness still requires checking your configured emulator, mail, game client, and payments.
+The [OpenAPI contract](api/openapi.json) describes the implemented requests and responses. [Generated TypeScript definitions](api/schema.d.ts) are published by the backend. When updating the frontend to a new API version, copy these definitions into `atom-vue/src/api-schema.d.ts` and run its build. The [design specification](headless-mode-spec.md) retains the acceptance criteria; deployment readiness still requires checking your configured emulator, mail, game client, and payments.
 
 ## Prerequisites
 
@@ -123,7 +123,7 @@ Serve GET public page URLs through the Vue history fallback to `index.html`, inc
 For Nginx terminating TLS directly, the core routing can look like this inside the HTTPS server block (adapt paths and upstream to your deployment):
 
 ```nginx
-root /srv/dusk-vue/dist;
+root /srv/atom-vue/dist;
 index index.html;
 proxy_set_header Host $http_host;
 proxy_set_header X-Forwarded-Host $http_host;
@@ -188,7 +188,7 @@ Follow the returned PayPal `approval_url`; callbacks return to Atom for processi
 
 ## Build, workers, and verification
 
-Build the independent client with its own `npm ci` and `npm run build`, then serve its `dist/` with history fallback. Preserve `storage/app/public` and the `public/storage` link across deployments. Media URLs and game-client configuration must be reachable by the browser. Keep queue workers and the existing scheduler running: queued password-reset mail and payment reconciliation do not depend on public theme rendering. Use the normal process supervisor for `php artisan queue:work`, schedule `php artisan schedule:run` every minute, and restart workers when configuration/code changes. Configure real mail/PayPal/RCON secrets through deployment secrets.
+In the separate `atom-vue` checkout, build the client with its own `npm ci` and `npm run build`, then serve its `dist/` with history fallback. Preserve `storage/app/public` and the `public/storage` link across deployments. Media URLs and game-client configuration must be reachable by the browser. Keep queue workers and the existing scheduler running: queued password-reset mail and payment reconciliation do not depend on public theme rendering. Use the normal process supervisor for `php artisan queue:work`, schedule `php artisan schedule:run` every minute, and restart workers when configuration/code changes. Configure real mail/PayPal/RCON secrets through deployment secrets.
 
 Maintainers update `docs/api/openapi.json` with behavior changes, then run:
 
@@ -198,6 +198,6 @@ npm run api:check
 npm run api:test
 ```
 
-The check compares both generated files byte-for-byte, compiles schemas with AJV, and checks every registered v1 operation plus each documented auth operation against Laravel's route table. Pest contract checks feed actual application responses to that validator. The Vue client imports its generated copy; it can be copied to a separate repository without a backend-source dependency. Vue, React, Angular, and Svelte consumers can all use the same generated `paths`/`components` types and credential/CSRF sequence.
+The check compares `docs/api/schema.d.ts` with the generated definitions byte-for-byte, compiles schemas with AJV, and checks every registered v1 operation plus each documented auth operation against Laravel's route table. Pest contract checks feed actual application responses to that validator. The Vue client keeps its own snapshot of the generated definitions and builds in its own repository; backend tooling does not write to the frontend checkout. Vue, React, Angular, and Svelte consumers can all use the same generated `paths`/`components` types and credential/CSRF sequence.
 
 Before serving users, verify a real browser journey: initialize CSRF, register/login, complete pending 2FA, change account data, browse articles, logout and see private state clear. Verify required staff enrollment and housekeeping login challenge, reset mail, bans/maintenance/support exceptions, uploads, payment return/reconciliation, and the configured game launch. Check conversion/reversal and retained theme rendering on disposable Arcturus/Ada installs. Builds, route coverage, schema tests, and a demo without real integration credentials do not establish live payment delivery or emulator game entry.

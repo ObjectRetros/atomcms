@@ -103,9 +103,6 @@ jobs:
       - name: Test API schema validation
         run: npm run api:test
 
-      - name: Build independent Vue Dusk client
-        run: npm --prefix examples/dusk-vue ci --ignore-scripts && npm --prefix examples/dusk-vue run build
-
       - name: Build Atom theme
         run: npm run build:atom
 
