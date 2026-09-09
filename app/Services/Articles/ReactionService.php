@@ -7,6 +7,8 @@ use App\Models\Articles\WebsiteArticleReaction;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class ReactionService
 {
@@ -24,6 +26,13 @@ class ReactionService
             'added' => (bool) $record->active,
             'username' => $user->username,
         ];
+    }
+
+    public function setReaction(WebsiteArticle $article, User $user, string $reaction, bool $active): void
+    {
+        Validator::make(['reaction' => $reaction], ['reaction' => ['required', Rule::in(config('habbo.reactions'))]])->validate();
+        $this->rateLimiter->hit($user, 'reactions', 30);
+        WebsiteArticleReaction::query()->upsert([['article_id' => $article->id, 'user_id' => $user->id, 'reaction' => $reaction, 'active' => $active]], ['article_id', 'user_id', 'reaction'], ['active']);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaypalGateway;
+use App\Data\PaypalOrderData;
 use App\Enums\PaypalTransactionStatus;
 use App\Exceptions\PaypalPaymentException;
 use App\Models\User;
@@ -15,10 +16,15 @@ final readonly class PaypalOrderCreator
 
     public function create(User $user, int $majorAmount): string
     {
+        return $this->createWithReceipt($user, $majorAmount)->approvalUrl;
+    }
+
+    public function createWithReceipt(User $user, int $majorAmount, ?string $idempotencyKey = null): PaypalOrderData
+    {
         $money = StorefrontMoney::fromMajor($majorAmount);
 
         try {
-            $response = $this->gateway->createOrder($this->orderData((string) $money->getAmount()));
+            $response = ($idempotencyKey === null ? $this->gateway->createOrder($this->orderData((string) $money->getAmount())) : $this->gateway->createOrder($this->orderData((string) $money->getAmount(), $idempotencyKey), $idempotencyKey));
         } catch (Throwable $exception) {
             throw PaypalPaymentException::gatewayFailure($exception);
         }
@@ -30,20 +36,19 @@ final readonly class PaypalOrderCreator
             throw PaypalPaymentException::invalidResponse();
         }
 
-        $user->transactions()->create([
-            'transaction_id' => $orderId,
+        $user->transactions()->firstOrCreate(['transaction_id' => $orderId], [
             'status' => PaypalTransactionStatus::Created,
             'amount' => StorefrontMoney::minorAmount($money),
             'currency' => $money->getCurrency()->getCurrencyCode(),
         ]);
 
-        return $approvalUrl;
+        return new PaypalOrderData($orderId, $approvalUrl, StorefrontMoney::minorAmount($money), $money->getCurrency()->getCurrencyCode());
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function orderData(string $amount): array
+    private function orderData(string $amount, ?string $reference = null): array
     {
         return [
             'intent' => 'CAPTURE',
@@ -56,6 +61,7 @@ final readonly class PaypalOrderCreator
                 'user_action' => 'PAY_NOW',
             ],
             'purchase_units' => [[
+                ...($reference === null ? [] : ['custom_id' => $reference]),
                 'amount' => [
                     'currency_code' => StorefrontMoney::currencyCode(),
                     'value' => $amount,

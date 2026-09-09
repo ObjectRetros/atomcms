@@ -2,12 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Responses\AccessResponse;
 use App\Models\Miscellaneous\WebsiteIpBlacklist;
 use App\Models\Miscellaneous\WebsiteIpWhitelist;
+use App\Models\User;
 use App\Services\IpLookupService;
+use App\Services\PermissionsService;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +25,7 @@ class VPNCheckerMiddleware
         }
 
         if (WebsiteIpBlacklist::where('ip_address', $request->ip())->exists()) {
-            return $this->restrict();
+            return $this->restrict($request);
         }
 
         return $this->checkReputation($request, $next);
@@ -33,7 +35,7 @@ class VPNCheckerMiddleware
     {
         return setting('vpn_block_enabled') === '0'
             || setting('ipdata_api_key') === 'ADD-API-KEY-HERE'
-            || hasPermission('bypass_vpn')
+            || ($request->user() instanceof User && app(PermissionsService::class)->allows($request->user(), 'bypass_vpn'))
             || WebsiteIpWhitelist::where('ip_address', $request->ip())->exists();
     }
 
@@ -54,13 +56,13 @@ class VPNCheckerMiddleware
         }
 
         if ($this->asnListed($asn, WebsiteIpBlacklist::class, 'blacklist_asn')) {
-            return $this->restrict();
+            return $this->restrict($request);
         }
 
         if ($reputation['threat']) {
             WebsiteIpBlacklist::firstOrCreate(['ip_address' => $ip], ['asn' => null]);
 
-            return $this->restrict();
+            return $this->restrict($request);
         }
 
         return $next($request);
@@ -136,10 +138,8 @@ class VPNCheckerMiddleware
         return in_array(true, array_values($filtered), true);
     }
 
-    private function restrict(): RedirectResponse
+    private function restrict(Request $request): Response
     {
-        return to_route('me.show')->withErrors([
-            'message' => __('Your IP has been restricted - If you think this is a mistake, you can contact us on our Discord.'),
-        ]);
+        return AccessResponse::make($request, 'ip_restricted', 'Your IP has been restricted - If you think this is a mistake, you can contact us on our Discord.', 403, 'me.show', true);
     }
 }

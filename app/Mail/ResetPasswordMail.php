@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Support\FrontendUrls;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -25,8 +26,7 @@ class ResetPasswordMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'email.forgetPassword',
             with: [
-                'resetUrl' => rtrim((string) config('app.url'), '/')
-                    . route('reset.password.get', $this->token, absolute: false),
+                'resetUrl' => app(FrontendUrls::class)->route('reset.password.get', ['token' => $this->token]),
             ],
         );
     }

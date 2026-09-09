@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\PaypalGateway;
 use App\Database\CollisionAwareMariaDbConnection;
 use App\Database\CollisionAwareMySqlConnection;
+use App\Exceptions\PaypalPaymentException;
 use App\Http\Middleware\BannedMiddleware;
 use App\Http\Middleware\ForceStaffTwoFactorMiddleware;
 use App\Http\Middleware\MaintenanceMiddleware;
@@ -63,7 +64,11 @@ class AppServiceProvider extends ServiceProvider
         // resolving the client never performs OAuth HTTP inside the container.
         // Scoped so a webhook that verifies and captures reuses one token.
         $this->app->scoped(PayPalClient::class, function (): PayPalClient {
-            $client = new PayPalClient(config('habbo.paypal'));
+            try {
+                $client = new PayPalClient(config('habbo.paypal'));
+            } catch (\Throwable $exception) {
+                throw PaypalPaymentException::gatewayFailure($exception);
+            }
             $client->setClient(new HttpClient([
                 'connect_timeout' => 3,
                 'timeout' => 10,

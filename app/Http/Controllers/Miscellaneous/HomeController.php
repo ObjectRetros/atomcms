@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Miscellaneous;
 
 use App\Http\Controllers\Controller;
-use App\Models\Articles\WebsiteArticle;
-use App\Models\Miscellaneous\CameraWeb;
+use App\Services\Articles\ArticleService;
+use App\Services\Community\CameraService;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -12,16 +12,8 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         return view('index', [
-            'articles' => WebsiteArticle::latest('id')
-                ->take(4)
-                ->has('user')
-                ->with('user:id,username,look')
-                ->get(),
-            'photos' => CameraWeb::latest('id')
-                ->take(4)
-                ->where('visible', true)
-                ->with('user:id,username,look')
-                ->get(),
+            'articles' => app(ArticleService::class)->latestWithAuthor(4),
+            'photos' => app(CameraService::class)->latestPhotos(),
         ]);
     }
 }

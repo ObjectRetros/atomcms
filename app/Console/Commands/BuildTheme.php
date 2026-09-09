@@ -9,7 +9,7 @@ use Symfony\Component\Process\Process;
 
 class BuildTheme extends Command
 {
-    protected $signature = 'build:theme';
+    protected $signature = 'build:theme {theme? : Theme name, or housekeeping for standalone admin assets}';
 
     protected $description = 'Build a selected theme assets';
 
@@ -23,7 +23,7 @@ class BuildTheme extends Command
             return Command::FAILURE;
         }
 
-        $selection = $this->choice(
+        $selection = $this->argument('theme') ?? $this->choice(
             'Which theme would you like to build?',
             $themes->toArray(),
             0,
@@ -31,6 +31,12 @@ class BuildTheme extends Command
 
         if (! is_string($selection)) {
             $this->error('The selected theme is invalid.');
+
+            return Command::FAILURE;
+        }
+
+        if (! $themes->contains($selection)) {
+            $this->error('Unknown theme. Available: ' . $themes->implode(', '));
 
             return Command::FAILURE;
         }
@@ -51,6 +57,7 @@ class BuildTheme extends Command
 
         return collect(File::directories($themesPath))
             ->map(fn ($path) => basename($path))
+            ->push('housekeeping')
             ->sort();
     }
 

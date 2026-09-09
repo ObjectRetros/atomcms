@@ -3,10 +3,14 @@
     "type": "module",
     "scripts": {
         "dev:atom": "vite --config resources/themes/atom/vite.config.js",
-        "build:atom": "vite build --config resources/themes/atom/vite.config.js",
+        "build:atom": "vite build --config resources/themes/atom/vite.config.js && npm run build:housekeeping",
         "dev:dusk": "vite --config resources/themes/dusk/vite.config.js",
-        "build:dusk": "vite build --config resources/themes/dusk/vite.config.js",
-        "format": "prettier \"resources/**/*.{js,ts,vue,blade}\" --write"
+        "build:dusk": "vite build --config resources/themes/dusk/vite.config.js && npm run build:housekeeping",
+        "format": "prettier \"resources/**/*.{js,ts,vue,blade}\" --write",
+        "build:housekeeping": "vite build --config resources/css/filament/housekeeping/vite.config.js",
+        "api:generate": "node scripts/api/generate.mjs",
+        "api:check": "node scripts/api/generate.mjs --check && node scripts/api/check.mjs",
+        "api:test": "node --test scripts/api/contract.test.mjs"
     },
     "devDependencies": {
         "@prettier/plugin-php": "^0.19.3",
@@ -14,9 +18,12 @@
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/postcss": "^4.0.0",
         "@tailwindcss/typography": "^0.5.19",
+        "ajv": "8.20.0",
+        "ajv-formats": "3.0.1",
         "autoprefixer": "^10.4.20",
         "axios": "^1.6.2",
         "laravel-vite-plugin": "^1.3.0",
+        "openapi-typescript": "7.10.1",
         "postcss": "^8.4.49",
         "tailwindcss": "^4.0.0",
         "turbolinks": "^5.2.0",

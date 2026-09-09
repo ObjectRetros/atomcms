@@ -20,9 +20,14 @@ final class SrmklivePaypalGateway implements PaypalGateway
      *
      * @return array<string, mixed>
      */
-    public function createOrder(array $data): array
+    public function createOrder(array $data, ?string $idempotencyKey = null): array
     {
-        return $this->arrayResponse($this->client()->createOrder($data));
+        $client = $this->client();
+        if ($idempotencyKey !== null) {
+            $client->setRequestHeader('PayPal-Request-Id', $idempotencyKey);
+        }
+
+        return $this->arrayResponse($client->createOrder($data));
     }
 
     /**

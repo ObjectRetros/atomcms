@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Miscellaneous\WebsiteInstallation;
 use App\Models\Miscellaneous\WebsiteSetting;
 use App\Rules\ValidateInstallationKeyRule;
-use App\Services\InstallationService;
+use App\Services\InstallationSetup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,19 +88,7 @@ class InstallationController extends Controller
 
     public function completeInstallation(): RedirectResponse
     {
-        // Clear all caches before marking as complete
-        Cache::forget('website_permissions');
-        Cache::forget('website_settings');
-
-        // Concurrent first-ever requests can each have created an installation
-        // row; the wizard progressed on the oldest while completion previously
-        // marked only the newest, leaving the row every check reads incomplete
-        // forever. Mark them all so every reader agrees.
-        WebsiteInstallation::query()->update([
-            'completed' => true,
-        ]);
-
-        InstallationService::setComplete();
+        app(InstallationSetup::class)->complete();
 
         return to_route('welcome');
     }
@@ -114,7 +102,14 @@ class InstallationController extends Controller
     {
         $allowedKeys = $this->getSettingsForStep($step)->pluck('key');
 
+        $shared = app(InstallationSetup::class);
+        $essential = array_intersect_key($request->only($allowedKeys->all()), $shared->rules());
+        $shared->configure($essential);
+
         foreach ($request->except('_token') as $key => $value) {
+            if (array_key_exists($key, $shared->rules())) {
+                continue;
+            }
             if (! $allowedKeys->contains($key) || (! is_string($value) && $value !== null)) {
                 continue;
             }

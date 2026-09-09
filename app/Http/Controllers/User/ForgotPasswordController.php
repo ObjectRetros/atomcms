@@ -8,6 +8,8 @@ use App\Http\Requests\ResetPasswordRequest;
 use App\Mail\ResetPasswordMail;
 use App\Models\PasswordResetToken;
 use App\Models\User;
+use App\Support\FrontendUrls;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -20,7 +22,7 @@ class ForgotPasswordController extends Controller
         return view('auth.passwords.forget');
     }
 
-    public function submitForgetPassword(ForgotPasswordRequest $request): RedirectResponse
+    public function submitForgetPassword(ForgotPasswordRequest $request): RedirectResponse|JsonResponse
     {
         // Do not reveal whether the email exists, to prevent account enumeration.
         if (User::where('mail', $request->mail)->exists()) {
@@ -35,6 +37,10 @@ class ForgotPasswordController extends Controller
             Mail::to($request->mail)->queue(new ResetPasswordMail($token));
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => __('We have e-mailed your password reset link!')]);
+        }
+
         return back()->with('success', __('We have e-mailed your password reset link!'));
     }
 
@@ -47,12 +53,16 @@ class ForgotPasswordController extends Controller
         return view('auth.passwords.reset', ['token' => $token]);
     }
 
-    public function submitResetPassword(ResetPasswordRequest $request, string $token): RedirectResponse
+    public function submitResetPassword(ResetPasswordRequest $request, string $token): RedirectResponse|JsonResponse
     {
         $prt = $this->validToken($token);
 
         if ($prt === null || $prt->user === null) {
             $prt?->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json(['code' => 'invalid_reset_token', 'message' => __('This token has expired!')], 422);
+            }
 
             return $this->expired();
         }
@@ -60,7 +70,11 @@ class ForgotPasswordController extends Controller
         $prt->user->changePassword($request->password);
         $prt->delete();
 
-        return to_route('login')->with('success', __('Your password has been successfully reset!'));
+        if ($request->expectsJson()) {
+            return response()->json(['message' => __('Your password has been successfully reset!')]);
+        }
+
+        return redirect(app(FrontendUrls::class)->route('login'))->with('success', __('Your password has been successfully reset!'));
     }
 
     private function validToken(string $token): ?PasswordResetToken

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WebsiteTicketFormRequest;
-use App\Models\Help\WebsiteHelpCenterCategory;
 use App\Models\Help\WebsiteHelpCenterTicket;
+use App\Services\Help\TicketService;
 use App\Support\AuthenticatedUser;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -19,21 +19,21 @@ class TicketController extends Controller
         $this->authorize('viewAny', WebsiteHelpCenterTicket::class);
 
         return view('help-center.tickets.index', [
-            'tickets' => WebsiteHelpCenterTicket::orderBy('open')->latest('id')->with('user:id,username')->paginate(15),
+            'tickets' => app(TicketService::class)->tickets(AuthenticatedUser::current(), true),
         ]);
     }
 
     public function create(): View
     {
         return view('help-center.tickets.create', [
-            'categories' => WebsiteHelpCenterCategory::get(),
+            'categories' => app(TicketService::class)->categories(),
             'openTickets' => $this->myOpenTickets(),
         ]);
     }
 
     public function store(WebsiteTicketFormRequest $request): RedirectResponse
     {
-        AuthenticatedUser::from($request)->tickets()->create($request->validated());
+        app(TicketService::class)->store(AuthenticatedUser::from($request), $request->ticketData());
 
         return redirect()->back()->with('success', __('Ticket submitted!'));
     }
@@ -42,24 +42,18 @@ class TicketController extends Controller
     {
         $this->authorize('update', $ticket);
 
-        $ticket->load([
-            'user:id,username,look',
-            'category',
-            'replies.user:id,username,look',
-        ]);
+        $ticket = app(TicketService::class)->show(AuthenticatedUser::current(), $ticket);
 
         return view('help-center.tickets.edit', [
             'ticket' => $ticket,
-            'categories' => WebsiteHelpCenterCategory::get(),
+            'categories' => app(TicketService::class)->categories(),
             'openTickets' => $this->myOpenTickets($ticket),
         ]);
     }
 
     public function update(WebsiteHelpCenterTicket $ticket, WebsiteTicketFormRequest $request): RedirectResponse
     {
-        $this->authorize('update', $ticket);
-
-        $ticket->update($request->validated());
+        app(TicketService::class)->update(AuthenticatedUser::from($request), $ticket, $request->ticketData());
 
         return to_route('help-center.ticket.show', $ticket)->with('success', __('Ticket updated!'));
     }
@@ -68,11 +62,7 @@ class TicketController extends Controller
     {
         $this->authorize('view', $ticket);
 
-        $ticket->load([
-            'user:id,username,look',
-            'category',
-            'replies.user:id,username,look',
-        ]);
+        $ticket = app(TicketService::class)->show(AuthenticatedUser::current(), $ticket);
 
         return view('help-center.tickets.show', [
             'ticket' => $ticket,
@@ -82,18 +72,14 @@ class TicketController extends Controller
 
     public function destroy(WebsiteHelpCenterTicket $ticket): RedirectResponse
     {
-        $this->authorize('delete', $ticket);
-
-        $ticket->delete();
+        app(TicketService::class)->destroy(AuthenticatedUser::current(), $ticket);
 
         return to_route('me.show')->with('success', __('The ticket has been deleted!'));
     }
 
     public function toggleTicketStatus(WebsiteHelpCenterTicket $ticket): RedirectResponse
     {
-        $this->authorize('update', $ticket);
-
-        $ticket->update(['open' => ! $ticket->open]);
+        app(TicketService::class)->toggle(AuthenticatedUser::current(), $ticket);
 
         return redirect()->back()->with('success', __('The ticket status has been changed!'));
     }

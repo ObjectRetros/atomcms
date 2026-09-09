@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Responses\AccessResponse;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -11,6 +12,10 @@ class ForceStaffTwoFactorMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('logout', 'housekeeping/logout') || $request->routeIs('logout', 'filament.*.auth.logout', 'api.v1.me.two-factor')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if (! $user instanceof User || ! setting('force_staff_2fa')) {
@@ -30,9 +35,11 @@ class ForceStaffTwoFactorMiddleware
             && ! $user->hasEnabledTwoFactorAuthentication()
             && ! $request->routeIs(...$allowedRoutes)
         ) {
-            return to_route($request->routeIs('filament.housekeeping.*')
-                ? 'filament.housekeeping.pages.two-factor-authentication'
-                : 'settings.two-factor');
+            if ($request->routeIs('filament.housekeeping.*')) {
+                return to_route('filament.housekeeping.pages.two-factor-authentication');
+            }
+
+            return AccessResponse::make($request, 'two_factor_required', 'Two-factor authentication must be configured.', 403, 'settings.two-factor');
         }
 
         return $next($request);
