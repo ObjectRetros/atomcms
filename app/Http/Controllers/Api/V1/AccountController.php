@@ -49,7 +49,10 @@ class AccountController extends Controller
             'referral_threshold' => (int) setting('referrals_needed', 5),
             'referral_reward_amount' => (int) setting('referral_reward_amount'),
             'two_factor_enabled' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at !== null,
-            'online_friends' => PublicUserResource::collection($user->getOnlineFriends()->map(fn ($friend) => PublicUserData::from($friend))),
+            'online_friends' => $user->getOnlineFriends()->map(fn (User $friend): array => [
+                ...(new PublicUserResource(PublicUserData::from($friend)))->resolve(),
+                'last_online' => (int) $friend->last_online,
+            ]),
         ]]);
     }
 

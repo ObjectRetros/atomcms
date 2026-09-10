@@ -100,6 +100,6 @@ class CommunityController extends Controller
         $role = $position->position_kind === 'team' ? $position->team : $position->permission;
         $applicationStatus = $position->position_kind === 'team' && $position->team_id !== null ? ($statuses[$position->team_id] ?? null) : null;
 
-        return ['id' => $position->id, 'application_status' => $applicationStatus, 'kind' => $position->position_kind, 'name' => $role?->rank_name, 'badge' => $role?->badge, 'color' => $role?->staff_color, 'description' => $position->description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
+        return ['id' => $position->id, 'application_status' => $applicationStatus, 'kind' => $position->position_kind, 'name' => $role?->rank_name, 'badge' => $role?->badge, 'color' => $role?->staff_color, 'description' => $position->description, 'group_description' => $role?->job_description, 'apply_from' => $position->apply_from?->toIso8601String(), 'apply_to' => $position->apply_to?->toIso8601String()];
     }
 }

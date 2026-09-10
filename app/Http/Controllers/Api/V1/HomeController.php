@@ -65,7 +65,7 @@ class HomeController extends Controller
     public function shop(): JsonResponse
     {
         return response()->json(['data' => [
-            'categories' => $this->homes->categories()->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name]),
+            'categories' => $this->homes->categories()->map(fn ($category): array => ['id' => $category->id, 'name' => $category->name, 'icon' => filled($category->icon) ? url(str_starts_with($category->icon, '/') || str_starts_with($category->icon, 'http') ? $category->icon : 'storage/' . $category->icon) : null]),
             'items' => $this->homes->catalogItems()->map(fn ($item): array => $this->definitionData($item)),
         ]]);
     }

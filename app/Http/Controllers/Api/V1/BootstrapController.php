@@ -15,6 +15,7 @@ use App\Services\HousekeepingPermissionsService;
 use App\Services\InstallationService;
 use App\Services\PermissionsService;
 use App\Services\User\UserApiService;
+use App\Support\PaypalConfiguration;
 use App\Support\StorefrontMoney;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -69,7 +70,10 @@ class BootstrapController extends Controller
             'features' => array_values(array_map(fn (Feature $feature): string => $feature->value, array_filter([Feature::CameraPhotos, Feature::RareValues], fn (Feature $feature): bool => Emulator::supports($feature)))),
             'locale' => app()->getLocale(),
             'locales' => $installed ? WebsiteLanguage::query()->get(['language', 'country_code'])->map(fn (WebsiteLanguage $language): array => ['name' => $language->language, 'locale' => $language->country_code])->all() : [],
-            'assets' => ['logo' => url(setting('cms_logo', '/assets/images/logo.png')), 'avatar' => setting('avatar_imager'), 'badge' => url(setting('badges_path', '/client/flash/c_images/album1584'))],
+            'assets' => ['header' => url(setting('cms_header', '/assets/images/kasja_mepage_header.png')), 'me_backdrop' => url(setting('cms_me_backdrop', '/assets/images/kasja_mepage_image.png')), 'logo' => url(setting('cms_logo', '/assets/images/logo.png')), 'avatar' => setting('avatar_imager'), 'badge' => url(setting('badges_path', '/client/flash/c_images/album1584'))],
+            'color_mode' => setting('cms_color_mode') === 'dark' ? 'dark' : 'light',
+            'clients' => ['flash_enabled' => (bool) config('habbo.client.flash_enabled')],
+            'payments' => ['paypal_configured' => PaypalConfiguration::isConfigured()],
             'registration' => ['enabled' => ! (bool) setting('disable_registration'), 'requires_beta_code' => (bool) setting('requires_beta_code')],
             'reactions' => config('habbo.reactions'),
             'operations' => ['articles', 'accounts', 'directory', 'staff', 'teams', 'leaderboards', 'applications', 'shop', 'paypal', 'vouchers', 'referrals', 'support', 'homes', 'badges', 'logo', 'nitro'],

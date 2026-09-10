@@ -182,12 +182,42 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "author_display": {
+                      "type": "object",
+                      "properties": {
+                        "rank_name": {
+                          "type": "string"
+                        },
+                        "background_url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "rank_name",
+                        "background_url"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "can_post_comment": {
+                      "type": "boolean"
+                    },
+                    "reaction_users": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
                     }
                   },
                   "required": [
                     "data",
                     "reactions",
-                    "my_reactions"
+                    "my_reactions",
+                    "author_display",
+                    "can_post_comment"
                   ],
                   "additionalProperties": false
                 }
@@ -4767,12 +4797,20 @@
               },
               "badge": {
                 "type": "string"
+              },
+              "header": {
+                "type": "string"
+              },
+              "me_backdrop": {
+                "type": "string"
               }
             },
             "required": [
               "logo",
               "avatar",
-              "badge"
+              "badge",
+              "header",
+              "me_backdrop"
             ],
             "additionalProperties": false
           },
@@ -4862,6 +4900,37 @@
               "string",
               "null"
             ]
+          },
+          "color_mode": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark"
+            ]
+          },
+          "clients": {
+            "type": "object",
+            "properties": {
+              "flash_enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "flash_enabled"
+            ],
+            "additionalProperties": false
+          },
+          "payments": {
+            "type": "object",
+            "properties": {
+              "paypal_configured": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "paypal_configured"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -4886,7 +4955,10 @@
           "latest_photos",
           "discord_url",
           "tinymce_api_key",
-          "discord_widget_id"
+          "discord_widget_id",
+          "color_mode",
+          "clients",
+          "payments"
         ],
         "additionalProperties": false
       },
@@ -4972,7 +5044,7 @@
           "online_friends": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PublicUser"
+              "$ref": "#/components/schemas/OnlineFriend"
             }
           },
           "can_manage_tickets": {
@@ -5553,6 +5625,16 @@
               "null"
             ],
             "description": "The authenticated user’s team application status, or null when no application exists."
+          },
+          "group_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6103,11 +6185,22 @@
                 },
                 "name": {
                   "type": "string"
+                },
+                "icon": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "required": [
                 "id",
-                "name"
+                "name",
+                "icon"
               ],
               "additionalProperties": false
             }
@@ -6899,6 +6992,38 @@
           "type",
           "ban_reason",
           "ban_expire"
+        ],
+        "additionalProperties": false
+      },
+      "OnlineFriend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          },
+          "motto": {
+            "type": "string"
+          },
+          "look": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "last_online": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "motto",
+          "look",
+          "online",
+          "last_online"
         ],
         "additionalProperties": false
       }

@@ -1245,6 +1245,8 @@ export interface components {
                 logo: string;
                 avatar: string | null;
                 badge: string;
+                header: string;
+                me_backdrop: string;
             };
             registration: {
                 enabled: boolean;
@@ -1261,6 +1263,14 @@ export interface components {
             discord_url: string | null;
             tinymce_api_key: string | null;
             discord_widget_id: string | null;
+            /** @enum {string} */
+            color_mode: "light" | "dark";
+            clients: {
+                flash_enabled: boolean;
+            };
+            payments: {
+                paypal_configured: boolean;
+            };
         };
         Me: {
             id: number;
@@ -1284,7 +1294,7 @@ export interface components {
             referral_threshold: number;
             referral_reward_amount: number;
             two_factor_enabled: boolean;
-            online_friends: components["schemas"]["PublicUser"][];
+            online_friends: components["schemas"]["OnlineFriend"][];
             can_manage_tickets: boolean;
         };
         Article: {
@@ -1374,6 +1384,7 @@ export interface components {
             color: string | null;
             /** @description The authenticated user’s team application status, or null when no application exists. */
             application_status: string | null;
+            group_description?: string | null;
         };
         ShopPackage: {
             id: number;
@@ -1465,6 +1476,7 @@ export interface components {
             categories: {
                 id: number;
                 name: string;
+                icon: string | null;
             }[];
             items: components["schemas"]["HomeDefinition"][];
         };
@@ -1629,6 +1641,14 @@ export interface components {
             ban_reason: string;
             ban_expire: number | null;
         };
+        OnlineFriend: {
+            id: number;
+            username: string;
+            motto: string;
+            look: string;
+            online: boolean;
+            last_online: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -1760,6 +1780,14 @@ export interface operations {
                             [key: string]: number;
                         };
                         my_reactions: string[];
+                        author_display: {
+                            rank_name: string;
+                            background_url: string;
+                        };
+                        can_post_comment: boolean;
+                        reaction_users?: {
+                            [key: string]: string[];
+                        };
                     };
                 };
             };

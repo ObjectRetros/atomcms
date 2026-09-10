@@ -31,8 +31,16 @@ class ArticleController extends Controller
     public function show(WebsiteArticle $article, Request $request): ArticleResource
     {
         $actor = $request->user();
+        $article = $this->articles->loadForDisplay($article);
+        $author = $article->user;
 
-        return (new ArticleResource($this->articles->loadForDisplay($article)))->additional([
+        return (new ArticleResource($article))->additional([
+            'author_display' => [
+                'rank_name' => $author && ! $author->hidden_staff ? $author->permission->rank_name ?? 'Member' : 'Member',
+                'background_url' => asset('assets/images/' . ($author->permission->staff_background ?? 'staff-bg.png')),
+            ],
+            'can_post_comment' => $actor instanceof User && $article->can_comment && ! $article->userHasReachedArticleCommentLimit($actor),
+            'reaction_users' => (object) $this->reactions->usersFor($article)->all(),
             'reactions' => (object) $this->reactions->countsFor($article)->all(),
             'my_reactions' => $actor instanceof User ? $this->reactions->reactionsFor($article, $actor) : [],
         ]);

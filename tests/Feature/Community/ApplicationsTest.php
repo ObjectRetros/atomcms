@@ -45,10 +45,11 @@ function openTeamPosition(): WebsiteOpenPosition
 test('application API preserves rank and team header artwork', function (string $kind) {
     $position = $kind === 'team' ? openTeamPosition() : openRankPosition();
     $role = $kind === 'team' ? $position->team : $position->permission;
-    $role->update(['badge' => 'ADM', 'staff_color' => '#123456']);
+    $role->update(['badge' => 'ADM', 'staff_color' => '#123456', 'job_description' => 'Community group description']);
 
     $this->actingAs($this->user)->getJson('/api/v1/applications/' . $position->id)->assertOk()
-        ->assertJsonPath('data.badge', 'ADM')->assertJsonPath('data.color', '#123456');
+        ->assertJsonPath('data.badge', 'ADM')->assertJsonPath('data.color', '#123456')
+        ->assertJsonPath('data.group_description', 'Community group description');
     $this->getJson('/api/v1/applications?kind=' . $kind)->assertOk()
         ->assertJsonFragment(['id' => $position->id, 'badge' => 'ADM', 'color' => '#123456']);
 })->with(['rank', 'team']);

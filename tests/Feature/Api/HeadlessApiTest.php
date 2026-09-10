@@ -7,7 +7,9 @@ use App\Enums\HomeItemType;
 use App\Models\Articles\WebsiteArticle;
 use App\Models\Community\RareValue\WebsiteRareValue;
 use App\Models\Community\RareValue\WebsiteRareValueCategory;
+use App\Models\Game\Permission;
 use App\Models\Help\WebsiteHelpCenterCategory;
+use App\Models\Home\HomeCategory;
 use App\Models\Home\HomeItem;
 use App\Models\Miscellaneous\WebsiteMaintenanceTask;
 use App\Models\Miscellaneous\WebsitePermission;
@@ -90,6 +92,7 @@ test('public projections do not leak account secrets or balances', function () {
 });
 
 test('all public and authenticated catalog read operations produce JSON', function () {
+    $category = HomeCategory::create(['name' => 'Theme artwork', 'icon' => 'home-items/custom-category.png', 'order' => -1]);
     foreach (['articles', 'users?q=abc', 'users/online', 'rules', 'homes/' . $this->member->username] as $path) {
         $this->getJson('/api/v1/' . $path)->assertOk()->assertJsonStructure(['data']);
     }
@@ -97,6 +100,7 @@ test('all public and authenticated catalog read operations produce JSON', functi
     foreach (['staff', 'teams', 'leaderboards', 'photos', 'applications', 'shop', 'shop/purchases', 'support', 'support/tickets', 'home-shop', 'homes/' . $this->member->username . '/inventory', 'badges', 'rare-values', 'me/sessions'] as $path) {
         $this->getJson('/api/v1/' . $path)->assertOk()->assertJsonStructure(['data']);
     }
+    $this->getJson('/api/v1/home-shop')->assertOk()->assertJsonPath('data.categories.0', ['id' => $category->id, 'name' => 'Theme artwork', 'icon' => url('storage/home-items/custom-category.png')]);
 });
 
 test('account referrals expose configured reward and progress for the theme', function (?int $total) {
@@ -120,6 +124,10 @@ test('article comments and reactions share persistence and reject forbidden edit
     $comment = $article->comments()->firstOrFail();
     $this->getJson('/api/v1/articles/' . $article->slug . '/comments')->assertOk()->assertJsonPath('data.0.comment', 'Shared comment');
     $this->postJson('/api/v1/articles/' . $article->slug . '/reactions', ['reaction' => 'heart'])->assertOk()->assertJsonPath('data.added', true);
+    $article->reactions()->create(['user_id' => User::factory()->create()->id, 'reaction' => 'heart', 'active' => false]);
+    $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()
+        ->assertJsonPath('reactions.heart', 1)
+        ->assertJsonPath('reaction_users', ['heart' => [$this->member->username]]);
     $this->postJson('/api/v1/articles/' . $article->slug . '/reactions', ['reaction' => 'invalid'])->assertUnprocessable();
     $this->actingAs(User::factory()->create(['rank' => 1]))->deleteJson('/api/v1/comments/' . $comment->id)->assertForbidden();
     $this->actingAs($this->member)->deleteJson('/api/v1/comments/' . $comment->id)->assertNoContent();
@@ -323,14 +331,14 @@ test('ticket detail serializes persisted database timestamps', function () {
 });
 
 test('friend guestbook and leaderboard projections keep public presence and motto', function () {
-    $friend = User::factory()->create(['rank' => 1, 'online' => '1', 'motto' => 'Public motto', 'credits' => 1000000]);
+    $friend = User::factory()->create(['rank' => 1, 'online' => '1', 'motto' => 'Public motto', 'credits' => 1000000, 'last_online' => 1788264000]);
     DB::table('messenger_friendships')->insert(['user_one_id' => $this->member->id, 'user_two_id' => $friend->id, 'relation' => 0, 'friends_since' => time(), 'category' => 0]);
     $this->member->receivedHomeMessages()->create(['user_id' => $friend->id, 'content' => 'Hello']);
     app(CurrencyRepository::class)->give($friend, CurrencyTypes::Duckets, 1000000);
     DB::table('users_settings')->where('user_id', $friend->id)->update(['achievement_score' => 1000000]);
     $expected = ['id' => $friend->id, 'username' => $friend->username, 'motto' => 'Public motto', 'look' => $friend->look, 'online' => true];
 
-    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.online_friends.0', $expected);
+    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.online_friends.0', [...$expected, 'last_online' => 1788264000]);
     foreach (['My Friends' => 'data.content.items.0', 'My Guestbook' => 'data.content.0.author'] as $name => $path) {
         $definition = HomeItem::create(['name' => $name, 'type' => HomeItemType::Widget, 'currency_type' => CurrencyTypes::Duckets, 'price' => 0, 'image' => 'widget.png']);
         $item = $this->member->homeItems()->create(['home_item_id' => $definition->id, 'placed' => true]);
@@ -365,3 +373,71 @@ test('gallery photos normalize relative media URLs and retain absolute URLs', fu
         ->assertJsonPath('data.0.id', $id)
         ->assertJsonPath('data.0.url', url($storedUrl));
 })->with(['/camera/photo.png', 'https://camera.example.test/photo.png']);
+
+test('bootstrap exposes theme artwork and enabled integrations without credentials', function () {
+    setSetting('cms_header', '/storage/custom-header.png');
+    setSetting('cms_me_backdrop', 'https://images.example.com/backdrop.png');
+    setSetting('cms_color_mode', 'dark');
+    config([
+        'habbo.client.flash_enabled' => true,
+        'habbo.paypal.mode' => 'sandbox',
+        'habbo.paypal.sandbox.client_id' => 'private-paypal-client',
+        'habbo.paypal.sandbox.client_secret' => 'private-paypal-secret',
+    ]);
+
+    $this->getJson('/api/v1/bootstrap')->assertOk()
+        ->assertJsonPath('data.assets.header', url('/storage/custom-header.png'))
+        ->assertJsonPath('data.assets.me_backdrop', 'https://images.example.com/backdrop.png')
+        ->assertJsonPath('data.color_mode', 'dark')
+        ->assertJsonPath('data.clients.flash_enabled', true)
+        ->assertJsonPath('data.payments', ['paypal_configured' => true])
+        ->assertDontSee('private-paypal-client')->assertDontSee('private-paypal-secret');
+});
+
+test('bootstrap uses light mode and keeps unavailable clients and top ups disabled', function () {
+    setSetting('cms_color_mode', 'unsupported');
+    config(['habbo.client.flash_enabled' => false, 'habbo.paypal.mode' => 'sandbox', 'habbo.paypal.sandbox.client_secret' => '']);
+
+    $this->getJson('/api/v1/bootstrap')->assertOk()
+        ->assertJsonPath('data.color_mode', 'light')
+        ->assertJsonPath('data.clients.flash_enabled', false)
+        ->assertJsonPath('data.payments.paypal_configured', false);
+});
+
+test('article author presentation preserves rank visibility without exposing permissions', function (bool $hidden, string $label) {
+    Permission::findOrFail(5)->update(['rank_name' => 'Hotel team', 'staff_background' => 'custom-staff.png']);
+    $author = User::factory()->create(['rank' => 5, 'hidden_staff' => $hidden]);
+    $article = WebsiteArticle::create(['user_id' => $author->id, 'title' => 'Author presentation', 'short_story' => 'Preview', 'full_story' => 'Content']);
+
+    $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()
+        ->assertJsonPath('author_display', ['rank_name' => $label, 'background_url' => asset('assets/images/custom-staff.png')])
+        ->assertJsonMissingPath('data.author.rank')->assertJsonMissingPath('data.author.permission');
+})->with(['visible' => [false, 'Hotel team'], 'hidden' => [true, 'Member']]);
+
+test('article detail permits comments only for an eligible authenticated viewer', function (bool $authenticated, bool $unlocked, int $ownComments, bool $canPost) {
+    setSetting('max_comment_per_article', '2');
+    $author = User::factory()->create();
+    $article = WebsiteArticle::create(['user_id' => $author->id, 'title' => 'Comment availability', 'short_story' => 'Preview', 'full_story' => 'Content', 'can_comment' => $unlocked]);
+    $article->comments()->create(['user_id' => $author->id, 'comment' => 'Another member commented']);
+    for ($index = 0; $index < $ownComments; $index++) {
+        $article->comments()->create(['user_id' => $this->member->id, 'comment' => 'My existing comment']);
+    }
+    if ($authenticated) {
+        $this->actingAs($this->member);
+    }
+
+    $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()->assertJsonPath('can_post_comment', $canPost);
+})->with([
+    'guest' => [false, true, 0, false],
+    'below limit' => [true, true, 1, true],
+    'limit reached' => [true, true, 2, false],
+    'locked' => [true, false, 0, false],
+]);
+
+test('article author presentation falls back when no author is attached', function () {
+    $article = WebsiteArticle::create(['user_id' => null, 'title' => 'Archived article', 'short_story' => 'Preview', 'full_story' => 'Content']);
+
+    $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()
+        ->assertJsonPath('data.author', null)
+        ->assertJsonPath('author_display', ['rank_name' => 'Member', 'background_url' => asset('assets/images/staff-bg.png')]);
+});

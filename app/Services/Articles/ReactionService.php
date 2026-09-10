@@ -51,6 +51,18 @@ class ReactionService
             ->map(fn ($count): int => (int) $count);
     }
 
+    /** @return Collection<string, array<int, string>> */
+    public function usersFor(WebsiteArticle $article): Collection
+    {
+        return $article->reactions()
+            ->with('user:id,username')
+            ->get()
+            ->groupBy('reaction')
+            ->map(fn (Collection $reactions): array => $reactions
+                ->map(fn (WebsiteArticleReaction $reaction): string => $reaction->user->username ?? '')
+                ->values()->all());
+    }
+
     /**
      * The reactions the given user has active on the article.
      *

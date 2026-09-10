@@ -4,6 +4,7 @@ use App\Emulator\Contracts\BadgeRepository;
 use App\Emulator\Contracts\CurrencyRepository;
 use App\Enums\CurrencyTypes;
 use App\Enums\HomeItemType;
+use App\Models\Articles\WebsiteArticle;
 use App\Models\Community\RareValue\WebsiteRareValue;
 use App\Models\Community\RareValue\WebsiteRareValueCategory;
 use App\Models\Home\HomeItem;
@@ -89,19 +90,27 @@ test('ada rare values expose artwork without arcturus limited edition columns', 
 });
 
 test('ada public friend home and leaderboard projections read live emulator presence and motto', function () {
-    $friend = User::factory()->create(['rank' => 1, 'online' => false, 'motto' => 'Stale motto']);
-    DB::table('player_data')->where('player_id', $friend->id)->update(['is_online' => true]);
+    $friend = User::factory()->create(['rank' => 1, 'online' => false, 'motto' => 'Stale motto', 'last_online' => 1]);
+    DB::table('player_data')->where('player_id', $friend->id)->update(['is_online' => true, 'last_online' => '2026-09-01 12:00:00']);
     DB::table('player_avatar_data')->where('player_id', $friend->id)->update(['motto' => 'Live motto']);
     DB::table('player_friendships')->insert(['origin_player_id' => $this->member->id, 'target_player_id' => $friend->id, 'status' => 2, 'created_at' => now()]);
     $this->member->receivedHomeMessages()->create(['user_id' => $friend->id, 'content' => 'Hello']);
     app(CurrencyRepository::class)->give($friend, CurrencyTypes::Credits, 1000000);
     $expected = ['id' => $friend->id, 'username' => $friend->username, 'motto' => 'Live motto', 'look' => $friend->look, 'online' => true];
 
-    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.online_friends.0', $expected);
+    $this->actingAs($this->member)->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.online_friends.0', [...$expected, 'last_online' => 1788264000]);
     foreach (['My Friends' => 'data.content.items.0', 'My Guestbook' => 'data.content.0.author'] as $name => $path) {
         $definition = HomeItem::create(['name' => $name, 'type' => HomeItemType::Widget, 'currency_type' => CurrencyTypes::Duckets, 'price' => 0, 'image' => 'widget.png']);
         $item = $this->member->homeItems()->create(['home_item_id' => $definition->id, 'placed' => true]);
         $this->getJson('/api/v1/homes/' . $this->member->username . '/widgets/' . $item->id)->assertOk()->assertJsonPath($path, $expected);
     }
     $this->getJson('/api/v1/leaderboards')->assertOk()->assertJsonPath('data.credits.0.user', $expected);
+});
+
+test('ada article presentation uses role names and the driver background default', function () {
+    DB::table('roles')->where('id', 1)->update(['name' => 'Ada member']);
+    $article = WebsiteArticle::create(['user_id' => $this->member->id, 'title' => 'Ada author', 'short_story' => 'Preview', 'full_story' => 'Content']);
+
+    $this->getJson('/api/v1/articles/' . $article->slug)->assertOk()
+        ->assertJsonPath('author_display', ['rank_name' => 'Ada member', 'background_url' => asset('assets/images/staff-bg.png')]);
 });
